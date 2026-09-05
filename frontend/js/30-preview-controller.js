@@ -198,7 +198,48 @@
     }
     renderAudio(await res.blob());
     setState('ready', `Preview de ${getPreviewDurationSec()} s listo para reproducir`, 100);
+    fetchAndPublishMeters(sourceId);
     return true;
+  }
+
+  // Telemetría de GR en tiempo real: cada render nuevo del Preview trae
+  // consigo los chain_meters de ESE render (comp/limiter/glue/mb low-mid-
+  // high, etc.) — se piden justo después del audio y se publican al store
+  // central (30-metrics-store.js) para que los paneles de GR se actualicen.
+  // No bloquea ni afecta el estado de "listo" del Preview si falla.
+  async function fetchAndPublishMeters(sourceId) {
+    if (!LG.metrics?.publish) return;
+    try {
+      const res = await LG.api.apiFetch(`${LG.api.apiBase()}/preview/meters/${sourceId}`, {
+        method: 'GET', timeout: 15000, maxRetries: 0,
+      });
+      if (!res.ok) return;
+      const chainMeters = await res.json();
+      LG.metrics.publish(toDisplayMeters(chainMeters), { source: 'preview' });
+    } catch (_) {
+      // Silencioso a propósito: el Preview en sí ya está listo, esto es
+      // solo un extra informativo para los meters de GR.
+    }
+  }
+
+  // El backend arma chain_meters con "mb": {low:{gr_db},mid:{gr_db},high:{gr_db}}
+  // (mismo shape que usa /master en otros lados del código, no lo toco acá).
+  // Pero updateCentralGR (33-studio-controller.js) espera mb_meters PLANO
+  // con low_gr_db/mid_gr_db/high_gr_db, y comp_meters/glue_meters también
+  // planos — este adaptador tiende el puente sin tocar ninguno de los dos.
+  function toDisplayMeters(chainMeters) {
+    const mb = chainMeters?.mb || {};
+    return {
+      chain_meters: chainMeters,
+      comp_meters: chainMeters?.comp || {},
+      limiter_meters: chainMeters?.limiter || {},
+      glue_meters: chainMeters?.glue || {},
+      mb_meters: {
+        low_gr_db: mb.low?.gr_db,
+        mid_gr_db: mb.mid?.gr_db,
+        high_gr_db: mb.high?.gr_db,
+      },
+    };
   }
 
   function cancelRender() {
