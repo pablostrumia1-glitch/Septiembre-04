@@ -102,6 +102,7 @@ def create_preview_router(
 
         monitor = asyncio.create_task(monitor_disconnect(), name="lgmdm-preview-disconnect-monitor")
         output_path = None
+        succeeded = False
         try:
             def cancel_check() -> bool:
                 return disconnected
@@ -114,7 +115,7 @@ def create_preview_router(
             )
             if not os.path.exists(output_path):
                 raise HTTPException(500, "El Preview no fue generado")
-            return FileResponse(
+            response = FileResponse(
                 output_path,
                 media_type="audio/wav",
                 filename="lgmdm-preview-25s.wav",
@@ -125,6 +126,8 @@ def create_preview_router(
                 },
                 background=BackgroundTask(preview_renderer.remove_render, output_path),
             )
+            succeeded = True
+            return response
         except InterruptedError as exc:
             raise HTTPException(499, "Preview cancelado") from exc
         except HTTPException:
@@ -133,7 +136,26 @@ def create_preview_router(
             raise HTTPException(500, f"Error renderizando Preview: {exc}") from exc
         finally:
             monitor.cancel()
-            if output_path and not os.path.exists(output_path):
+            # FIX real (esto sí hacía falta): la condición original era
+            # `not os.path.exists(output_path)`, invertida — nunca corría en
+            # la práctica. En el camino exitoso el WAV queda a cargo del
+            # BackgroundTask de la respuesta (corre después de que el
+            # archivo se envía completo), por eso el guard de `succeeded`.
+            if not succeeded and output_path and os.path.exists(output_path):
                 preview_renderer.remove_render(output_path)
+
+    @router.get("/meters/{source_id}")
+    async def get_preview_meters(
+        source_id: str,
+        current_user: dict = Depends(current_user_dependency),
+    ):
+        try:
+            # Reusa get_source solo para validar ownership (mismo chequeo que
+            # ya hace render_preview) antes de exponer los meters de ese id.
+            preview_renderer.get_source(source_id, str(current_user["id"]))
+            meters = await run_in_threadpool(preview_renderer.get_meters, source_id)
+        except PreviewSnapshotError as exc:
+            raise HTTPException(404, str(exc)) from exc
+        return meters
 
     return router
