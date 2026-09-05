@@ -33,8 +33,8 @@ try:
         create_audio_router,
         create_mastering_router, create_mixer_router, create_stems_router, create_streaming_router,
         create_preview_router,
-    )  # pragma: no cover - fallback for direct script execution
-                                                                              
+    )
+except ImportError:  # pragma: no cover - fallback for direct script execution
     from job_service import JobService
     from audio_service import AudioService
     from validation_utils import MAX_FILE_SIZE, coerce_ws_chain_params, validate_audio_file

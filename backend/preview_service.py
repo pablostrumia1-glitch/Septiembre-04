@@ -22,6 +22,22 @@ class PreviewSnapshotError(RuntimeError):
     pass
 
 
+def _json_safe(value: Any) -> Any:
+    """Convierte tipos numpy (float32/float64/int64/ndarray, etc.) a tipos
+    nativos de Python antes de json.dumps. chain_meters ya viene mayormente
+    redondeado con round(float(...), 2), pero esto es una red de seguridad
+    barata por si algún sub-dict se cuela sin convertir."""
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, np.ndarray):
+        return _json_safe(value.tolist())
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
+
+
 class PreviewRenderer:
     """Owns immutable 25-second preview sources and cancellable renders."""
 
@@ -48,6 +64,9 @@ class PreviewRenderer:
             self.directory / f"{source_id}.wav",
             self.directory / f"{source_id}.json",
         )
+
+    def _meters_path(self, source_id: str) -> Path:
+        return self.directory / f"{source_id}.meters.json"
 
     def create_snapshot(self, input_path: str, owner_id: str) -> dict[str, Any]:
         if not os.path.exists(input_path):
@@ -92,7 +111,13 @@ class PreviewRenderer:
         return str(source_path), meta
 
     @staticmethod
-    def _render_worker(source_path: str, output_path: str, params: dict[str, Any], duration_sec: int) -> None:
+    def _render_worker(
+        source_path: str,
+        output_path: str,
+        meters_path: str,
+        params: dict[str, Any],
+        duration_sec: int,
+    ) -> None:
         clean = dict(params)
         clean.pop("progress_cb", None)
         clean["input_path"] = source_path
@@ -105,17 +130,30 @@ class PreviewRenderer:
             raise RuntimeError("El motor de mastering no generó el Preview")
         os.replace(produced, output_path)
 
+        # Telemetría de GR en tiempo real: process_audio ya calcula
+        # chain_meters (comp/limiter/glue/mb low-mid-high/etc.) — antes se
+        # descartaba. Se guarda con el mismo source_id (no un id nuevo) para
+        # que el frontend, que ya tiene sourceId en scope, la pueda pedir
+        # justo después de recibir el audio de cada render.
+        chain_meters = result.get("chain_meters") or {}
+        tmp_meters = meters_path + ".tmp"
+        with open(tmp_meters, "w", encoding="utf-8") as handle:
+            json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
+        os.replace(tmp_meters, meters_path)
+
     def render_cancellable(
         self,
         source_path: str,
         params: dict[str, Any],
         cancel_check: Callable[[], bool],
     ) -> str:
+        source_id = Path(source_path).stem
         output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
+        meters_path = str(self._meters_path(source_id))
         ctx = mp.get_context("spawn")
         process = ctx.Process(
             target=self._render_worker,
-            args=(source_path, output_path, params, self.duration_sec),
+            args=(source_path, output_path, meters_path, params, self.duration_sec),
             daemon=True,
         )
         process.start()
@@ -142,6 +180,12 @@ class PreviewRenderer:
             if os.path.exists(output_path):
                 os.remove(output_path)
             raise
+
+    def get_meters(self, source_id: str) -> dict[str, Any]:
+        path = self._meters_path(source_id)
+        if not path.exists():
+            raise PreviewSnapshotError("Todavía no hay telemetría de GR para este snapshot")
+        return json.loads(path.read_text(encoding="utf-8"))
 
     @staticmethod
     def remove_render(path: Optional[str]) -> None:
