@@ -151,6 +151,12 @@ activemq-data/
 .env
 .envrc
 .venv
+.scripts/
+.cambios-mios/
+.reportes/
+.scripts
+.cambios-mios
+.reportes
 env/
 venv/
 ENV/
@@ -219,5 +225,5 @@ __marimo__/
 scripts/*
 cambios-mios/*
 reportes/*
-/workspaces/Septiembre-04/scripts
+scripts
 reportes
