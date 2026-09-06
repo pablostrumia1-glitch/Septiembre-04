@@ -214,6 +214,24 @@ os.makedirs(STEM_LIBRARY_DIR, exist_ok=True)
 jobs = JobService()
 audio_service = AudioService(upload_dir=UPLOAD_DIR)
 
+@app.on_event("startup")
+def _check_production_secrets():
+    """Arranque: falla si JWT_SECRET fue generado automáticamente (no configurado)."""
+    try:
+        from .auth import JWT_SECRET_WAS_GENERATED
+    except ImportError:
+        from auth import JWT_SECRET_WAS_GENERATED
+    if JWT_SECRET_WAS_GENERATED:
+        import logging as _logging
+        _logging.getLogger(__name__).critical(
+            "JWT_SECRET not configured. Set JWT_SECRET environment variable before running in production."
+        )
+        raise RuntimeError(
+            "JWT_SECRET environment variable must be set before running in production. "
+            "Generated secrets are not persistent and compromise security."
+        )
+
+
 @app.on_event("shutdown")
 def _shutdown_runtime_resources():
     """Cierra recursos persistentes antes de terminar el proceso."""

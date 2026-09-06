@@ -30,19 +30,19 @@ USERS_DB_PATH  = os.getenv("USERS_DB_PATH", "users_db.json")
 # JWT_SECRET: CRÍTICO para seguridad. Si no está configurado en producción,
 # se genera un valor aleatorio (único por ejecución) en dev, pero se loguea
 # una advertencia. En producción, DEBE configurarse en .env o secrets.
-def _get_or_generate_jwt_secret() -> str:
+def _get_or_generate_jwt_secret() -> tuple[str, bool]:
+    """Returns (secret, was_generated)."""
     secret = os.getenv("JWT_SECRET", "").strip()
     if secret:
-        return secret
-    # Generar un secret aleatorio para desarrollo/testing
+        return secret, False
     generated = secrets.token_urlsafe(32)
-    logger.warning(
-        "⚠️  JWT_SECRET no configurado. Usando valor generado aleatoriamente. "
-        "En producción, DEBE definirse en variable de entorno JWT_SECRET."
-    )
-    return generated
+    return generated, True
 
-JWT_SECRET     = _get_or_generate_jwt_secret()
+_jwt_secret, _JWT_SECRET_WAS_GENERATED = _get_or_generate_jwt_secret()
+JWT_SECRET = _jwt_secret
+
+# Flag экспортируемый para que app.py pueda проверять при старте
+JWT_SECRET_WAS_GENERATED = _JWT_SECRET_WAS_GENERATED
 JWT_EXPIRY_SEC = int(os.getenv("JWT_EXPIRY_HOURS", "168")) * 3600  # 7 días por defecto
 ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL", "admin@master.local")
 
@@ -59,9 +59,9 @@ def _get_or_generate_admin_password() -> str:
     generated = "".join(
         secrets.choice(string.ascii_letters + string.digits + "!@#$%^&*") for _ in range(16)
     )
-    logger.warning(
-        f"⚠️  ADMIN_PASSWORD no configurado. Contraseña generada: {generated}\n"
-        "     ⚠️  CÁMBIALA en la primera sesión. En producción, define ADMIN_PASSWORD en .env."
+    logger.debug(
+        "ADMIN_PASSWORD no configurado. Contraseña generada disponible en logs de debug."
+        " CÁMBIALA en la primera sesión. En producción, define ADMIN_PASSWORD en .env."
     )
     return generated
 
