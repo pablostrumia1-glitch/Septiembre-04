@@ -68,8 +68,7 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
         if not req.message or not req.message.strip():
             raise HTTPException(400, "El mensaje no puede estar vacío.")
         try:
-            result = await asyncio.to_thread(
-                ai_assistant.chat,
+            result = await ai_assistant.chat(
                 req.message,
                 [(m.model_dump() if hasattr(m, "model_dump") else m.dict()) for m in req.history],
                 req.analysis,
@@ -104,7 +103,7 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
             analysis = await asyncio.to_thread(analyze_audio, audio, sr)
             analysis["mix_advice"] = mix_advice(analysis)
             platform_options = list(PLATFORM_LOUDNESS_TARGETS.keys())
-            decision = await asyncio.to_thread(ai_assistant.decide_mastering, analysis, platform_options, audio, sr)
+            decision = await ai_assistant.decide_mastering(analysis, platform_options, audio, sr)
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
         except Exception as exc:
@@ -139,7 +138,7 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
             analysis = await asyncio.to_thread(analyze_audio, audio, sr)
             analysis["mix_advice"] = mix_advice(analysis)
             platform_options = list(PLATFORM_LOUDNESS_TARGETS.keys())
-            decision = await asyncio.to_thread(ai_assistant.decide_mastering, analysis, platform_options, audio, sr)
+            decision = await ai_assistant.decide_mastering(analysis, platform_options, audio, sr)
         except ValueError as exc:
             if os.path.exists(input_path):
                 os.remove(input_path)

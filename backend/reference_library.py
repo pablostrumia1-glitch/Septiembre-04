@@ -115,12 +115,12 @@ def scan(force: bool = False) -> int:
         found_ids.add(fid)
         with _index_lock:
             existing = _index.get(fid)
-        needs_analysis = (
-            force
-            or existing is None
-            or existing.get("path") != os.path.abspath(fpath)
-            or abs(existing.get("_mtime", 0) - mtime) > 1.0
-        )
+            needs_analysis = (
+                force
+                or existing is None
+                or existing.get("path") != os.path.abspath(fpath)
+                or abs(existing.get("_mtime", 0) - mtime) > 1.0
+            )
         if needs_analysis:
             entry = _analyze_file(fpath)
             if entry:

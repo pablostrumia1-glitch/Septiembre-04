@@ -29,11 +29,17 @@ API pública:
         -> dict[str, np.ndarray]   # {"vocals":..,"drums":..,"bass":..,"other":..}
         Cada array tiene shape (channels, samples) en el sr original de entrada.
 """
+import functools
 import numpy as np
 
 STEM_NAMES = ["drums", "bass", "other", "vocals"]  # orden nativo de htdemucs
 
-_MODEL_CACHE = {}
+@functools.lru_cache(maxsize=4)
+def _get_model(model_name="htdemucs_ft"):
+    from demucs_infer.pretrained import get_model
+    model = get_model(model_name)
+    model.eval()
+    return model
 
 
 def _get_device(device):
@@ -41,16 +47,6 @@ def _get_device(device):
     if device and device != "auto":
         return device
     return "cuda" if torch.cuda.is_available() else "cpu"
-
-
-def _get_model(model_name="htdemucs_ft"):
-    if model_name in _MODEL_CACHE:
-        return _MODEL_CACHE[model_name]
-    from demucs_infer.pretrained import get_model
-    model = get_model(model_name)
-    model.eval()
-    _MODEL_CACHE[model_name] = model
-    return model
 
 
 def _resample(audio_2d: np.ndarray, sr_in: int, sr_out: int) -> np.ndarray:

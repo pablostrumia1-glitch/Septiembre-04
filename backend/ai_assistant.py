@@ -4,13 +4,15 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import json
 import logging
 import re
+import threading
 from typing import Optional, Dict, Tuple
 
-import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,7 @@ GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 _client = None
 _client_error: Optional[str] = None
+_client_lock = threading.Lock()
 
 
 def _get_client():
@@ -41,29 +44,30 @@ def _get_client():
     resultado. Ya no instancia ningún SDK: las llamadas van por REST directo,
     ver `_gemini_generate_content`."""
     global _client, _client_error
-    if _client is not None:
+    with _client_lock:
+        if _client is not None:
+            return _client
+        if _client_error is not None:
+            return None
+        if not GEMINI_API_KEY:
+            _client_error = (
+                "Falta configurar la variable de entorno GEMINI_API_KEY en el backend."
+            )
+            logger.warning(_client_error)
+            return None
+        _client = True
         return _client
-    if _client_error is not None:
-        return None
-    if not GEMINI_API_KEY:
-        _client_error = (
-            "Falta configurar la variable de entorno GEMINI_API_KEY en el backend."
-        )
-        logger.warning(_client_error)
-        return None
-    _client = True
-    return _client
 
 
 def is_available() -> bool:
     return _get_client() is not None
 
 
-def _gemini_generate_content(system_prompt: str, contents: list,
-                              max_output_tokens: int = 2048,
-                              thinking_budget: Optional[int] = None,
-                              temperature: Optional[float] = None,
-                              max_retries: int = 3) -> Optional[str]:
+async def _gemini_generate_content(system_prompt: str, contents: list,
+                                    max_output_tokens: int = 2048,
+                                    thinking_budget: Optional[int] = None,
+                                    temperature: Optional[float] = None,
+                                    max_retries: int = 3) -> Optional[str]:
     """Llama directo al endpoint REST generateContent de Gemini (sin SDK) y \
     devuelve el texto crudo de la respuesta. `contents` ya viene armado en el \
     formato de la API: [{"role": "user"|"model", "parts": [{"text": ...}]}, ...]. \
@@ -72,7 +76,6 @@ def _gemini_generate_content(system_prompt: str, contents: list,
     llamada falla, no hay candidatos (p.ej. bloqueo de safety) o hay error de red.\
     
     Con reintentos automáticos para transient errors (timeout, 5xx, connection issues)."""
-    import time
     url = f"{GEMINI_API_BASE}/models/{AI_MODEL}:generateContent"
     generation_config = {
         "responseMimeType": "application/json",
@@ -87,38 +90,38 @@ def _gemini_generate_content(system_prompt: str, contents: list,
         "contents": contents,
         "generationConfig": generation_config,
     }
-    
+
     last_error = None
     for attempt in range(1, max_retries + 1):
         try:
-            resp = requests.post(url, params={"key": GEMINI_API_KEY}, json=payload, timeout=45)
-            resp.raise_for_status()
-            data = resp.json()
-        except requests.exceptions.Timeout as e:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(45.0)) as client:
+                resp = await client.post(url, params={"key": GEMINI_API_KEY}, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+        except httpx.TimeoutException as e:
             last_error = e
             if attempt < max_retries:
                 wait_time = 2 ** (attempt - 1)  # exponential backoff: 1s, 2s, 4s
                 logger.warning(f"Timeout en Gemini (intento {attempt}/{max_retries}). Esperando {wait_time}s...")
-                time.sleep(wait_time)
+                await asyncio.sleep(wait_time)
                 continue
             else:
                 logger.error(f"Timeout en Gemini después de {max_retries} intentos: {e}")
                 return None
-        except requests.exceptions.RequestException as e:
+        except httpx.HTTPStatusError as e:
             last_error = e
-            # Reintentar solo en errores de red/servidor, no en errores de cliente (4xx)
-            if hasattr(e, 'response') and e.response and e.response.status_code >= 500:
+            if e.response.status_code >= 500:
                 if attempt < max_retries:
                     wait_time = 2 ** (attempt - 1)
                     logger.warning(f"Error 5xx en Gemini (intento {attempt}/{max_retries}): {e.response.status_code}. Esperando {wait_time}s...")
-                    time.sleep(wait_time)
+                    await asyncio.sleep(wait_time)
                     continue
             logger.error(f"Error llamando a la API REST de Gemini: {e}")
             return None
         except Exception as e:
             logger.error(f"Error inesperado en Gemini: {e}")
             return None
-        
+
         # Si llegamos acá sin exception, procesamos la respuesta
         break
 
@@ -305,9 +308,9 @@ Rangos válidos de los parámetros de la cadena (para cuando propongas cambios):
 """
 
 
-def chat(user_message: str, history: Optional[list] = None,
-         analysis: Optional[dict] = None, preset: Optional[str] = None,
-         platform: Optional[str] = None) -> dict:
+async def chat(user_message: str, history: Optional[list] = None,
+               analysis: Optional[dict] = None, preset: Optional[str] = None,
+               platform: Optional[str] = None) -> dict:
     """Envía un mensaje al asistente de IA y devuelve un dict:
     {"reply": str, "suggested_params": dict, "suggestion_summary": Optional[str]}
 
@@ -367,7 +370,7 @@ def chat(user_message: str, history: Optional[list] = None,
     # por defecto (igual que el bug de auto-master, ver ahí), y acá el margen
     # es todavía menor (2048 tokens) — más chances de que el JSON se corte a
     # mitad de generación.
-    raw = _gemini_generate_content(system_prompt, contents, max_output_tokens=2048, thinking_budget=0)
+    raw = await _gemini_generate_content(system_prompt, contents, max_output_tokens=2048, thinking_budget=0)
     data = _extract_json_object(raw) if raw else None
     if data is None and raw is not None:
         logger.warning("Respuesta de chat de Gemini no fue JSON parseable.")
@@ -1572,8 +1575,8 @@ def _apply_optimization(result: dict, audio, sr, pre_analysis: Optional[dict] = 
     return result
 
 
-def decide_mastering(analysis: Optional[dict], platform_options: list,
-                      audio=None, sr: Optional[int] = None) -> dict:
+async def decide_mastering(analysis: Optional[dict], platform_options: list,
+                            audio=None, sr: Optional[int] = None) -> dict:
     """Le pide al modelo que calcule, a mano, todos los parámetros de la cadena \
     de mastering (compresor, EQ de 4 bandas, multibanda, estéreo, limiter, etc.) \
     en base al análisis del track — NO elige entre presets predefinidos.
@@ -1658,7 +1661,7 @@ def decide_mastering(analysis: Optional[dict], platform_options: list,
         # — silenciosamente caía al heurístico de respaldo). Subido a 8192
         # para dejar margen real tanto al pensamiento dinámico como al JSON
         # completo (~90 campos + reasoning).
-        raw = _gemini_generate_content(
+        raw = await _gemini_generate_content(
             system_prompt, contents, max_output_tokens=8192,
             thinking_budget=-1, temperature=0.3,
         )
@@ -1796,7 +1799,7 @@ Equilibrá los LUFS/peaks entre stems para que ninguno domine injustamente.
 """
 
 
-def decide_mix(stems_analysis: dict) -> dict:
+async def decide_mix(stems_analysis: dict) -> dict:
     """Analiza los stems y sugiere parámetros de mezcla para cada uno.
 
     stems_analysis: { stem_name: { analysis_dict } }
@@ -1842,7 +1845,7 @@ def decide_mix(stems_analysis: dict) -> dict:
         return _fallback_mix_params(stems_analysis)
 
     try:
-        result = _gemini_generate_content(
+        result = await _gemini_generate_content(
             system_prompt=MIX_SYSTEM_PROMPT,
             contents=[{"role": "user", "parts": [{"text": user_prompt}]}],
             max_output_tokens=4096,
