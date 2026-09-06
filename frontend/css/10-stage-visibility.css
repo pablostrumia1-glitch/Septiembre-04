@@ -215,9 +215,9 @@
     --cns-left-w: 180px;
     --cns-right-w: 190px;
     --cns-left-min: 160px;
-    --cns-left-max: 260px;
+    --cns-left-max: 420px;
     --cns-right-min: 180px;
-    --cns-right-max: 300px;
+    --cns-right-max: 420px;
     --cns-wave-h: clamp(175px, 28vh, 310px);
     --cns-ana-h: clamp(105px, 16vh, 175px);
     margin-top: 0;
