@@ -160,6 +160,8 @@ app = FastAPI(title="Audio Mastering API", version="7.0.1")
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "https://masteringstudio.duckdns.org").rstrip("/")
 CORS_ORIGINS = [origin.strip().rstrip("/") for origin in os.getenv("CORS_ORIGINS", FRONTEND_ORIGIN).split(",") if origin.strip()]
 
+limiter = Limiter(key_func=get_remote_address)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
