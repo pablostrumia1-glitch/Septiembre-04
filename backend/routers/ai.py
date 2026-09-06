@@ -8,7 +8,7 @@ import uuid
 
 import librosa
 import numpy as np
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from pydantic import BaseModel, Field
 
 try:
@@ -51,7 +51,7 @@ def _fix_ai_decision_params(decision: dict) -> dict:
     return fixed
 
 
-def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source, validate_audio_file, jobs, logger, run_mastering_job, current_user_dependency) -> APIRouter:
+def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source, validate_audio_file, jobs, logger, run_mastering_job, current_user_dependency, limiter) -> APIRouter:
     router = APIRouter()
 
     @router.get("/ai/status", tags=["Asistente IA"])
@@ -64,7 +64,8 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
         }
 
     @router.post("/ai/chat", tags=["Asistente IA"])
-    async def ai_chat(req: AiChatRequest, current_user: dict = Depends(current_user_dependency)):
+    @limiter.limit("15/minute")
+    async def ai_chat(request: Request, req: AiChatRequest, current_user: dict = Depends(current_user_dependency)):
         if not req.message or not req.message.strip():
             raise HTTPException(400, "El mensaje no puede estar vacío.")
         try:
@@ -85,7 +86,8 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
             raise HTTPException(500, "Error interno del asistente de IA.") from exc
 
     @router.post("/ai/suggest", tags=["Asistente IA"])
-    async def ai_suggest(
+    @limiter.limit("10/minute")
+    async def ai_suggest(request: Request,
         current_user: dict = Depends(current_user_dependency),
         file: UploadFile | None = File(None),
         library_id: str | None = Form(None),
@@ -118,7 +120,8 @@ def create_ai_router(*, upload_dir: str, read_and_validate, resolve_input_source
         return {"ai_decision": decision, "analysis": analysis}
 
     @router.post("/ai/auto-master", tags=["Asistente IA"])
-    async def ai_auto_master(
+    @limiter.limit("5/minute")
+    async def ai_auto_master(request: Request,
         background_tasks: BackgroundTasks,
         file: UploadFile = File(...),
         output_format: str = Form("wav", pattern="^(wav|flac|mp3)$"),

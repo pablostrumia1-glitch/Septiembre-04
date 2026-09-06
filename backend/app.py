@@ -470,6 +470,7 @@ app.include_router(create_ai_router(
     logger=logger,
     run_mastering_job=run_mastering_job,
     current_user_dependency=get_current_user,
+    limiter=limiter,
 ))
 app.include_router(create_preview_router(
     preview_renderer=preview_renderer,
