@@ -135,7 +135,7 @@ celerybeat.pid
 *.rdb
 *.aof
 *.pid
-
+*.md
 # RabbitMQ
 mnesia/
 rabbitmq/
@@ -154,9 +154,9 @@ activemq-data/
 .scripts/
 .cambios-mios/
 .reportes/
-.scripts
+/.scripts
 .cambios-mios
-.reportes
+/.reportes
 env/
 venv/
 ENV/
