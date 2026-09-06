@@ -6,7 +6,10 @@ from typing import Any, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator
 
-from .mastering import process_audio
+try:
+    from .mastering import process_audio
+except ImportError:  # pragma: no cover - direct uvicorn app:app execution
+    from mastering import process_audio
 
 
 def _annotation_from_default(default: Any):

@@ -15,7 +15,10 @@ import librosa
 import numpy as np
 import soundfile as sf
 
-from .mastering import _crop_preview, process_audio
+try:
+    from .mastering import _crop_preview, process_audio
+except ImportError:  # pragma: no cover - direct uvicorn app:app execution
+    from mastering import _crop_preview, process_audio
 
 
 class PreviewSnapshotError(RuntimeError):

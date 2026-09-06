@@ -10,9 +10,14 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
-from .. import library
-from ..preview_contracts import PreviewRequest, PreviewSourceResponse
-from ..preview_service import PreviewRenderer, PreviewSnapshotError
+try:
+    from .. import library
+    from ..preview_contracts import PreviewRequest, PreviewSourceResponse
+    from ..preview_service import PreviewRenderer, PreviewSnapshotError
+except ImportError:  # pragma: no cover - direct uvicorn app:app execution
+    import library
+    from preview_contracts import PreviewRequest, PreviewSourceResponse
+    from preview_service import PreviewRenderer, PreviewSnapshotError
 
 
 def create_preview_router(
