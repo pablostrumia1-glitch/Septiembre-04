@@ -227,3 +227,16 @@ cambios-mios/*
 reportes/*
 scripts
 reportes
+
+# ─────────────────────────────────────────────────────────────────
+# Ocultar TODO en la raíz excepto frontend/ y backend/
+# (se aplica después de las reglas anteriores)
+# ─────────────────────────────────────────────────────────────────
+/*
+# ...pero no estos directorios:
+!/frontend/
+!/backend/
+
+# Permitir archivos sueltos en raíz
+!.gitignore
+!.env
