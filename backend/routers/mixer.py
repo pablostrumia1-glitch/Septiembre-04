@@ -6,16 +6,6 @@ import glob as _glob
 import json as _json
 import os
 
-from backend.mixer import (
-    UPLOAD_DIR,
-    STEM_LIBRARY_DIR,
-    ai_assistant,
-    analyze_audio,
-    get_current_user,
-    library,
-    read_and_validate,
-    validate_audio_file,
-)
 import librosa as _lr
 import numpy as np
 
@@ -23,9 +13,25 @@ import numpy as np
 def create_router(**dependencies):
     router = APIRouter()
 
-    # Attach dependencies as router attributes for backwards compatibility
-    for key, val in dependencies.items():
-        setattr(router, key, val)
+    # Resolve dependencies injected from app.py
+    get_current_user = dependencies["get_current_user"]
+    read_and_validate = dependencies["read_and_validate"]
+    validate_audio_file = dependencies["validate_audio_file"]
+    ai_assistant = dependencies["ai_assistant"]
+    library = dependencies["library"]
+    analyze_audio = dependencies["analyze_audio"]
+    UPLOAD_DIR = dependencies["UPLOAD_DIR"]
+    STEM_LIBRARY_DIR = dependencies["STEM_LIBRARY_DIR"]
+
+    # Attach for any direct access
+    router.UPLOAD_DIR = UPLOAD_DIR
+    router.STEM_LIBRARY_DIR = STEM_LIBRARY_DIR
+    router.ai_assistant = ai_assistant
+    router.library = library
+    router.analyze_audio = analyze_audio
+    router.get_current_user = get_current_user
+    router.read_and_validate = read_and_validate
+    router.validate_audio_file = validate_audio_file
 
     return router
 

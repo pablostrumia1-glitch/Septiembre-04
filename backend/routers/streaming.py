@@ -7,54 +7,6 @@ import os
 import time
 import uuid
 
-from backend.streaming import (
-    MAX_FILE_SIZE,
-    UPLOAD_DIR,
-    PROCESSED_DIR,
-    LIBRARY_DIR,
-    audio_cache_get,
-    audio_cache_put,
-    cleanup_old,
-    derive_mb_chain_params_from_reference,
-    get_platform_target,
-    get_preset,
-    jobs,
-    library,
-    master_stream_to_pcm16,
-    process_audio_with_reference,
-    read_and_validate,
-    ref_lib,
-    resolve_input_source,
-    run_in_threadpool,
-    validate_audio_file,
-    verify_ws_token,
-    CODEC_MAP,
-    _crop_preview,
-    _ensure_stereo,
-    _get_input_duration,
-    _make_progress_cb,
-    _match_length,
-    analyze_audio,
-    apply_mastering_chain,
-    apply_sidechain,
-    build_matching_fir,
-    compute_ms_eq_curves,
-    compute_reference_eq_curve,
-    compute_reference_eq_curve_ddsp,
-    eq_high_pass,
-    eq_parametric_band,
-    apply_matching_fir,
-    apply_ms_matching_fir,
-    spectral_energy_at_bands,
-    spectral_energy_at_bands_multires,
-    StemParams,
-    MixParams,
-    process_stem,
-    mix_and_master,
-    normalize_by_lufs,
-    run_normalize_job,
-    coerce_ws_chain_params,
-)
 import librosa
 import numpy as np
 import soundfile as sf
@@ -63,7 +15,55 @@ import soundfile as sf
 def create_router(**dependencies):
     router = APIRouter()
 
-    # Attach dependencies as router attributes for backwards compatibility
+    # Resolve dependencies injected from app.py
+    MAX_FILE_SIZE = dependencies["MAX_FILE_SIZE"]
+    UPLOAD_DIR = dependencies["UPLOAD_DIR"]
+    PROCESSED_DIR = dependencies["PROCESSED_DIR"]
+    LIBRARY_DIR = dependencies["LIBRARY_DIR"]
+    audio_cache_get = dependencies["audio_cache_get"]
+    audio_cache_put = dependencies["audio_cache_put"]
+    cleanup_old = dependencies["cleanup_old"]
+    coerce_ws_chain_params = dependencies["coerce_ws_chain_params"]
+    derive_mb_chain_params_from_reference = dependencies["derive_mb_chain_params_from_reference"]
+    get_platform_target = dependencies["get_platform_target"]
+    get_preset = dependencies["get_preset"]
+    jobs = dependencies["jobs"]
+    library = dependencies["library"]
+    master_stream_to_pcm16 = dependencies["master_stream_to_pcm16"]
+    process_audio_with_reference = dependencies["process_audio_with_reference"]
+    read_and_validate = dependencies["read_and_validate"]
+    ref_lib = dependencies["ref_lib"]
+    resolve_input_source = dependencies["resolve_input_source"]
+    run_in_threadpool = dependencies["run_in_threadpool"]
+    validate_audio_file = dependencies["validate_audio_file"]
+    verify_ws_token = dependencies["verify_ws_token"]
+    analyze_audio = dependencies["analyze_audio"]
+    apply_mastering_chain = dependencies["apply_mastering_chain"]
+    apply_sidechain = dependencies["apply_sidechain"]
+    build_matching_fir = dependencies["build_matching_fir"]
+    compute_ms_eq_curves = dependencies["compute_ms_eq_curves"]
+    compute_reference_eq_curve = dependencies["compute_reference_eq_curve"]
+    compute_reference_eq_curve_ddsp = dependencies["compute_reference_eq_curve_ddsp"]
+    eq_high_pass = dependencies["eq_high_pass"]
+    eq_parametric_band = dependencies["eq_parametric_band"]
+    apply_matching_fir = dependencies["apply_matching_fir"]
+    apply_ms_matching_fir = dependencies["apply_ms_matching_fir"]
+    spectral_energy_at_bands = dependencies["spectral_energy_at_bands"]
+    spectral_energy_at_bands_multires = dependencies["spectral_energy_at_bands_multires"]
+    StemParams = dependencies["StemParams"]
+    MixParams = dependencies["MixParams"]
+    process_stem = dependencies["process_stem"]
+    mix_and_master = dependencies["mix_and_master"]
+    normalize_by_lufs = dependencies["normalize_by_lufs"]
+    run_normalize_job = dependencies["run_normalize_job"]
+    CODEC_MAP = dependencies["CODEC_MAP"]
+    _crop_preview = dependencies["_crop_preview"]
+    _ensure_stereo = dependencies["_ensure_stereo"]
+    _get_input_duration = dependencies["_get_input_duration"]
+    _make_progress_cb = dependencies["_make_progress_cb"]
+    _match_length = dependencies["_match_length"]
+
+    # Attach for any direct access
     for key, val in dependencies.items():
         setattr(router, key, val)
 
