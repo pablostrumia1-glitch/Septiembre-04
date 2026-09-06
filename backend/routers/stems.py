@@ -6,19 +6,17 @@ import os
 import time
 import uuid
 
-from backend.stems import (
-    jobs,
-    read_and_validate,
-    run_stems_job,
-    validate_audio_file,
-    _get_input_duration,
-    UPLOAD_DIR,
-    get_current_user,
-)
+try:
+    from ..auth import get_current_user
+except ImportError:
+    from auth import get_current_user
+
+router = APIRouter()
 
 
 def create_router(**dependencies):
-    router = APIRouter()
+    global jobs, read_and_validate, run_stems_job, validate_audio_file
+    global _get_input_duration, UPLOAD_DIR
 
     # Attach dependencies as router attributes for backwards compatibility
     for key, val in dependencies.items():
@@ -59,4 +57,17 @@ async def stems_separate(
         "created_at": time.time(), "params": job_params, "progress": 0, "stage": "En cola",
     })
     background_tasks.add_task(run_stems_job, job_id, input_path, mode)
-    return {"job_id": job_id, "status": "queued", "poll_url": f"/job/{job_id}"}\n\n\n@router.get("/stems/download/{job_id}/{stem_name}", tags=["Stems"], dependencies=[Depends(get_current_user)])\ndef stems_download(job_id: str, stem_name: str):\n    if not jobs.exists(job_id):\n        raise HTTPException(404, "Job no encontrado")\n    job = jobs.get_job(job_id)\n    if job.get("type") != "stems" or job["status"] != "done":\n        raise HTTPException(400, f"Job no listo: {job.get(\'status\')}")\n    stem_path = job.get("stem_paths", {}).get(stem_name)\n    if not stem_path or not os.path.exists(stem_path):\n        raise HTTPException(410, "Stem no encontrado o expirado. Volvé a separar el track.")\n    return FileResponse(stem_path, media_type="audio/wav", filename=f"{stem_name}.wav")\n\n\
+    return {"job_id": job_id, "status": "queued", "poll_url": f"/job/{job_id}"}
+
+
+@router.get("/stems/download/{job_id}/{stem_name}", tags=["Stems"], dependencies=[Depends(get_current_user)])
+def stems_download(job_id: str, stem_name: str):
+    if not jobs.exists(job_id):
+        raise HTTPException(404, "Job no encontrado")
+    job = jobs.get_job(job_id)
+    if job.get("type") != "stems" or job["status"] != "done":
+        raise HTTPException(400, f"Job no listo: {job.get('status')}")
+    stem_path = job.get("stem_paths", {}).get(stem_name)
+    if not stem_path or not os.path.exists(stem_path):
+        raise HTTPException(410, "Stem no encontrado o expirado. Volvé a separar el track.")
+    return FileResponse(stem_path, media_type="audio/wav", filename=f"{stem_name}.wav")

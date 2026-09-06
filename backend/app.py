@@ -59,7 +59,7 @@ except ImportError:  # pragma: no cover - fallback for direct script execution
     )
 try:
     from .mastering import (
-        process_audio, analyze_audio, spectrum_analysis_fft, mix_advice,
+        process_audio, analyze_audio, spectrum_analysis_fft, mix_advice, apply_mastering_chain,
         MASTERING_PRESETS, get_preset, PLATFORM_LOUDNESS_TARGETS, get_platform_target,
         process_audio_with_reference, _crop_preview, measure_lufs_integrated,
         compute_ms_eq_curves, apply_ms_matching_fir,
@@ -82,7 +82,7 @@ try:
     from . import reference_library as ref_lib
 except ImportError:
     from mastering import (
-        process_audio, analyze_audio, spectrum_analysis_fft, mix_advice,
+        process_audio, analyze_audio, spectrum_analysis_fft, mix_advice, apply_mastering_chain,
         MASTERING_PRESETS, get_preset, PLATFORM_LOUDNESS_TARGETS, get_platform_target,
         process_audio_with_reference, _crop_preview, measure_lufs_integrated,
         compute_ms_eq_curves, apply_ms_matching_fir,

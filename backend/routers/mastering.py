@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def create_router(**dependencies):
-    router: APIRouter = dependencies["router"]
+    router: APIRouter = dependencies.get("router", APIRouter())
     get_current_user = dependencies.get("get_current_user")
 
     # ─── /master/preset/{preset_name} ──────────────────────────────────

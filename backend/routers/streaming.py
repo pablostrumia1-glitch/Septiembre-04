@@ -11,9 +11,31 @@ import librosa
 import numpy as np
 import soundfile as sf
 
+try:
+    from ..auth import get_current_user
+except ImportError:
+    from auth import get_current_user
+
+router = APIRouter()
+
 
 def create_router(**dependencies):
-    router = APIRouter()
+    global MAX_FILE_SIZE, UPLOAD_DIR, PROCESSED_DIR, LIBRARY_DIR
+    global audio_cache_get, audio_cache_put, cleanup_old
+    global coerce_ws_chain_params, derive_mb_chain_params_from_reference
+    global get_platform_target, get_preset, jobs, library
+    global master_stream_to_pcm16, process_audio_with_reference
+    global read_and_validate, ref_lib, resolve_input_source, run_in_threadpool
+    global validate_audio_file, verify_ws_token, analyze_audio
+    global apply_mastering_chain, apply_sidechain, build_matching_fir
+    global compute_ms_eq_curves, compute_reference_eq_curve
+    global compute_reference_eq_curve_ddsp, eq_high_pass, eq_parametric_band
+    global apply_matching_fir, apply_ms_matching_fir
+    global spectral_energy_at_bands, spectral_energy_at_bands_multires
+    global StemParams, MixParams, process_stem, mix_and_master
+    global normalize_by_lufs, run_normalize_job
+    global _crop_preview, _ensure_stereo, _get_input_duration
+    global _match_length
 
     # Resolve dependencies injected from app.py
     MAX_FILE_SIZE = dependencies["MAX_FILE_SIZE"]
@@ -56,11 +78,9 @@ def create_router(**dependencies):
     mix_and_master = dependencies["mix_and_master"]
     normalize_by_lufs = dependencies["normalize_by_lufs"]
     run_normalize_job = dependencies["run_normalize_job"]
-    CODEC_MAP = dependencies["CODEC_MAP"]
     _crop_preview = dependencies["_crop_preview"]
     _ensure_stereo = dependencies["_ensure_stereo"]
     _get_input_duration = dependencies["_get_input_duration"]
-    _make_progress_cb = dependencies["_make_progress_cb"]
     _match_length = dependencies["_match_length"]
 
     # Attach for any direct access

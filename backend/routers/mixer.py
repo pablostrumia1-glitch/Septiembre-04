@@ -9,9 +9,17 @@ import os
 import librosa as _lr
 import numpy as np
 
+try:
+    from ..auth import get_current_user
+except ImportError:
+    from auth import get_current_user
+
+router = APIRouter()
+
 
 def create_router(**dependencies):
-    router = APIRouter()
+    global ai_assistant, analyze_audio, library, read_and_validate
+    global validate_audio_file, UPLOAD_DIR, STEM_LIBRARY_DIR
 
     # Resolve dependencies injected from app.py
     get_current_user = dependencies["get_current_user"]
