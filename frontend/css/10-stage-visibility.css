@@ -41,7 +41,7 @@
 
   .lg-main-stack {
     padding: 0 !important;
-    overflow: auto !important;
+    overflow: hidden !important;
     overflow-x: hidden !important;
   }
 
@@ -52,6 +52,8 @@
   .cns-console-wrap,
   .lg-workspace-workspace-shell {
     height: 100%;
+    min-height: 0;
+    min-width: 0;
   }
 
   .cns-shell {
@@ -159,14 +161,14 @@
   }
 
   @media (max-width: 960px) {
-    .cns-body { height: auto; }
+    .cns-body { min-height: 0; height: auto; }
     .lg-workspace-surface,
     #content,
     .cns-shell,
     .cns-console-wrap,
-    .lg-workspace-workspace-shell { height: auto; }
+    .lg-workspace-workspace-shell { min-height: 0; height: auto; }
     .console-workspace { overflow: visible; }
-    .cns-console { height: auto; }
+    .cns-console { min-height: 0; height: auto; }
   }
 }
 

@@ -1351,7 +1351,7 @@
   }
 
   /* Envoltorio de la superficie de trabajo (tabs + consola de 3 paneles) */
-  .lg-workspace-surface { display: block; min-width: 0; min-height: 0; }
+  .lg-workspace-surface { display: block; min-width: 0; min-height: 0; height: 100%; }
 
   /* Slider horizontal de la barra de control del master (mismo ancho que el knob) */
   .lg-console-slider { width: 100%; accent-color: var(--v4-accent); }

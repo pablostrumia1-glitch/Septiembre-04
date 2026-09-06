@@ -9,6 +9,15 @@
    para no chocar con --lg-sidebar-w de 32-flex-layout.js.
    ============================================================ */
 
+/* Base: #content fills its parent for viewport-fit layout */
+#content {
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .cns-shell {
   --cns-left-w: 260px;
   --cns-right-w: 280px;
@@ -21,6 +30,8 @@
   --cns-handle-w: 12px;
   width: 100%;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   margin: 12px 0 0;
 }
 
@@ -31,6 +42,7 @@
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  height: 100%;
   gap: 0;
 }
 

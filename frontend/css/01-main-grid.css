@@ -44,7 +44,8 @@
   .lg-main-stack {
     min-width: 0;
     min-height: 0;
-    overflow: auto;
+    height: 100%;
+    overflow: hidden;
     padding: var(--gutter);
     background: rgba(18, 24, 42, 0.25);
     background-image: radial-gradient(circle at 72% -10%, rgba(142, 129, 200, 0.12), transparent 34%),
