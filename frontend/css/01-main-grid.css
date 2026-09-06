@@ -41,17 +41,6 @@
     min-width: 0;
   }
 
-  .lg-main-stack {
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-    padding: var(--gutter);
-    background: rgba(18, 24, 42, 0.25);
-    background-image: radial-gradient(circle at 72% -10%, rgba(142, 129, 200, 0.12), transparent 34%),
-                      radial-gradient(circle at 12% 120%, rgba(139, 210, 232, 0.08), transparent 26%);
-  }
-
   .lg-footer {
     min-height: 34px;
     display: flex;
@@ -79,15 +68,7 @@
     opacity: 1;
   }
 
-  /* Handle de redimensionamiento del header */
-    /* → 02-header.css */
-
-
-    /* → 02-header.css */
-
-
-    /* → 02-header.css */
-
+  /* Handle de redimensionamiento del header → 02-header.css */
 
   /* CL-4 (audit): el bloque @media (max-width: 900px) que estaba
      acá estaba duplicado LITERALMENTE en responsive.css (líneas

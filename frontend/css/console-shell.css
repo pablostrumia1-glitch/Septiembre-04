@@ -46,34 +46,12 @@
   gap: 0;
 }
 
-/* FIX: los handles (#cnsHandleLeft/#cnsHandleRight) son display:none por
-   defecto y nunca se muestran. Un elemento display:none queda fuera del
-   auto-placement del grid, así que el navegador reordenaba los 3
-   elementos visibles (panel-izq, consola, panel-der) en las primeras 3
-   columnas en vez de las 5 reales — la consola caía en una columna de
-   6px pensada para el handle, y el panel derecho se comía el ancho que
-   era de la consola. Fijar grid-column explícito saca esa dependencia
-   del orden/visibilidad de los handles. */
-#cnsPanelLeft {
-  grid-column: 1;
-  min-width: 0;
-}
-#cnsHandleLeft {
-  grid-column: 2;
-  min-width: 0;
-}
-#cnsConsoleWrap {
-  grid-column: 3;
-  min-width: 0;
-}
-#cnsHandleRight {
-  grid-column: 4;
-  min-width: 0;
-}
-#cnsPanelRight {
-  grid-column: 5;
-  min-width: 0;
-}
+/* Grid columns explícitos para que los handles (invisibles) no rompan el layout */
+#cnsPanelLeft  { grid-column: 1; min-width: 0; }
+#cnsHandleLeft { grid-column: 2; min-width: 0; }
+#cnsConsoleWrap{ grid-column: 3; min-width: 0; }
+#cnsHandleRight{ grid-column: 4; min-width: 0; }
+#cnsPanelRight { grid-column: 5; min-width: 0; }
 
 @media (max-width: 1200px) {
   .cns-shell {
