@@ -16,7 +16,9 @@
   --cns-left-max: 420px;
   --cns-right-min: 220px;
   --cns-right-max: 420px;
-  --cns-handle-w: 6px;
+  /* Handle más ancho (12px) → área clickeable razonable en desktop
+     y touch. La línea visual central sigue siendo fina. */
+  --cns-handle-w: 12px;
   width: 100%;
   min-width: 0;
   margin: 12px 0 0;
@@ -73,12 +75,33 @@
   cursor: col-resize;
   position: relative;
   touch-action: none;
-  background: linear-gradient(90deg, transparent 35%, var(--v4-border, var(--line)) 50%, transparent 65%);
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Hit-area visible: la línea de grip está al centro pero el área
+     clickeable cubre todo el ancho del slot. Esto resuelve el problema
+     clásico de "los paneles no se redimensionan" cuando el handle mide
+     apenas 6px y el cursor pasa de largo sin enganchar. */
+  background: linear-gradient(90deg,
+    transparent 0%,
+    transparent 40%,
+    var(--v4-border, var(--line)) 50%,
+    transparent 60%,
+    transparent 100%);
   transition: background .15s;
 }
 .cns-handle:hover,
 .cns-handle.dragging {
-  background: linear-gradient(90deg, transparent 30%, var(--v4-accent, var(--p)) 50%, transparent 70%);
+  background: linear-gradient(90deg,
+    var(--v4-accent, var(--p)) 0%,
+    var(--v4-accent, var(--p)) 50%,
+    var(--v4-accent, var(--p)) 100%);
+  opacity: .35;
+}
+.cns-handle:hover::after,
+.cns-handle.dragging::after {
+  background: var(--v4-accent, var(--p));
+  opacity: 1;
 }
 .cns-handle-h {
   cursor: row-resize;

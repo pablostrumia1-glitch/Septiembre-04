@@ -45,14 +45,24 @@
     function onUp() {
       dragging = false;
       handle.classList.remove('dragging');
+      document.body.style.removeProperty('user-select');
+      document.body.style.removeProperty('-webkit-user-select');
+      document.body.style.removeProperty('cursor');
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onUp);
     }
     function onDown(e) {
+      // Si el target ya está draggeando, no reiniciar (evita saltos).
+      if (dragging) return;
       dragging = true;
       handle.classList.add('dragging');
+      // Bloquear selección de texto y mantener cursor de resize
+      // durante toda la operación de drag.
+      document.body.style.userSelect = 'none';
+      document.body.style.WebkitUserSelect = 'none';
+      document.body.style.cursor = axis === 'x' ? 'col-resize' : 'row-resize';
       start = pointerPos(e);
       startSize = currentSize();
       document.addEventListener('mousemove', onMove);

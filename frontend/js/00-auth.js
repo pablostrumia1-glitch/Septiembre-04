@@ -299,6 +299,15 @@
     // en una pantalla vacía mientras se valida una sesión anterior.
     renderAuthOverlay();
 
+    // === AUTH DESACTIVADO PARA DEBUG ===
+    // Forzamos el usuario dev y ocultamos el overlay sin pedir credenciales.
+    const devUser = { id: 'dev', email: 'dev@local', name: 'Dev User', role: 'admin' };
+    saveSession('dev-bypass-token', devUser);
+    document.getElementById('auth-overlay')?.classList.add('hidden');
+    onAuthenticated(devUser);
+    return;
+    // ===================================
+
     const token = getToken();
     const user  = getUser();
 
