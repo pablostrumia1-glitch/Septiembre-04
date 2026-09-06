@@ -56,6 +56,8 @@
 
   /* Handle de redimensionamiento del sidebar */
   .sidebarResizeHandle {
+    display: flex;
+    align-items: stretch;
     width: 10px;
     flex: 0 0 10px;
     cursor: col-resize;
@@ -63,12 +65,25 @@
     opacity: 0.5;
     transition: opacity 0.15s;
   }
+  /* El atributo hidden del HTML solo debe pesar cuando la clase lo diga
+     explícitamente (mobile, ver responsive.css) — el display:flex de
+     arriba ya gana por especificidad de clase vs [hidden] del navegador. */
+  .sidebarResizeHandle[hidden] {
+    display: flex;
+  }
 
   .sidebarResizeHandle:hover {
     opacity: 1;
   }
 
-  /* Handle de redimensionamiento del header → 02-header.css */
+  /* Handle de redimensionamiento del header */
+    /* → 02-header.css */
+
+
+    /* → 02-header.css */
+
+
+    /* → 02-header.css */
 
   /* CL-4 (audit): el bloque @media (max-width: 900px) que estaba
      acá estaba duplicado LITERALMENTE en responsive.css (líneas

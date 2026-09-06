@@ -111,7 +111,7 @@
   --cns-ana-h: 16vh;
   display: grid;
   grid-template-columns: var(--cns-vu-w) var(--cns-handle-w) minmax(0, 1fr);
-  grid-template-rows: var(--cns-wave-h) var(--cns-handle-w) var(--cns-ana-h) var(--cns-handle-w) minmax(0, 1fr);
+  grid-template-rows: minmax(160px, var(--cns-wave-h)) var(--cns-handle-w) minmax(110px, var(--cns-ana-h)) var(--cns-handle-w) minmax(140px, 1fr);
   gap: 10px;
 }
 
@@ -210,7 +210,8 @@
 
 .cns-block-grow {
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
 }
 

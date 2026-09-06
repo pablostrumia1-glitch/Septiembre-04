@@ -203,10 +203,11 @@
   }
 
   // Telemetría de GR en tiempo real: cada render nuevo del Preview trae
-  // consigo los chain_meters de ESE render (comp/limiter/glue/mb low-mid-
-  // high, etc.) — se piden justo después del audio y se publican al store
-  // central (30-metrics-store.js) para que los paneles de GR se actualicen.
-  // No bloquea ni afecta el estado de "listo" del Preview si falla.
+  // consigo los chain_meters de ESE render (comp/glue/mb low-mid-high,
+  // cada uno con una curva downsampleada a ~30Hz) — se piden justo después
+  // del audio. Se publica un valor inicial de una vez, y además se guardan
+  // las curvas para que el medidor se anime sincronizado con la
+  // reproducción real (ver liveGRTick más abajo).
   async function fetchAndPublishMeters(sourceId) {
     if (!LG.metrics?.publish) return;
     try {
@@ -216,31 +217,79 @@
       if (!res.ok) return;
       const chainMeters = await res.json();
       LG.metrics.publish(toDisplayMeters(chainMeters), { source: 'preview' });
+      liveCurves = {
+        comp: chainMeters?.comp?.curve || [],
+        compHopMs: chainMeters?.comp?.curve_hop_ms || 0,
+        glue: chainMeters?.glue?.curve || [],
+        glueHopMs: chainMeters?.glue?.curve_hop_ms || 0,
+        low: chainMeters?.mb?.low_curve || [],
+        mid: chainMeters?.mb?.mid_curve || [],
+        high: chainMeters?.mb?.high_curve || [],
+        mbHopMs: chainMeters?.mb?.curve_hop_ms || 0,
+      };
     } catch (_) {
       // Silencioso a propósito: el Preview en sí ya está listo, esto es
       // solo un extra informativo para los meters de GR.
     }
   }
 
-  // El backend arma chain_meters con "mb": {low:{gr_db},mid:{gr_db},high:{gr_db}}
-  // (mismo shape que usa /master en otros lados del código, no lo toco acá).
-  // Pero updateCentralGR (33-studio-controller.js) espera mb_meters PLANO
-  // con low_gr_db/mid_gr_db/high_gr_db, y comp_meters/glue_meters también
-  // planos — este adaptador tiende el puente sin tocar ninguno de los dos.
+  // El backend arma chain_meters con "mb": {low_gr_db, mid_gr_db, high_gr_db,...}
+  // YA plano (no anidado por banda) — mismo shape que usa /master en otros
+  // lados del código, no lo tolo acá. updateCentralGR (33-studio-controller.js)
+  // espera mb_meters/comp_meters/glue_meters como claves de nivel superior
+  // (en vez de chain_meters.mb/comp/glue) — este adaptador tiende el puente.
   function toDisplayMeters(chainMeters) {
-    const mb = chainMeters?.mb || {};
     return {
       chain_meters: chainMeters,
       comp_meters: chainMeters?.comp || {},
       limiter_meters: chainMeters?.limiter || {},
       glue_meters: chainMeters?.glue || {},
-      mb_meters: {
-        low_gr_db: mb.low?.gr_db,
-        mid_gr_db: mb.mid?.gr_db,
-        high_gr_db: mb.high?.gr_db,
-      },
+      mb_meters: chainMeters?.mb || {},
     };
   }
+
+  // ── Medidor de GR "en vivo" durante la reproducción ──────────────────
+  // No hay streaming: se toman las curvas downsampleadas (~30Hz) que ya
+  // vinieron con el render y se leen según audio.currentTime en cada
+  // frame — se ve/siente como un medidor en vivo real, 100% client-side.
+  let liveCurves = null;
+  let liveRafId = null;
+
+  function curveValueAt(curve, hopMs, t) {
+    if (!Array.isArray(curve) || curve.length === 0 || !hopMs) return 0;
+    const idx = Math.min(curve.length - 1, Math.max(0, Math.round((t * 1000) / hopMs)));
+    return curve[idx] ?? 0;
+  }
+
+  function liveGRTick(audio) {
+    if (!audio || audio.paused || audio.ended) { liveRafId = null; return; }
+    if (liveCurves) {
+      const t = audio.currentTime;
+      LG.metrics?.publish?.({
+        comp_meters: { gr_db: curveValueAt(liveCurves.comp, liveCurves.compHopMs, t) },
+        glue_meters: { gr_db: curveValueAt(liveCurves.glue, liveCurves.glueHopMs, t) },
+        mb_meters: {
+          low_gr_db:  curveValueAt(liveCurves.low,  liveCurves.mbHopMs, t),
+          mid_gr_db:  curveValueAt(liveCurves.mid,  liveCurves.mbHopMs, t),
+          high_gr_db: curveValueAt(liveCurves.high, liveCurves.mbHopMs, t),
+        },
+      }, { source: 'preview-live' });
+    }
+    liveRafId = requestAnimationFrame(() => liveGRTick(audio));
+  }
+
+  global.addEventListener('lgmdm:preview-ready', (e) => {
+    const audio = e.detail?.audio;
+    if (!audio) return;
+    audio.addEventListener('play', () => {
+      if (liveRafId == null) liveGRTick(audio);
+    });
+    audio.addEventListener('pause', stopLiveGR);
+    audio.addEventListener('ended', stopLiveGR);
+    function stopLiveGR() {
+      if (liveRafId != null) { cancelAnimationFrame(liveRafId); liveRafId = null; }
+    }
+  });
 
   function cancelRender() {
     const current = renderSession;
