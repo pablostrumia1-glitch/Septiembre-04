@@ -61,7 +61,7 @@
   }
 
   .cns-body {
-    grid-template-columns: 180px 6px minmax(0, 1fr) 6px 190px;
+    grid-template-columns: var(--cns-left-w, 180px) var(--cns-handle-w, 6px) minmax(0, 1fr) var(--cns-handle-w, 6px) var(--cns-right-w, 190px);
   }
 
   .cns-panel {
@@ -157,7 +157,7 @@
   #aiPanel { z-index: 120; }
 
   @media (max-width: 1180px) {
-    .cns-body { grid-template-columns: 170px 6px minmax(0, 1fr) 6px 180px; }
+    .cns-body { grid-template-columns: var(--cns-left-w, 170px) var(--cns-handle-w, 6px) minmax(0, 1fr) var(--cns-handle-w, 6px) var(--cns-right-w, 180px); }
   }
 
   @media (max-width: 960px) {
