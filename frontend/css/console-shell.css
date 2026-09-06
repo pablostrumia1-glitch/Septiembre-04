@@ -117,11 +117,11 @@
   max-width: 100%;
   overflow: hidden;
   --cns-vu-w: 90px;
-  --cns-wave-h: 250px;
-  --cns-ana-h: 150px;
+  --cns-wave-h: 28vh;
+  --cns-ana-h: 16vh;
   display: grid;
   grid-template-columns: var(--cns-vu-w) var(--cns-handle-w) minmax(0, 1fr);
-  grid-template-rows: var(--cns-wave-h) var(--cns-handle-w) var(--cns-ana-h) var(--cns-handle-w) minmax(120px, 1fr);
+  grid-template-rows: var(--cns-wave-h) var(--cns-handle-w) var(--cns-ana-h) var(--cns-handle-w) minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -207,7 +207,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  max-height: 760px;
 }
 
 .cns-block {
@@ -216,11 +215,13 @@
   gap: 8px;
   padding: 12px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .cns-block-grow {
   flex: 1 1 auto;
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .cns-block-head {
