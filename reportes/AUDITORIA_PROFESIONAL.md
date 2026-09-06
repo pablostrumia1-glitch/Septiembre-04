@@ -3,7 +3,7 @@
 **Proyecto:** MASTER — Intelligent Mastering Console  
 **Auditor:** GitHub Copilot  
 **Alcance:** frontend/css/\*, frontend/js/\*  
-**Estado:** 🔴 CRÍTICO — Requiere acción inmediata
+**Estado:** ✅ PARCIALMENTE RESUELTO — Quedan items por verificar
 
 ---
 
@@ -17,9 +17,11 @@
 | Comentarios obsoletos | 6 | 0 | 3 | 3 |
 | **TOTAL** | **21** | **1** | **9** | **11** |
 
+> ⚠️ **NOTA:** Tokens `--v4-accent` y `--p` NO son bugs — son diseño intencional con cascade por tema. Ver detalle en BUG 3-4.
+
 ---
 
-## 🔴 BUG 1 — Auth Bypass Activo (PRODUCCIÓN)
+## 🔴 BUG 1 — Auth Bypass Activo (RESUELTO ✅)
 
 **Archivo:** `frontend/js/00-auth.js:302-308`
 
@@ -301,24 +303,24 @@ El problema original era que los handles `#cnsHandleLeft` y `#cnsHandleRight` er
 ## PLAN DE ACCIÓN ORDENADO
 
 ### Fase 1: Críticos (antes de cualquier test)
-- [ ] **BUG 1:** Eliminar auth bypass en `frontend/js/00-auth.js:302-308`
+- [x] **BUG 1:** ✅ RESUELTO — Auth bypass eliminado (commit `10837a9`)
 
 ### Fase 2: Limpieza de código muerto
-- [ ] **BUG 2:** Eliminar comentario `FIX:` obsoleto en `console-shell.css:46-54`
-- [ ] **INFO 11:** Eliminar dead comments en `01-main-grid.css:82-91`
+- [x] **BUG 2:** ✅ RESUELTO — Comentario `FIX:` obsoleto eliminado (commit `10837a9`)
+- [x] **INFO 11:** ✅ RESUELTO — Dead comments eliminados en `01-main-grid.css` (commit `10837a9`)
 
 ### Fase 3: Conflictos CSS (tokens)
-- [ ] **BUG 3-4:** Refactorizar `--v4-accent` y `--p` para usar `[data-theme]` selectors
+- [x] **BUG 3-4:** ✅ INVESTIGADO — Tokens `--v4-accent` y `--p` son intencionales, cascade por tema funciona correctamente. NO ES BUG.
 
 ### Fase 4: Conflictos CSS (selectores duplicados)
-- [ ] **CONFLICTO 5:** Unificar `.lg-main-stack` en `01-reset-base.css`, eliminar duplicado en `01-main-grid.css`
-- [ ] **CONFLICTO 6:** Unificar `.cns-body` para usar CSS variables en Stage 1
-- [ ] **CONFLICTO 7-8:** Unificar `.cns-console` grid-template (elegir una sola fuente de verdad)
+- [x] **CONFLICTO 5:** ✅ UNIFICADO — `.lg-main-stack` en `01-reset-base.css` (commit `10837a9`)
+- [x] **CONFLICTO 6:** ✅ CORREGIDO — `.cns-body` usa CSS vars (commit `79eed6a`)
+- [x] **CONFLICTO 7-8:** ✅ VERIFICADO — Cascade Stage 1/Stage 2 intencional, no hay bug.
 
-### Fase 5: Verificación
+### Fase 5: Verificación (pendiente test manual)
 - [ ] Test resize de paneles
 - [ ] Test en múltiples viewports
-- [ ] Test de auth (debe pedir credenciales)
+- [ ] Test de auth (debe pedir credenciales — bypass eliminado)
 
 ---
 
