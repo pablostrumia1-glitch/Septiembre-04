@@ -216,6 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-scripts/
-cambios-mios/
-reportes/
+scripts/*
+cambios-mios/*
+reportes/*
+/workspaces/Septiembre-04/scripts
+reportes
