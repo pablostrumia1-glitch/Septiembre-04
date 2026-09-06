@@ -35,6 +35,30 @@ except ImportError:  # pragma: no cover
 
 _lock = threading.Lock()
 
+# MED-1 fix: in-memory cache to avoid re-parsing JSON from disk on every call.
+# Entries are cheap to hold in memory (metadata only, not audio data).
+_CACHE: dict = {"index": None, "loaded_at": 0.0}
+_CACHE_TTL_SEC = 30.0
+
+
+def _get_index(library_dir: str) -> dict:
+    """Cachea el índice en memoria con TTL de 30s para evitar N lecturas
+    de disco por segundo cuando hay muchas llamadas a get_path/list_files."""
+    now = time.monotonic()
+    with _lock:
+        if _CACHE["index"] is not None and (now - _CACHE["loaded_at"]) < _CACHE_TTL_SEC:
+            return _CACHE["index"]
+        index = _load_index(library_dir)
+        _CACHE["index"] = index
+        _CACHE["loaded_at"] = now
+        return index
+
+
+def _invalidate_cache() -> None:
+    """Invalida la caché después de writes (add_file, delete_file)."""
+    with _lock:
+        _CACHE["index"] = None
+
 
 def _index_path(library_dir: str) -> str:
     return os.path.join(library_dir, "_index.json")
@@ -119,19 +143,20 @@ def add_file(library_dir: str, original_filename: str, data: bytes) -> dict:
         index = _load_index(library_dir)
         index[file_id] = meta
         _save_index(library_dir, index)
+    _invalidate_cache()
     return meta
 
 
-def list_files(library_dir: str) -> list:
-    """Más reciente primero."""
-    with _lock:
-        index = _load_index(library_dir)
-    return sorted(index.values(), key=lambda m: m.get("uploaded_at", 0), reverse=True)
+def list_files(library_dir: str, offset: int = 0, limit: int = 100) -> tuple[list, int]:
+    """Más reciente primero. Devuelve (files, total) para paginación real."""
+    index = _get_index(library_dir)
+    all_files = sorted(index.values(), key=lambda m: m.get("uploaded_at", 0), reverse=True)
+    total = len(all_files)
+    return all_files[offset:offset + limit], total
 
 
 def get_meta(library_dir: str, file_id: str) -> Optional[dict]:
-    with _lock:
-        index = _load_index(library_dir)
+    index = _get_index(library_dir)
     return index.get(file_id)
 
 
@@ -158,4 +183,5 @@ def delete_file(library_dir: str, file_id: str) -> bool:
             os.remove(stored_path)
     except Exception:
         pass
+    _invalidate_cache()
     return True

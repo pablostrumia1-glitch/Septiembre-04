@@ -73,7 +73,7 @@ class PreviewRenderer:
             raise PreviewSnapshotError("El archivo original no existe")
 
         source_id = uuid.uuid4().hex
-        audio, sr = librosa.load(input_path, sr=None, mono=False)
+        audio, sr = librosa.load(input_path, sr=None, mono=False, duration=25, offset=0)
         if audio.ndim == 1:
             audio = audio[np.newaxis, :]
         if audio.shape[1] == 0 or sr <= 0:

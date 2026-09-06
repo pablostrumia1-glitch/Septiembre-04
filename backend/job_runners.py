@@ -69,10 +69,14 @@ def create_job_runners(
             jobs.update_job(job_id, status="done", result=result, finished_at=time.time(), progress=100, stage="Completado")
             jobs.append_log(job_id, f"Master finalizado correctamente: {output_path or 'sin ruta'}", stage="preview_ready")
             logger.info("Job %s done: %s", job_id, result.get("output_path"))
-        except Exception as e:
+        except (ValueError, RuntimeError) as e:
             jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
             jobs.append_log(job_id, f"Error en el job: {e}", stage="failed", level="error")
-            logger.error("Job %s failed: %s", job_id, e, exc_info=True)
+            logger.error("Job %s failed (value/runtime error): %s", job_id, e, exc_info=True)
+        except OSError as e:
+            jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
+            jobs.append_log(job_id, f"Error de sistema: {e}", stage="failed", level="error")
+            logger.error("Job %s failed (OS error): %s", job_id, e, exc_info=True)
         finally:
             if os.path.exists(input_path):
                 os.remove(input_path)
@@ -97,9 +101,12 @@ def create_job_runners(
                 )
             jobs.update_job(job_id, status="done", result=result, finished_at=time.time(), progress=100, stage="Completado")
             logger.info("Job %s (reference match) done: %s", job_id, result.get("output_path"))
-        except Exception as e:
+        except (ValueError, RuntimeError) as e:
             jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
             logger.error("Job %s (reference match) failed: %s", job_id, e, exc_info=True)
+        except OSError as e:
+            jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
+            logger.error("Job %s (reference match) failed (OS error): %s", job_id, e, exc_info=True)
         finally:
             if os.path.exists(input_path):
                 os.remove(input_path)
@@ -126,9 +133,12 @@ def create_job_runners(
                 )
             jobs.update_job(job_id, status="done", result=result, finished_at=time.time(), progress=100, stage="Completado")
             logger.info("Job %s (lufs normalize) done: %s", job_id, result.get("output_path"))
-        except Exception as e:
+        except (ValueError, RuntimeError) as e:
             jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
             logger.error("Job %s (lufs normalize) failed: %s", job_id, e, exc_info=True)
+        except OSError as e:
+            jobs.mark_failed(job_id, str(e), stage="failed", progress=0)
+            logger.error("Job %s (lufs normalize) failed (OS error): %s", job_id, e, exc_info=True)
         finally:
             if os.path.exists(input_path):
                 os.remove(input_path)
@@ -180,9 +190,12 @@ def create_job_runners(
                 available_stems=list(stem_paths.keys()),
             )
             logger.info("Job %s (stems) done: %s", job_id, list(stem_paths.keys()))
-        except Exception as e:
+        except (ValueError, RuntimeError) as e:
             jobs.update_job(job_id, status="error", error=str(e))
             logger.error("Job %s (stems) failed: %s", job_id, e, exc_info=True)
+        except OSError as e:
+            jobs.update_job(job_id, status="error", error=str(e))
+            logger.error("Job %s (stems) failed (OS error): %s", job_id, e, exc_info=True)
         finally:
             if os.path.exists(input_path):
                 os.remove(input_path)

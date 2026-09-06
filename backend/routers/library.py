@@ -20,9 +20,12 @@ def create_library_router(*, library_module, library_dir: str, read_and_validate
         return meta
 
     @router.get("/library", tags=["Librería"])
-    def library_list():
-        """Lista todos los archivos guardados, más reciente primero."""
-        return {"files": library_module.list_files(library_dir)}
+    def library_list(offset: int = 0, limit: int = 100):
+        """Lista archivos guardados con paginación, más reciente primero."""
+        if offset < 0 or limit < 1 or limit > 500:
+            raise HTTPException(400, "offset>=0 y 1<=limit<=500.")
+        files, total = library_module.list_files(library_dir, offset=offset, limit=limit)
+        return {"files": files, "total": total, "offset": offset, "limit": limit}
 
     @router.get("/library/{file_id}/download", tags=["Librería"])
     def library_download(file_id: str):

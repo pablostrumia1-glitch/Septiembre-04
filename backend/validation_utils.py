@@ -44,6 +44,15 @@ def validate_audio_file(filename: str) -> None:
     ext = os.path.splitext(filename)[-1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(400, f"Formato '{ext}' no soportado. Válidos: {sorted(ALLOWED_EXTENSIONS)}")
+    # ── Magic bytes: solo para archivos wav ─────────────────────────────────
+    if ext == ".wav":
+        from pathlib import Path
+        file_path = Path("uploads") / filename
+        if file_path.exists():
+            with open(file_path, "rb") as f:
+                magic = f.read(12)
+            if not (magic[:4] == b"RIFF" and magic[8:12] == b"WAVE"):
+                raise HTTPException(400, "El archivo no es un WAV válido (magic bytes incorrectos).")
 
 
 def coerce_ws_chain_params(params: dict) -> dict:

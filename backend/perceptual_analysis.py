@@ -9,6 +9,84 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# ── Magic numbers extraídos como constantes nombradas ───────────────────────
+# Thresholds de claridad
+CLARITY_DARK_CENTROID_HZ = 2000
+CLARITY_HARSH_FLATNESS = 0.3
+CLARITY_HARSH_CENTROID_HZ = 6000
+AIR_ENERGY_VERY_LOW_DB = -30
+
+# Thresholds de dinámica
+LOOSE_PLR_DB = 14
+LOOSE_LRA_LU = 7
+TIGHT_PLR_DB = 6
+TIGHT_LRA_LU = 3
+
+# Thresholds tonales
+TONAL_DARK_CENTROID_HZ = 2000
+TONAL_BRIGHT_CENTROID_HZ = 5000
+
+# Thresholds estéreo
+STEREO_MONO_CORRELATION = 0.9
+STEREO_SEPARATED_CORRELATION = 0.5
+PHASE_ISSUE_DB = -6
+
+# Thresholds de definición instrumental
+CLEAR_FLATNESS = 0.7
+PRESENCE_CLEAR_DB = 5
+BLENDED_FLATNESS = 0.3
+OVERLY_DEFINED_PRESENCE_DB = 8
+
+# Thresholds de presencia
+IN_YOUR_FACE_CENTROID_HZ = 5500
+IN_YOUR_FACE_PRESENCE_DB = 6
+DISTANT_CENTROID_HZ = 2500
+DISTANT_LUFS = -18
+DISTANT_AIR_DB = -25
+
+# Thresholds de fatiga
+FATIGUE_CENTROID_HZ = 6000
+FATIGUE_PLR_DB = 4
+FATIGUE_PRESENCE_DB = 10
+FATIGUE_LUFS = -6
+
+# Thresholds de cohesión
+OVER_COMPRESSED_PLR_DB = 3
+DISCONNECTED_CORRELATION = 0.6
+
+# Thresholds de balance de frecuencias
+BASS_HEAVY_SUBS_DB = 5
+BASS_HEAVY_MIDS_DB = -5
+TREBLE_HEAVY_AIR_DB = 5
+TREBLE_HEAVY_SUBS_DB = -10
+
+# Thresholds de headroom
+CRAMPED_TRUE_PEAK_DB = -0.5
+CRAMPED_CLIPPING_RATIO = 0.1
+EMPTY_TRUE_PEAK_DB = -6
+EMPTY_LUFS = -18
+
+# Thresholds de clasificación de género (get_genre_from_perceptual)
+TRAP_LUFS = -7
+TRAP_PLR = 8
+BALADA_LUFS = -13
+BALADA_PLR = 12
+BALADA_LRA = 6
+ROCK_LUFS_MIN = -10
+ROCK_LUFS_MAX = -8
+ROCK_PLR_MIN = 8
+ROCK_PLR_MAX = 14
+ROCK_TRANSIENT_DENSITY = 0.6
+PODCAST_PLR = 16
+PODCAST_CENTROID_HZ = 3000
+AMBIENT_PLR = 12
+POP_LUFS_MIN = -10
+POP_LUFS_MAX = -7
+POP_PLR_MIN = 6
+POP_PLR_MAX = 12
+EDM_LUFS = -6
+EDM_PLR = 6
+
 
 class PerceptualProfile:
     """Describe cómo suena la mezcla en términos humanos, no técnicos"""
@@ -85,10 +163,10 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     air_energy = band_energies.get("air", -20)
     low_mids_energy = band_energies.get("low_mid", -20)
     
-    if air_energy < -30 and centroid < 2000:
+    if air_energy < AIR_ENERGY_VERY_LOW_DB and centroid < CLARITY_DARK_CENTROID_HZ:
         # Muy oscuro, bajos dominan
         profile.clarity = "muddy"
-    elif flatness < 0.3 or centroid > 6000:
+    elif flatness < CLARITY_HARSH_FLATNESS or centroid > CLARITY_HARSH_CENTROID_HZ:
         # Picos muy angostos o demasiado aire
         profile.clarity = "harsh"
     else:
@@ -102,17 +180,17 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     plr = analysis.get("plr_db", 8)
     lra = analysis.get("lra", 4)
     
-    if plr > 14 and lra > 7:
+    if plr > LOOSE_PLR_DB and lra > LOOSE_LRA_LU:
         profile.dynamic_feel = "loose"
-    elif plr < 6 and lra < 3:
+    elif plr < TIGHT_PLR_DB and lra < TIGHT_LRA_LU:
         profile.dynamic_feel = "tight"
     else:
         profile.dynamic_feel = "balanced"
     
     # ── BALANCE TONAL (dark | balanced | bright) ────────────────────────────
-    if centroid < 2000:
+    if centroid < TONAL_DARK_CENTROID_HZ:
         profile.tonal_balance = "dark"
-    elif centroid > 5000:
+    elif centroid > TONAL_BRIGHT_CENTROID_HZ:
         profile.tonal_balance = "bright"
     else:
         profile.tonal_balance = "balanced"
@@ -124,11 +202,11 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     
     # Si correlación es baja pero mono_compatibility es OK → separated (normal)
     # Si mono_compatibility es muy negativa → phase issues
-    if correlation_global > 0.9:
+    if correlation_global > STEREO_MONO_CORRELATION:
         profile.stereo_coherence = "mono"  # O muy poco estéreo
-    elif mono_compatibility < -6:
+    elif mono_compatibility < PHASE_ISSUE_DB:
         profile.stereo_coherence = "phase_issues"
-    elif correlation_global < 0.5:
+    elif correlation_global < STEREO_SEPARATED_CORRELATION:
         profile.stereo_coherence = "separated"
     else:
         profile.stereo_coherence = "coherent"
@@ -140,11 +218,11 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     
     presence_band = band_energies.get("presence", -20)  # 2k-4k
     
-    if flatness > 0.7 and presence_band < 5:
+    if flatness > CLEAR_FLATNESS and presence_band < PRESENCE_CLEAR_DB:
         profile.instrumental_definition = "clear"
-    elif flatness < 0.3:
+    elif flatness < BLENDED_FLATNESS:
         profile.instrumental_definition = "blended"
-    elif presence_band > 8:
+    elif presence_band > OVERLY_DEFINED_PRESENCE_DB:
         profile.instrumental_definition = "overly_defined"
     else:
         profile.instrumental_definition = "clear"
@@ -156,9 +234,9 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     
     lufs = analysis.get("lufs", -14)
     
-    if centroid > 5500 and presence_band > 6:
+    if centroid > IN_YOUR_FACE_CENTROID_HZ and presence_band > IN_YOUR_FACE_PRESENCE_DB:
         profile.presence_feel = "in_your_face"
-    elif centroid < 2500 or (lufs < -18 and air_energy < -25):
+    elif centroid < DISTANT_CENTROID_HZ or (lufs < DISTANT_LUFS and air_energy < DISTANT_AIR_DB):
         profile.presence_feel = "distant"
     else:
         profile.presence_feel = "present"
@@ -168,13 +246,13 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     # Baja con: espacio, aire, dinámica natural
     
     fatigue = 0.0
-    if centroid > 6000:
+    if centroid > FATIGUE_CENTROID_HZ:
         fatigue += 0.3
-    if plr < 4:
+    if plr < FATIGUE_PLR_DB:
         fatigue += 0.2
-    if presence_band > 10:
+    if presence_band > FATIGUE_PRESENCE_DB:
         fatigue += 0.25
-    if lufs > -6:
+    if lufs > FATIGUE_LUFS:
         fatigue += 0.15
     
     profile.fatigue_risk = min(1.0, fatigue)
@@ -184,9 +262,9 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     # Over-compressed: PLR muy bajo, nada de dinámica, suena "plano"
     # Disconnected: elementos suenan por separado, falta glue
     
-    if plr < 3:
+    if plr < OVER_COMPRESSED_PLR_DB:
         profile.mix_cohesion = "over_compressed"
-    elif correlation_global < 0.6:
+    elif correlation_global < DISCONNECTED_CORRELATION:
         profile.mix_cohesion = "disconnected"
     else:
         profile.mix_cohesion = "glued"
@@ -196,9 +274,9 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     mids_energy = band_energies.get("mid", -20)
     air_energy_val = band_energies.get("air", -20)
     
-    if subs_energy > 5 and mids_energy < -5:
+    if subs_energy > BASS_HEAVY_SUBS_DB and mids_energy < BASS_HEAVY_MIDS_DB:
         profile.frequency_balance = "bass_heavy"
-    elif air_energy_val > 5 and subs_energy < -10:
+    elif air_energy_val > TREBLE_HEAVY_AIR_DB and subs_energy < TREBLE_HEAVY_SUBS_DB:
         profile.frequency_balance = "treble_heavy"
     else:
         profile.frequency_balance = "balanced"
@@ -207,9 +285,9 @@ def analyze_perceptual_profile(analysis: Dict) -> PerceptualProfile:
     true_peak = analysis.get("true_peak_db", -3)
     clipping_ratio = analysis.get("clipping_ratio", 0.0)
     
-    if true_peak > -0.5 or clipping_ratio > 0.1:
+    if true_peak > CRAMPED_TRUE_PEAK_DB or clipping_ratio > CRAMPED_CLIPPING_RATIO:
         profile.headroom_feel = "cramped"
-    elif true_peak < -6 or lufs < -18:
+    elif true_peak < EMPTY_TRUE_PEAK_DB or lufs < EMPTY_LUFS:
         profile.headroom_feel = "empty"
     else:
         profile.headroom_feel = "comfortable"
@@ -235,31 +313,31 @@ def get_genre_from_perceptual(profile: PerceptualProfile,
     centroid = analysis.get("spectral_centroid_hz", 3000)
     
     # TRAP: loud, bass-heavy, tight dynamic, defined (no reverb)
-    if lufs > -7 and profile.frequency_balance == "bass_heavy" and plr < 8:
+    if lufs > TRAP_LUFS and profile.frequency_balance == "bass_heavy" and plr < TRAP_PLR:
         genre_scores["trap"] = 0.85
     
     # BALADA: quiet, loose dynamic, presente emotivamente, reverb
-    if lufs < -13 and plr > 12 and lra > 6 and profile.dynamic_feel == "loose":
+    if lufs < BALADA_LUFS and plr > BALADA_PLR and lra > BALADA_LRA and profile.dynamic_feel == "loose":
         genre_scores["balada"] = 0.80
     
     # ROCK: comp media, air presente, transientes claros, dinámico
-    if -10 < lufs < -8 and 8 < plr < 14 and transient_density > 0.6:
+    if ROCK_LUFS_MIN < lufs < ROCK_LUFS_MAX and ROCK_PLR_MIN < plr < ROCK_PLR_MAX and transient_density > ROCK_TRANSIENT_DENSITY:
         genre_scores["rock"] = 0.75
     
     # PODCAST/VOZ: extremo PLR, medios claros, mínimo reverb
-    if plr > 16 and centroid < 3000 and profile.clarity == "clear":
+    if plr > PODCAST_PLR and centroid < PODCAST_CENTROID_HZ and profile.clarity == "clear":
         genre_scores["podcast"] = 0.80
     
     # AMBIENT: dinámico, reverb, oscuro, presencia baja
-    if plr > 12 and profile.presence_feel == "distant" and profile.tonal_balance == "dark":
+    if plr > AMBIENT_PLR and profile.presence_feel == "distant" and profile.tonal_balance == "dark":
         genre_scores["ambient"] = 0.75
     
     # POP: balanced todo, presente, comp suave, aire moderado
-    if -10 < lufs < -7 and 6 < plr < 12 and profile.presence_feel == "present":
+    if POP_LUFS_MIN < lufs < POP_LUFS_MAX and POP_PLR_MIN < plr < POP_PLR_MAX and profile.presence_feel == "present":
         genre_scores["pop"] = 0.70
     
     # EDM/DANCE: very loud, tight, bass, presencia agresiva
-    if lufs > -6 and plr < 6 and profile.frequency_balance == "bass_heavy":
+    if lufs > EDM_LUFS and plr < EDM_PLR and profile.frequency_balance == "bass_heavy":
         genre_scores["edm"] = 0.75
     
     if not genre_scores:

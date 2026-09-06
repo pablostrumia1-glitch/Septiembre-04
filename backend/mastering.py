@@ -27,6 +27,12 @@ os.makedirs("processed", exist_ok=True)
 
 @dataclasses.dataclass
 class MasteringParams:
+    def __post_init__(self) -> None:
+        if not self.lp_bypass and self.hp_cutoff >= self.lp_cutoff:
+            raise ValueError(
+                f"hp_cutoff ({self.hp_cutoff}) debe ser menor que lp_cutoff ({self.lp_cutoff}) "
+                "cuando lp_bypass es False."
+            )
     # ── Ganancia / loudness ─────────────────────────────────────────────────
     input_gain_db: float = 0.0
     target_peak: float = 0.95        # aceptado pero no usado directamente en la cadena
