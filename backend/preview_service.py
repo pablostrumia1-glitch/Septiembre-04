@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import os
+
+# Configure native numerical runtimes before importing numpy/librosa. This is
+# required because preview renders run in isolated multiprocessing children.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
 import hashlib
 import json
 import multiprocessing as mp
-import os
 import shutil
 import tempfile
 import time
@@ -151,6 +160,17 @@ class PreviewRenderer:
         clean["output_format"] = "wav"
         clean["output_bit_depth"] = 24
 
+        # Preview workers are short-lived; avoid loading cross-environment
+        # Numba caches compiled under a different import name.
+        try:
+            if process_audio.__module__ == "mastering":
+                import mastering as mastering_module
+            else:
+                from . import mastering as mastering_module
+            mastering_module.HAS_NUMBA = False
+        except ImportError:
+            pass
+
         logger.info(f"[preview] iniciando process_audio con {len(clean)} params")
         try:
             result = process_audio(**clean)
@@ -160,7 +180,12 @@ class PreviewRenderer:
         produced = result.get("output_path")
         if not produced or not os.path.exists(produced):
             raise RuntimeError("El motor de mastering no generó el Preview")
-        os.replace(produced, output_path)
+        try:
+            os.replace(produced, output_path)
+        except OSError as exc:
+            if exc.errno != 18:
+                raise
+            shutil.move(produced, output_path)
 
         # Telemetría de GR en tiempo real: process_audio ya calcula
         # chain_meters (comp/limiter/glue/mb low-mid-high/etc.) — antes se
@@ -182,9 +207,8 @@ class PreviewRenderer:
         source_id = Path(source_path).stem
         output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
         meters_path = str(self._meters_path(source_id))
-        # Usar fork en vez de spawn: fork preserva el estado de numpy/scipy
-        # que puede crashear con spawn en algunos sistemas (SIGSEGV -11)
-        ctx = mp.get_context("fork")
+        # Spawn evita heredar runtimes BLAS/Numba ya inicializados por Uvicorn.
+        ctx = mp.get_context("spawn")
         process = ctx.Process(
             target=self._render_worker,
             args=(source_path, output_path, meters_path, params, self.duration_sec),
