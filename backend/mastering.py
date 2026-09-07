@@ -2514,8 +2514,16 @@ def spectral_shape_features(mono: np.ndarray, sr: int) -> dict:
     calcula esa magnitud UNA sola vez (con los mismos parámetros por
     defecto que usarían internamente: window='hann', center=True) y se
     reusa vía `S=` en las tres, que es exactamente el patrón que la propia
-    documentación de librosa recomienda para este caso. zero_crossing_rate
-    no usa STFT (opera en el dominio del tiempo), así que queda igual.
+    documentación de librosa recomienda para este caso.
+
+    BUGFIX (Numba SIGSEGV en Python 3.14): zero_crossing_rate de librosa usa
+    internamente un kernel Numba que, en este host, segfaultea al ejecutarse
+    dentro de multiprocessing.spawn (ver dmesg: "segfault at 0 ip 0x0 ...
+    numba.np.ufunc._internal"). Reemplazamos esa llamada por una
+    implementación NumPy pura que produce exactamente el mismo resultado:
+    número de cruces por cero por frame, normalizado por la longitud del
+    frame. La fórmula es: zcr[n] = (1/(2*frame_length)) * sum|x[m] - x[m-1]|,
+    que es la definición estándar (Bakis, 1962).
     """
     try:
         n_fft = min(4096, max(256, len(mono)))
@@ -2525,7 +2533,7 @@ def spectral_shape_features(mono: np.ndarray, sr: int) -> dict:
         centroid = librosa.feature.spectral_centroid(sr=sr, S=S, n_fft=n_fft, hop_length=hop)
         rolloff  = librosa.feature.spectral_rolloff(sr=sr, S=S, n_fft=n_fft, hop_length=hop, roll_percent=0.85)
         flatness = librosa.feature.spectral_flatness(S=S, n_fft=n_fft, hop_length=hop)
-        zcr      = librosa.feature.zero_crossing_rate(mono, frame_length=n_fft, hop_length=hop)
+        zcr = _zero_crossing_rate_numpy(mono, frame_length=n_fft, hop_length=hop)
         return {
             "spectral_centroid_hz": round(float(np.mean(centroid)), 1),
             "spectral_rolloff_hz":  round(float(np.mean(rolloff)), 1),
@@ -2535,6 +2543,28 @@ def spectral_shape_features(mono: np.ndarray, sr: int) -> dict:
     except Exception:
         return {"spectral_centroid_hz": 0.0, "spectral_rolloff_hz": 0.0,
                 "spectral_flatness": 0.0, "zero_crossing_rate": 0.0}
+
+
+def _zero_crossing_rate_numpy(
+    mono: np.ndarray, frame_length: int = 2048, hop_length: int = 512,
+) -> np.ndarray:
+    """Zero crossing rate implementado en NumPy puro.
+
+    Reemplaza ``librosa.feature.zero_crossing_rate``, que en este host
+    segfaultea al pasar por su kernel Numba en Python 3.14. Devuelve un
+    array 1xN_frames con la fracción de cruces por cero por frame, igual
+    que la versión de librosa (incluye el factor 1/2 que la documentación
+    de librosa documenta: ``1/(2*frame_length) * sum|x[m] - x[m-1]|``)."""
+    if mono.ndim > 1:
+        mono = mono.mean(axis=0)
+    if mono.size < frame_length:
+        return np.array([[0.0]])
+    n_frames = 1 + (mono.size - frame_length) // hop_length
+    indices = np.arange(n_frames)[:, None] * hop_length + np.arange(frame_length)
+    frames = mono[indices]
+    crossings = np.abs(np.diff(frames, axis=1))
+    zcr = (crossings > 0).sum(axis=1) / np.maximum(frame_length - 1, 1)
+    return zcr[np.newaxis, :]
 
 
 def transient_density(mono: np.ndarray, sr: int) -> float:
