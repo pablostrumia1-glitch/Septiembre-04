@@ -1,0 +1,16 @@
+/* Product areas intentionally disabled for the current release. */
+[data-workspace="mixer"],
+.sidebar-pane-mixer,
+#mixerContentArea,
+#mixerSidePanel,
+#s-stems-mode,
+#btnStems,
+#matchMasteringBlock,
+#btnMasterRef,
+#btnRefPreview,
+#refPreviewPanel,
+#btnOpenRefLib,
+#quickReference,
+#proRefBtn {
+  display: none !important;
+}
