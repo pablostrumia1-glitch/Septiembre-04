@@ -3088,6 +3088,19 @@ def _band_rms_db(band: np.ndarray, n_frames: int = 32) -> float:
     rms = float(np.sqrt(np.mean(mono ** 2)))
     return float(20.0 * np.log10(rms + 1e-9))
 
+
+def _downsample_gr_curve(gr_arr: np.ndarray, sr: int, target_hz: float = 30.0) -> tuple[list[float], float]:
+    """Reduce una curva de GR sample-a-sample a puntos compactos para UI."""
+    values = np.asarray(gr_arr, dtype=np.float64).reshape(-1)
+    if values.size == 0 or sr <= 0:
+        return [], 1000.0 / target_hz
+    hop = max(1, int(round(sr / target_hz)))
+    curve = [
+        round(float(np.mean(values[start:start + hop])), 2)
+        for start in range(0, values.size, hop)
+    ]
+    return curve, round(1000.0 * hop / sr, 3)
+
 # ─── Compresor de banda ancha (single-band / "de un solo cuerpo") ─────────────
 # BUGFIX: este compresor tenía sliders en la UI (Threshold/Ratio/Attack/
 # Release/Makeup) que el backend nunca leía ni usaba ("compresor fantasma"):
@@ -3209,10 +3222,13 @@ def compressor(audio: np.ndarray, sr: int,
     gr_db_mean = float(np.mean(gr_arr)) if gr_arr.size else 0.0
     gr_db_max = float(np.min(gr_arr)) if gr_arr.size else 0.0
     out_db = _band_rms_db(out)
+    gr_curve, curve_hop_ms = _downsample_gr_curve(gr_arr, sr)
 
     meter = {
         "gr_db": round(gr_db_mean, 2),
         "gr_max_db": round(gr_db_max, 2),
+        "curve": gr_curve,
+        "curve_hop_ms": curve_hop_ms,
         "in_db": round(in_db, 2),
         "out_db": round(out_db, 2),
         "stereo_link": bool(stereo_link),
@@ -3304,6 +3320,10 @@ def multiband_compressor(audio: np.ndarray, sr: int,
     mid_gr_max_db  = float(np.min(mid_gr_arr))
     high_gr_max_db = float(np.min(high_gr_arr))
 
+    low_curve, curve_hop_ms = _downsample_gr_curve(low_gr_arr, sr)
+    mid_curve, _ = _downsample_gr_curve(mid_gr_arr, sr)
+    high_curve, _ = _downsample_gr_curve(high_gr_arr, sr)
+
     low_out_db  = _band_rms_db(low_comp)
     mid_out_db  = _band_rms_db(mid_comp)
     high_out_db = _band_rms_db(high_comp)
@@ -3315,6 +3335,10 @@ def multiband_compressor(audio: np.ndarray, sr: int,
         "low_gr_max_db":  round(low_gr_max_db, 2),
         "mid_gr_max_db":  round(mid_gr_max_db, 2),
         "high_gr_max_db": round(high_gr_max_db, 2),
+        "low_curve":     low_curve,
+        "mid_curve":     mid_curve,
+        "high_curve":    high_curve,
+        "curve_hop_ms":  curve_hop_ms,
         "low_in_db":   round(low_in_db, 2),
         "mid_in_db":   round(mid_in_db, 2),
         "high_in_db":  round(high_in_db, 2),
