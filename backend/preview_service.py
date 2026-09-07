@@ -29,6 +29,7 @@ import soundfile as sf
 # where its compiled extension may be incompatible with the host runtime.
 if mp.current_process().name != "MainProcess":
     os.environ.setdefault("NUMBA_DISABLE_JIT", "1")
+    os.environ.setdefault("LGMDM_DISABLE_NUMBA", "1")
 
 try:
     from .mastering import _crop_preview, process_audio

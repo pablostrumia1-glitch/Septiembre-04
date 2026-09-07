@@ -211,11 +211,14 @@ def resolve_oversample(mode: str | int | None = "quality") -> int:
 
 
 # ─── Numba acceleration ────────────────────────────────────────────────────────
-try:
-    import numba as nb
-    HAS_NUMBA = True
-except ImportError:
+if os.getenv("LGMDM_DISABLE_NUMBA") == "1":
     HAS_NUMBA = False
+else:
+    try:
+        import numba as nb
+        HAS_NUMBA = True
+    except ImportError:
+        HAS_NUMBA = False
 
 # Torch is optional and loaded lazily by the DDSP matching path. Preview and
 # ordinary mastering do not need this native runtime.
