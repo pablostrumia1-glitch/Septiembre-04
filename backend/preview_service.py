@@ -158,7 +158,15 @@ class PreviewRenderer:
         produced = result.get("output_path")
         if not produced or not os.path.exists(produced):
             raise RuntimeError("El motor de mastering no generó el Preview")
-        os.replace(produced, output_path)
+        # process_audio() escribe a <cwd>/processed/<basename>.wav — ruta
+        # relativa al working dir del subproceso. Si ese directorio vive en
+        # un filesystem distinto al del output_path del renderer, os.replace
+        # falla con EXDEV (Invalid cross-device link). shutil.move resuelve
+        # eso haciendo copy+remove cuando hace falta.
+        if os.path.abspath(produced) != os.path.abspath(output_path):
+            shutil.move(produced, output_path)
+        else:
+            os.replace(produced, output_path)
 
         chain_meters = result.get("chain_meters") or {}
         tmp_meters = meters_path + ".tmp"
@@ -205,6 +213,18 @@ class PreviewRenderer:
                 time.sleep(0.20)
             process.join(timeout=1)
             if process.exitcode != 0:
+                # Decodificar señales (ej. -11 = SIGSEGV, -9 = SIGKILL, -6 = SIGABRT)
+                # para que el log del server muestre la causa real en vez de
+                # un número opaco.
+                if process.exitcode < 0:
+                    try:
+                        signal_name = signal.Signals(-process.exitcode).name
+                    except ValueError:
+                        signal_name = f"SIG{-process.exitcode}"
+                    raise RuntimeError(
+                        f"Render de Preview terminó por señal {signal_name} "
+                        f"(exitcode {process.exitcode})"
+                    )
                 raise RuntimeError(f"Render de Preview finalizó con código {process.exitcode}")
             if not os.path.exists(output_path):
                 raise RuntimeError("Render de Preview finalizó sin archivo de salida")
