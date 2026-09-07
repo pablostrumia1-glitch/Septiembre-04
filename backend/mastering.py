@@ -248,19 +248,12 @@ def _to_stereo(audio: np.ndarray) -> np.ndarray:
     return audio
 
 def _crop_preview(audio: np.ndarray, sr: int, preview_seconds: float) -> np.ndarray:
-    """Recorta un extracto de `preview_seconds` centrado en la MITAD del tema
-    (en vez de los primeros N segundos). El arranque de un tema suele ser
-    intro/silencio/poco representativo (drops, coros, secciones densas suelen
-    estar en la mitad), así que un preview desde el segundo 0 tanto suena poco
-    representativo para el oyente como, en el caso del matching por
-    referencia, sesga el análisis espectral/dinámico usado para calcular el
-    EQ de matching hacia una porción del tema que no representa el resto.
-    """
+    """Recorta el preview desde el segundo 15 durante `preview_seconds`."""
     total_samples = audio.shape[1]
     max_samples = min(int(preview_seconds * sr), total_samples)
     if max_samples <= 0:
         return audio
-    start = max(0, (total_samples - max_samples) // 2)
+    start = min(int(15 * sr), max(0, total_samples - max_samples))
     return audio[:, start:start + max_samples]
 
 # ─── Bit depth de salida + dithering ───────────────────────────────────────────

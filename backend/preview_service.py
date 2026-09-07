@@ -51,7 +51,7 @@ def _crop_preview(audio: np.ndarray, sr: int, preview_seconds: float) -> np.ndar
     max_samples = min(int(preview_seconds * sr), audio.shape[1])
     if max_samples <= 0:
         return audio
-    start = max(0, (audio.shape[1] - max_samples) // 2)
+    start = min(int(15 * sr), max(0, audio.shape[1] - max_samples))
     return audio[:, start:start + max_samples]
 
 
