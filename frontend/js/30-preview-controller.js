@@ -56,16 +56,16 @@
     const wrap = audioWrap();
     if (wrap) {
       wrap.querySelectorAll('audio').forEach((audio) => {
-        try { audio.pause(); } catch (_) {}
+        try { audio.pause(); } catch (_) { }
         try {
           audio.removeAttribute('src');
           audio.load();
-        } catch (_) {}
+        } catch (_) { }
       });
       wrap.replaceChildren();
     }
     if (previewUrl) {
-      try { URL.revokeObjectURL(previewUrl); } catch (_) {}
+      try { URL.revokeObjectURL(previewUrl); } catch (_) { }
       previewUrl = null;
     }
     ready = false;
@@ -120,7 +120,7 @@
     const current = sourceSession;
     if (!current) return;
     current.cancelled = true;
-    try { current.controller.abort(); } catch (_) {}
+    try { current.controller.abort(); } catch (_) { }
     sourceSession = null;
   }
 
@@ -189,7 +189,7 @@
       try {
         const text = await res.text();
         if (text) detail += `: ${text}`;
-      } catch (_) {}
+      } catch (_) { }
       throw new Error(`El servidor no pudo renderizar el Preview: ${detail}`);
     }
     const contentType = res.headers.get('content-type') || '';
@@ -215,7 +215,8 @@
         method: 'GET', timeout: 15000, maxRetries: 0,
       });
       if (!res.ok) return;
-      const chainMeters = await res.json();
+      const payload = await res.json();
+      const chainMeters = payload?.chain_meters || payload?.chainMeters || payload;
       LG.metrics.publish(toDisplayMeters(chainMeters), { source: 'preview' });
       liveCurves = {
         comp: chainMeters?.comp?.curve || [],
@@ -269,8 +270,8 @@
         comp_meters: { gr_db: curveValueAt(liveCurves.comp, liveCurves.compHopMs, t) },
         glue_meters: { gr_db: curveValueAt(liveCurves.glue, liveCurves.glueHopMs, t) },
         mb_meters: {
-          low_gr_db:  curveValueAt(liveCurves.low,  liveCurves.mbHopMs, t),
-          mid_gr_db:  curveValueAt(liveCurves.mid,  liveCurves.mbHopMs, t),
+          low_gr_db: curveValueAt(liveCurves.low, liveCurves.mbHopMs, t),
+          mid_gr_db: curveValueAt(liveCurves.mid, liveCurves.mbHopMs, t),
           high_gr_db: curveValueAt(liveCurves.high, liveCurves.mbHopMs, t),
         },
       }, { source: 'preview-live' });
@@ -295,7 +296,7 @@
     const current = renderSession;
     if (current) {
       current.cancelled = true;
-      try { current.controller.abort(); } catch (_) {}
+      try { current.controller.abort(); } catch (_) { }
     }
     renderSession = null;
     running = false;
@@ -435,7 +436,7 @@
     const play = playButton();
     const stopPreview = stopButton();
     const getAudio = () => audioWrap()?.querySelector('audio[data-preview-ready="true"]');
-    if (play) play.addEventListener('click', () => { getAudio()?.play().catch(() => {}); });
+    if (play) play.addEventListener('click', () => { getAudio()?.play().catch(() => { }); });
     if (stopPreview) stopPreview.addEventListener('click', () => {
       const audio = getAudio();
       if (!audio) return;

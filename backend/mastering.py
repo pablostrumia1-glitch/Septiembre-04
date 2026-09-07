@@ -3084,7 +3084,10 @@ def _band_rms_db(band: np.ndarray, n_frames: int = 32) -> float:
 
 def _downsample_gr_curve(gr_arr: np.ndarray, sr: int, target_hz: float = 30.0) -> tuple[list[float], float]:
     """Reduce una curva de GR sample-a-sample a puntos compactos para UI."""
-    values = np.asarray(gr_arr, dtype=np.float64).reshape(-1)
+    values = np.asarray(gr_arr, dtype=np.float64)
+    if values.ndim > 1:
+        values = values.mean(axis=0)
+    values = values.reshape(-1)
     if values.size == 0 or sr <= 0:
         return [], 1000.0 / target_hz
     hop = max(1, int(round(sr / target_hz)))
@@ -3256,9 +3259,17 @@ def multiband_compressor(audio: np.ndarray, sr: int,
                          oversample: int = DEFAULT_DSP_OVERSAMPLE,
                          pdr: bool = True, pdr_hold_ms: float = 500.0) -> tuple:
     if bypass:
-        return audio, {"low_gr_db": 0.0, "mid_gr_db": 0.0, "high_gr_db": 0.0,
-                       "low_in_db": 0.0, "mid_in_db": 0.0, "high_in_db": 0.0,
-                       "low_out_db": 0.0, "mid_out_db": 0.0, "high_out_db": 0.0}
+                            zero_curve, curve_hop_ms = _downsample_gr_curve(
+                                np.zeros(audio.shape[-1], dtype=np.float32), sr,
+                            )
+                            return audio, {
+                                "bypass": True,
+                                "low_gr_db": 0.0, "mid_gr_db": 0.0, "high_gr_db": 0.0,
+                                "low_curve": zero_curve, "mid_curve": zero_curve,
+                                "high_curve": zero_curve, "curve_hop_ms": curve_hop_ms,
+                                "low_in_db": 0.0, "mid_in_db": 0.0, "high_in_db": 0.0,
+                                "low_out_db": 0.0, "mid_out_db": 0.0, "high_out_db": 0.0,
+                            }
 
     if audio.ndim == 1:
         audio = np.stack([audio, audio])
