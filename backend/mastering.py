@@ -217,12 +217,9 @@ try:
 except ImportError:
     HAS_NUMBA = False
 
-# ─── Torch (opcional, solo para compute_reference_eq_curve_ddsp) ──────────────
-try:
-    import torch
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
+# Torch is optional and loaded lazily by the DDSP matching path. Preview and
+# ordinary mastering do not need this native runtime.
+HAS_TORCH = False
 
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -4862,7 +4859,12 @@ def compute_reference_eq_curve_ddsp(src_bands_multires: dict, ref_bands_multires
     Devuelve el mismo formato que compute_reference_eq_curve(): lista de
     tuplas (freq_hz, gain_db), lista para pasar a build_matching_fir.
     """
-    if not HAS_TORCH:
+    try:
+        import torch
+    except ImportError:
+        torch = None
+
+    if torch is None:
         # Fallback: usa la resolución media (4096, la misma que usaba el
         # pipeline single-res histórico) con la heurística de siempre.
         return compute_reference_eq_curve(
