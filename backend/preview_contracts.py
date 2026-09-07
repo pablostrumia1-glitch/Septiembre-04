@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import inspect
 import math
 import re
-from typing import Any
+from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator
 
 
 SOURCE_ID_PATTERN = re.compile(r"^[a-f0-9]{16,128}$")
@@ -14,40 +15,67 @@ def _is_valid_source_id(value: str) -> bool:
     return bool(SOURCE_ID_PATTERN.fullmatch(value or ""))
 
 
-class _PreviewParamsBase(BaseModel):
-    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+def _annotation_from_default(default: Any) -> Any:
+    if default is None:
+        return Optional[str]
+    if isinstance(default, bool):
+        return bool
+    if isinstance(default, int) and not isinstance(default, bool):
+        return int
+    if isinstance(default, float):
+        return float
+    if isinstance(default, str):
+        return str
+    return Any
 
-    @field_validator("*", mode="after")
-    @classmethod
-    def validate_values(cls, value: Any) -> Any:
-        if isinstance(value, float) and not math.isfinite(value):
-            raise ValueError("Los parámetros numéricos deben ser finitos")
-        return value
+
+def _build_preview_params_model() -> type[BaseModel]:
+    """Infer PreviewParams from the process_audio signature.
+
+    The DSP stack is imported lazily here so that simply importing
+    ``preview_contracts`` (e.g. from the preview router) does not pull
+    SciPy, Numba or Torch into the parent process. They are loaded the
+    first time the model is built, which happens only inside the render
+    subprocess, never in the FastAPI main loop."""
+    try:
+        from backend.mastering import process_audio
+    except ImportError:  # pragma: no cover - direct uvicorn app:app
+        from mastering import process_audio
+
+    fields: dict[str, tuple[Any, Any]] = {}
+    sig = inspect.signature(process_audio)
+    excluded = {"input_path", "progress_cb", "preview_seconds"}
+    for name, parameter in sig.parameters.items():
+        if name in excluded:
+            continue
+        default = parameter.default
+        if default is inspect.Parameter.empty:
+            annotation = parameter.annotation if parameter.annotation is not inspect.Parameter.empty else Any
+            fields[name] = (annotation, ...)
+        else:
+            fields[name] = (_annotation_from_default(default), default)
+
+    class _Base(BaseModel):
+        model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+        @field_validator("*", mode="after")
+        @classmethod
+        def validate_values(cls, value: Any) -> Any:
+            if isinstance(value, float) and not math.isfinite(value):
+                raise ValueError("Los parámetros numéricos deben ser finitos")
+            return value
+
+    return create_model(
+        "PreviewParams",
+        __base__=_Base,
+        __module__=__name__,
+        **fields,
+    )
 
 
-class PreviewParams(BaseModel):
-    """Subset of mastering parameters exposed to the Preview API. The full
-    chain is owned by ``process_audio`` and is not required to validate
-    previews, so we declare the fields that the safe preview path actually
-    consumes. Additional keys sent by legacy clients are dropped at the
-    router boundary instead of being rejected."""
-
-    model_config = ConfigDict(extra="ignore", validate_assignment=True)
-
-    input_gain_db: float = 0.0
-    limiter_ceiling: float = 0.95
-    target_lufs: float = -14.0
-    target_peak: float = 0.95
-    use_lufs_normalize: bool = False
-    oversample_mode: str = "quality"
-    preset: str = "default"
-
-    @field_validator("*", mode="after")
-    @classmethod
-    def validate_values(cls, value: Any) -> Any:
-        if isinstance(value, float) and not math.isfinite(value):
-            raise ValueError("Los parámetros numéricos deben ser finitos")
-        return value
+# Construimos el modelo en import-time. El import perezoso dentro de la
+# factoría mantiene la carga del stack DSP fuera de FastAPI.
+PreviewParams = _build_preview_params_model()
 
 
 class PreviewRequest(BaseModel):

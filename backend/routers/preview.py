@@ -95,9 +95,9 @@ def create_preview_router(
                 f"solicitada={float(payload.preview_duration_sec):.2f}s",
             )
 
-        # Solo los campos declarados en PreviewParams llegan al motor. Cualquier
-        # otra clave del payload queda descartada para mantener el contrato
-        # chico y no introducir parámetros ajenos a la ruta segura.
+        # El modelo Pydantic PreviewParams ya valida la forma y los tipos.
+        # ``model_dump`` respeta la firma de process_audio, así que llega
+        # directo al motor sin reescrituras intermedias.
         params = payload.params.model_dump()
         params["preview_seconds"] = payload.preview_duration_sec
         params["output_format"] = "wav"

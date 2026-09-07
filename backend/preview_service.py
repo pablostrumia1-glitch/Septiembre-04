@@ -157,72 +157,26 @@ class PreviewRenderer:
         params: dict[str, Any],
         duration_sec: int,
     ) -> None:
-        """Render the snapshot. Two execution modes are supported:
+        """Render real-time del preview con la cadena DSP completa.
 
-        * ``LGMDM_PREVIEW_FULL_DSP=1`` (opt-in): run the full
-          ``process_audio`` chain against the snapshot. The result is the
-          actual mastered 25 s preview. Falls back to the native-safe path
-          if the process exits non-zero.
-
-        * default: native-safe path that copies the snapshot to the
-          destination. Use this on hosts where the DSP stack segfaults.
-        """
-        if os.environ.get("LGMDM_PREVIEW_FULL_DSP") == "1":
-            try:
-                PreviewRenderer._render_worker_full_dsp(
-                    source_path, output_path, meters_path, params, duration_sec,
-                )
-                return
-            except Exception as exc:  # pragma: no cover - host-dependent
-                # Reintentamos con la ruta segura para no devolver 500.
-                import logging
-                logging.getLogger(__name__).warning(
-                    "process_audio falló en preview, usando ruta segura: %s",
-                    exc,
-                )
-
-        audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
-        if not np.isfinite(audio_check).all():
-            raise RuntimeError("Audio de snapshot contiene NaN/Inf")
-
-        peak = float(np.max(np.abs(audio_check))) if audio_check.size else 0.0
-        gain_db = float(params.get("input_gain_db", 0.0) or 0.0)
-        ceiling = float(params.get("limiter_ceiling", 0.95) or 0.95)
-        ceiling = min(max(ceiling, 0.05), 1.0)
-        shutil.copyfile(source_path, output_path)
-
-        chain_meters = {
-            "preview_mode": "native-safe",
-            "input_gain_db": round(gain_db, 2),
-            "peak_before_limiter": round(peak, 6),
-            "limiter_ceiling": round(ceiling, 6),
-            "snapshot_sr": int(sr_check),
-            "snapshot_channels": int(audio_check.shape[1]),
-        }
-        tmp_meters = meters_path + ".tmp"
-        with open(tmp_meters, "w", encoding="utf-8") as handle:
-            json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
-        os.replace(tmp_meters, meters_path)
-
-    @staticmethod
-    def _render_worker_full_dsp(
-        source_path: str,
-        output_path: str,
-        meters_path: str,
-        params: dict[str, Any],
-        duration_sec: int,
-    ) -> None:
-        """Run the real ``process_audio`` chain in the preview worker.
-
-        The full DSP stack is heavy and depends on native extensions that can
-        segfault on Python 3.14 images; this path is therefore opt-in and
-        isolated to its own subprocess so a crash never affects the parent
-        server. The snapshot is already a 25 s PCM_24 WAV, so the output is
-        a real mastered preview instead of the original audio."""
+        El render corre dentro de un subproceso ``spawn`` para que cualquier
+        segfault de las extensiones nativas (SciPy, Numba, Torch) quede
+        contenido y el servidor principal siga respondiendo. Si el proceso
+        muere por una señal, ``render_cancellable`` la decodifica y la
+        expone como ``RuntimeError`` con el nombre real (``SIGSEGV``,
+        ``SIGKILL``, etc.). No hay fallback: el preview siempre es render
+        real, no copia del snapshot."""
         try:
             from backend.mastering import process_audio
         except ImportError:
             from mastering import process_audio
+
+        # Validación rápida del snapshot. Si el WAV está corrupto o tiene
+        # NaN/Inf, fallamos antes de entrar a la cadena DSP para que el
+        # log muestre la causa real.
+        audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
+        if not np.isfinite(audio_check).all():
+            raise RuntimeError("Audio de snapshot contiene NaN/Inf")
 
         clean = dict(params)
         clean.pop("progress_cb", None)
