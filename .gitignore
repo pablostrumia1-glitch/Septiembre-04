@@ -227,6 +227,7 @@ __marimo__/
 .streamlit/secrets.toml
 scripts/*
 !scripts/clean_pycache.py
+!scripts/sync_frontend.sh
 cambios-mios/*
 reportes/*
 scripts
@@ -240,6 +241,7 @@ reportes
 # ...pero no estos directorios:
 !/frontend/
 !/backend/
+!/scripts/
 
 # Permitir archivos sueltos en raíz
 !.gitignore
