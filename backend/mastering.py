@@ -1,11 +1,20 @@
 import dataclasses
 import logging
-import concurrent.futures
 import librosa
 import soundfile as sf
 import numpy as np
 import uuid
 import os
+
+# FIX (segfault -11 en preview render, ver dmesg): numba (via llvmlite) y
+# torch suelen traer CADA UNO su propio runtime de OpenMP embebido. Tener
+# los dos cargados en el mismo proceso es una causa muy documentada de
+# crash nativo en Linux (símbolos OpenMP duplicados) — coincide exacto con
+# los "python3[PID]: segfault at 0 ip 0000000000000000" del dmesg, ya que
+# el render corre en un proceso hijo (multiprocessing fork) que importa
+# este módulo desde cero cada vez. Esto es una red de seguridad; el fix
+# real es el import perezoso de torch más abajo (ver HAS_TORCH).
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 from typing import Optional
 from scipy.signal import butter, sosfilt, sosfiltfilt, fftconvolve, resample_poly, welch, sosfreqz, firwin2, find_peaks, savgol_filter
 from scipy.ndimage import maximum_filter1d, median_filter
@@ -211,18 +220,23 @@ def resolve_oversample(mode: str | int | None = "quality") -> int:
 
 
 # ─── Numba acceleration ────────────────────────────────────────────────────────
-if os.getenv("LGMDM_DISABLE_NUMBA") == "1":
+try:
+    import numba as nb
+    HAS_NUMBA = True
+except ImportError:
     HAS_NUMBA = False
-else:
-    try:
-        import numba as nb
-        HAS_NUMBA = True
-    except ImportError:
-        HAS_NUMBA = False
 
-# Torch is optional and loaded lazily by the DDSP matching path. Preview and
-# ordinary mastering do not need this native runtime.
-HAS_TORCH = False
+# ─── Torch (opcional, solo para compute_reference_eq_curve_ddsp) ──────────────
+# FIX (segfault -11 en preview render, ver dmesg): antes se hacía
+# `import torch` acá arriba, a nivel de módulo — es decir, en TODOS los
+# renders, no solo cuando hay reference-matching (única función que usa
+# torch). Como cada render corre en un proceso nuevo (multiprocessing
+# fork en preview_service.py), esto cargaba numba+torch juntos en
+# CADA preview, aunque no hiciera falta. find_spec() solo chequea que el
+# paquete exista, sin importarlo/cargar sus .so — el import real queda
+# perezoso, adentro de compute_reference_eq_curve_ddsp.
+import importlib.util
+HAS_TORCH = importlib.util.find_spec("torch") is not None
 
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -461,7 +475,7 @@ def _dither_meta(mode: str, bit_depth: int, sr: int) -> dict:
 # Mismo patrón que _smooth_envelope_pdr_numba: loop compilado + buffer
 # circular manual (sin reallocar) en vez de np.roll.
 if HAS_NUMBA:
-    @nb.jit(nopython=True, cache=True, fastmath=True, nogil=True)
+    @nb.jit(nopython=True, cache=False, fastmath=True, nogil=True)
     def _noise_shape_filter_numba(ch: np.ndarray, coeffs: np.ndarray,
                                   lsb: float, tpdf_noise: np.ndarray) -> np.ndarray:
         n = ch.shape[0]
@@ -648,7 +662,7 @@ def _write_master_output(audio_out: np.ndarray, sr: int, output_path: str,
 
 # ── Envelope follower (Numba JIT) ────────────────────────────────────────────────
 if HAS_NUMBA:
-    @nb.jit(nopython=True, cache=True, fastmath=True, nogil=True)
+    @nb.jit(nopython=True, cache=False, fastmath=True, nogil=True)
     def _smooth_envelope_numba(signal: np.ndarray, attack_coef: float, release_coef: float) -> np.ndarray:
         n = len(signal)
         env = np.empty(n, dtype=np.float64)
@@ -660,7 +674,7 @@ if HAS_NUMBA:
             env[i] = prev
         return env
 
-    @nb.jit(nopython=True, cache=True, fastmath=True, nogil=True)
+    @nb.jit(nopython=True, cache=False, fastmath=True, nogil=True)
     def _smooth_envelope_pdr_numba(signal: np.ndarray, attack_coef: float,
                                    release_fast_coef: float, release_slow_coef: float,
                                    hold_coef: float) -> np.ndarray:
@@ -689,7 +703,7 @@ if HAS_NUMBA:
             env[i] = prev
         return env
 
-    @nb.jit(nopython=True, cache=True, fastmath=True, nogil=True)
+    @nb.jit(nopython=True, cache=False, fastmath=True, nogil=True)
     def _compute_gain_reduction_numba(env_db: np.ndarray, threshold_db: float, ratio: float,
                                       knee_db: float = 6.0) -> np.ndarray:
         # MEJORA: codo suave (soft-knee) en vez de codo duro. Con codo duro la
@@ -712,7 +726,7 @@ if HAS_NUMBA:
                 gr[i] = factor * over
         return gr
 
-    @nb.jit(nopython=True, cache=True, fastmath=True, nogil=True)
+    @nb.jit(nopython=True, cache=False, fastmath=True, nogil=True)
     def _limiter_gain_numba(instant_gain: np.ndarray, release_coef: float) -> np.ndarray:
         n = len(instant_gain)
         smoothed = np.empty(n, dtype=np.float64)
@@ -3242,20 +3256,12 @@ def multiband_compressor(audio: np.ndarray, sr: int,
         )
         return compressed, gr_db
 
-    # PERF: las 3 bandas son independientes entre sí (no comparten estado ni
-    # dependen una de la otra hasta que se suman más abajo), y compressor()
-    # es una función pura (sin estado global mutable, sin RNG) que además
-    # libera el GIL en su trabajo pesado (envelope follower Numba nogil +
-    # filtrado SciPy en C) — correrlas en 3 threads en paralelo es seguro y
-    # reparte el trabajo en hasta 3 cores reales en vez de 1. Antes eran 3
-    # llamadas secuenciales.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as _pool:
-        _fut_low  = _pool.submit(_compressor, low,  low_threshold,  low_ratio,  low_attack_ms,  low_release_ms,  low_makeup_db)
-        _fut_mid  = _pool.submit(_compressor, mid,  mid_threshold,  mid_ratio,  mid_attack_ms,  mid_release_ms,  mid_makeup_db)
-        _fut_high = _pool.submit(_compressor, high, high_threshold, high_ratio, high_attack_ms, high_release_ms, high_makeup_db)
-        low_comp,  low_gr_arr  = _fut_low.result()
-        mid_comp,  mid_gr_arr  = _fut_mid.result()
-        high_comp, high_gr_arr = _fut_high.result()
+    # SERIE: la cadena de audio se procesa stage-por-stage (sin multitarea).
+    # El paralelismo previo con ThreadPoolExecutor se removió para garantizar
+    # orden determinístico y evitar contención de BLAS/Numba entre threads.
+    low_comp,  low_gr_arr  = _compressor(low,  low_threshold,  low_ratio,  low_attack_ms,  low_release_ms,  low_makeup_db)
+    mid_comp,  mid_gr_arr  = _compressor(mid,  mid_threshold,  mid_ratio,  mid_attack_ms,  mid_release_ms,  mid_makeup_db)
+    high_comp, high_gr_arr = _compressor(high, high_threshold, high_ratio, high_attack_ms, high_release_ms, high_makeup_db)
 
     # BUGFIX: mismo problema que en compressor() — promediar solo la cola
     # final (sr // 8) del track escondía la reducción real si el final
@@ -4862,18 +4868,15 @@ def compute_reference_eq_curve_ddsp(src_bands_multires: dict, ref_bands_multires
     Devuelve el mismo formato que compute_reference_eq_curve(): lista de
     tuplas (freq_hz, gain_db), lista para pasar a build_matching_fir.
     """
-    try:
-        import torch
-    except ImportError:
-        torch = None
-
-    if torch is None:
+    if not HAS_TORCH:
         # Fallback: usa la resolución media (4096, la misma que usaba el
         # pipeline single-res histórico) con la heurística de siempre.
         return compute_reference_eq_curve(
             src_bands_multires.get(4096, next(iter(src_bands_multires.values()))),
             ref_bands_multires.get(4096, next(iter(ref_bands_multires.values()))),
             freqs_hz, max_boost_db=max_boost_db, max_cut_db=max_cut_db)
+
+    import torch  # import perezoso: recién acá se carga (ver nota en HAS_TORCH más arriba)
 
     device = torch.device("cpu")
     n_bands = len(freqs_hz)
@@ -6264,18 +6267,11 @@ def process_audio_with_reference(
 
     ovs = resolve_oversample(oversample_mode)
 
-    _report(progress_cb, 8, "Analizando audio propio y de referencia (paralelo)")
-    # PERF: analyze_audio del src y de la ref son completamente independientes
-    # entre sí — los corremos en paralelo con ThreadPoolExecutor.
-    # numpy libera el GIL en las operaciones vectoriales (FFT, filtros, etc.)
-    # así que los dos threads realmente corren en paralelo en distintos núcleos.
-    import concurrent.futures as _cf
-    _n_workers = min(4, max(1, (__import__('os').cpu_count() or 1)))
-    with _cf.ThreadPoolExecutor(max_workers=_n_workers) as _pool:
-        _fut_before    = _pool.submit(analyze_audio, audio, sr)
-        _fut_reference = _pool.submit(analyze_audio, ref_audio, ref_sr)
-        analysis_before    = _fut_before.result()
-        analysis_reference = _fut_reference.result()
+    _report(progress_cb, 8, "Analizando audio propio y de referencia")
+    # SERIE: la cadena de audio se procesa stage-por-stage (sin multitarea).
+    # analyze_audio sobre el src primero, después sobre la ref.
+    analysis_before    = analyze_audio(audio, sr)
+    analysis_reference = analyze_audio(ref_audio, ref_sr)
 
     # BUGFIX Bug 5: analyze_harmonic_character debe correr sobre el audio CRUDO
     # antes de cualquier procesamiento de la cadena, y sobre una ventana
@@ -6309,12 +6305,9 @@ def process_audio_with_reference(
     _ref_start_s = int(_ref_start * ref_sr)
     _ref_end_s = min(ref_audio.shape[-1], _ref_start_s + int(_analysis_window_sec * ref_sr))
     _ref_audio_for_char = ref_audio[:, _ref_start_s:_ref_end_s] if ref_audio.ndim == 2 else ref_audio[_ref_start_s:_ref_end_s]
-    # PERF: los dos analyze_harmonic_character son independientes — paralelo.
-    with _cf.ThreadPoolExecutor(max_workers=2) as _pool:
-        _f_own_char = _pool.submit(analyze_harmonic_character, _own_audio_for_char, sr)
-        _f_ref_char = _pool.submit(analyze_harmonic_character, _ref_audio_for_char, ref_sr)
-        _own_char_raw = _f_own_char.result()
-        _ref_char_raw = _f_ref_char.result()
+    # SERIE: análisis armónico en serie. own primero, luego ref.
+    _own_char_raw = analyze_harmonic_character(_own_audio_for_char, sr)
+    _ref_char_raw = analyze_harmonic_character(_ref_audio_for_char, ref_sr)
     del _own_audio_for_char, _ref_audio_for_char
 
     # ── 1. Bandas comunes de frecuencia (log-spaced), acotadas al nyquist
@@ -6325,17 +6318,12 @@ def process_audio_with_reference(
     band_edges = list(zip(edges[:-1].tolist(), edges[1:].tolist()))
     centers = [float(np.sqrt(lo * hi)) for lo, hi in band_edges]
 
-    # PERF: las 4 llamadas espectrales iniciales son independientes entre sí.
-    # Corren en paralelo — cada una en su propio thread.
-    with _cf.ThreadPoolExecutor(max_workers=_n_workers) as _pool:
-        _f_src_bands    = _pool.submit(spectral_energy_at_bands, audio, sr, band_edges)
-        _f_ref_bands    = _pool.submit(spectral_energy_at_bands, ref_audio, ref_sr, band_edges)
-        _f_src_multi    = _pool.submit(spectral_energy_at_bands_multires, audio, sr, band_edges)
-        _f_ref_multi    = _pool.submit(spectral_energy_at_bands_multires, ref_audio, ref_sr, band_edges)
-        src_bands_db       = _f_src_bands.result()
-        ref_bands_db       = _f_ref_bands.result()
-        src_bands_multires = _f_src_multi.result()
-        ref_bands_multires = _f_ref_multi.result()
+    # SERIE: 4 llamadas espectrales secuenciales (src bands, ref bands,
+    # src multires, ref multires). Orden determinístico.
+    src_bands_db       = spectral_energy_at_bands(audio, sr, band_edges)
+    ref_bands_db       = spectral_energy_at_bands(ref_audio, ref_sr, band_edges)
+    src_bands_multires = spectral_energy_at_bands_multires(audio, sr, band_edges)
+    ref_bands_multires = spectral_energy_at_bands_multires(ref_audio, ref_sr, band_edges)
     match_before = spectral_match_score_multires(src_bands_multires, ref_bands_multires)
 
     if str(eq_fit_method).lower() == "ddsp":
@@ -6484,12 +6472,9 @@ def process_audio_with_reference(
                "ref_lra": analysis_reference.get("lra", 0.0)}
     _report(progress_cb, 40, "Igualando dinámica contra la referencia")
     if match_dynamics:
-        # PERF: own_crest y ref_crest son independientes — paralelo.
-        with _cf.ThreadPoolExecutor(max_workers=2) as _pool:
-            _f_own_crest = _pool.submit(band_crest_factors, audio, sr)
-            _f_ref_crest = _pool.submit(band_crest_factors, ref_audio, ref_sr)
-            own_crest = _f_own_crest.result()
-            ref_crest = _f_ref_crest.result()
+        # SERIE: crest factors own primero, luego ref.
+        own_crest = band_crest_factors(audio, sr)
+        ref_crest = band_crest_factors(ref_audio, ref_sr)
         audio, dynamics_band_meta = match_dynamics_bands(
             audio, sr, own_crest, ref_crest, margin_db=dynamics_margin_db,
             oversample=ovs)
@@ -6741,16 +6726,12 @@ def process_audio_with_reference(
         audio = limiter(audio, sr, ceiling=ceiling, release_ms=limiter_release_ms,
                         lookahead_ms=5.0, oversample=ovs)
 
-    _report(progress_cb, 93, "Analizando resultado final (paralelo)")
-    # PERF: analyze_audio y spectral_energy_at_bands_multires del resultado
-    # son independientes entre sí — paralelo.
-    with _cf.ThreadPoolExecutor(max_workers=2) as _pool:
-        _f_after       = _pool.submit(analyze_audio, audio, sr)
-        _f_final_bands = _pool.submit(spectral_energy_at_bands, audio, sr, band_edges)
-        _f_after_multi = _pool.submit(spectral_energy_at_bands_multires, audio, sr, band_edges)
-        analysis_after = _f_after.result()
-        final_bands_db = _f_final_bands.result()
-        _after_multi   = _f_after_multi.result()
+    _report(progress_cb, 93, "Analizando resultado final")
+    # SERIE: análisis final secuencial. analyze_audio primero, luego bandas,
+    # luego multires.
+    analysis_after = analyze_audio(audio, sr)
+    final_bands_db = spectral_energy_at_bands(audio, sr, band_edges)
+    _after_multi   = spectral_energy_at_bands_multires(audio, sr, band_edges)
     match_after = spectral_match_score_multires(_after_multi, ref_bands_multires)
 
     # ── 10. Reporte de análisis inteligente (resume las 7 dimensiones) ────

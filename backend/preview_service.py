@@ -23,7 +23,7 @@ from typing import Any, Callable, Optional
 
 import numpy as np
 import soundfile as sf
-
+import librosa
 # Preview workers must not initialize Numba's native JIT on Python versions
 # where its compiled extension may be incompatible with the host runtime.
 if mp.current_process().name != "MainProcess":
@@ -135,104 +135,42 @@ class PreviewRenderer:
         return str(source_path), meta
 
     @staticmethod
-    def _render_worker(
-        source_path: str,
-        output_path: str,
-        meters_path: str,
-        params: dict[str, Any],
-        duration_sec: int,
-    ) -> None:
-        import logging
-        logger = logging.getLogger(__name__)
-
-        # Limitar threads OpenMP para evitar segmentation faults con spawn
-        os.environ["OMP_NUM_THREADS"] = "1"
-        os.environ["MKL_NUM_THREADS"] = "1"
-        os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-        os.environ["NUMEXPR_NUM_THREADS"] = "1"
-
-        # Validar audio de entrada antes de procesar (NaN/Inf causan SIGSEGV)
-        try:
-            audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
-            if not np.isfinite(audio_check).all():
-                raise RuntimeError("Audio de snapshot contiene NaN/Inf")
-            logger.info(f"[preview] audio válido: shape={audio_check.shape}, sr={sr_check}")
-        except Exception as e:
-            raise RuntimeError(f"No se pudo leer el snapshot: {e}")
-
-        # Python 3.14 on this host crashes inside the native DSP stack. Keep
-        # preview rendering independent from SciPy/Numba/Torch; full mastering
-        # remains available through /master.
-        peak = float(np.max(np.abs(audio_check))) if audio_check.size else 0.0
-        gain_db = float(params.get("input_gain_db", 0.0) or 0.0)
-        ceiling = float(params.get("limiter_ceiling", 0.95) or 0.95)
-        ceiling = min(max(ceiling, 0.05), 1.0)
-        # The child can read libsndfile but cannot reliably open a new file on
-        # this Python 3.14 image. The snapshot is already a valid PCM_24 WAV.
-        shutil.copyfile(source_path, output_path)
-
-        # Telemetría de GR en tiempo real: process_audio ya calcula
-        # chain_meters (comp/limiter/glue/mb low-mid-high/etc.) — antes se
-        # descartaba. Se guarda con el mismo source_id (no un id nuevo) para
-        # que el frontend, que ya tiene sourceId en scope, la pueda pedir
-        # justo después de recibir el audio de cada render.
-        chain_meters = {
-            "preview_mode": "native-safe",
-            "input_gain_db": round(gain_db, 2),
-            "peak_before_limiter": round(peak, 6),
-            "limiter_ceiling": round(ceiling, 6),
-        }
-        tmp_meters = meters_path + ".tmp"
-        with open(tmp_meters, "w", encoding="utf-8") as handle:
-            json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
-        os.replace(tmp_meters, meters_path)
 
     def render_cancellable(
         self,
         source_path: str,
         params: dict[str, Any],
-        cancel_check: Callable[[], bool],
+        cancel_check: Optional[Callable[[], bool]] = None,
     ) -> str:
+        """Corre process_audio en el thread actual (sin subprocess).
+        Evita SIGSEGV/deadlock de OpenBLAS en procesos forked desde uvicorn multithreaded."""
         source_id = Path(source_path).stem
         output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
         meters_path = str(self._meters_path(source_id))
-        # Spawn evita heredar runtimes BLAS/Numba ya inicializados por Uvicorn.
-        ctx = mp.get_context("spawn")
-        process = ctx.Process(
-            target=self._render_worker,
-            args=(source_path, output_path, meters_path, params, self.duration_sec),
-            daemon=True,
-        )
-        process.start()
         try:
-            while process.is_alive():
-                if cancel_check():
-                    process.terminate()
-                    process.join(timeout=5)
-                    if process.is_alive():
-                        process.kill()
-                        process.join(timeout=2)
-                    raise InterruptedError("Render de Preview cancelado")
-                time.sleep(0.20)
-            process.join(timeout=1)
-            if process.exitcode != 0:
-                if process.exitcode < 0:
-                    try:
-                        signal_name = signal.Signals(-process.exitcode).name
-                    except ValueError:
-                        signal_name = f"SIG{-process.exitcode}"
-                    raise RuntimeError(
-                        f"Render de Preview terminó por señal {signal_name}"
-                    )
-                raise RuntimeError(f"Render de Preview finalizó con código {process.exitcode}")
-            if not os.path.exists(output_path):
-                raise RuntimeError("Render de Preview finalizó sin archivo de salida")
+            clean = dict(params)
+            clean.pop("progress_cb", None)
+            clean["input_path"] = source_path
+            clean["preview_seconds"] = self.duration_sec
+            clean["output_format"] = "wav"
+            clean["output_bit_depth"] = 24
+            result = process_audio(**clean)
+            produced = result.get("output_path")
+            if not produced or not os.path.exists(produced):
+                raise RuntimeError("El motor de mastering no generó el Preview")
+            os.replace(produced, output_path)
+            chain_meters = result.get("chain_meters") or {}
+            tmp_meters = meters_path + ".tmp"
+            with open(tmp_meters, "w", encoding="utf-8") as handle:
+                json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
+            os.replace(tmp_meters, meters_path)
             return output_path
-        except BaseException:
-            if process.is_alive():
-                process.terminate()
-                process.join(timeout=3)
+        except BaseException as _exc:
+            import traceback
+            import logging as _log
+            _log.getLogger("preview_service").error(
+                "process_audio falló:\n%s", traceback.format_exc()
+            )
             if os.path.exists(output_path):
                 os.remove(output_path)
             raise

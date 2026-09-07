@@ -12,7 +12,6 @@ Optimizaciones de CPU:
 - true_peak y mono_compat solo cada 8 chunks
 """
 import numpy as np # type: ignore
-import concurrent.futures
 import os
 import atexit
 

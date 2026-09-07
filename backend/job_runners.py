@@ -6,7 +6,6 @@ el punto de entrada HTTP. Las dependencias se inyectan mediante
 """
 from __future__ import annotations
 
-import concurrent.futures
 import logging
 import os
 import time
@@ -157,18 +156,12 @@ def create_job_runners(
                 stems = separate_stems(audio, sr, progress_cb=make_progress_cb(job_id))
 
             jobs.update_job(job_id, stage="Analizando stems", progress=96)
-            analysis_timeout_sec = 180
-            pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-            future = pool.submit(analyze_stems_full, stems, sr, measure_lufs_integrated)
-            try:
-                analysis = future.result(timeout=analysis_timeout_sec)
-                pool.shutdown(wait=False)
-            except concurrent.futures.TimeoutError:
-                pool.shutdown(wait=False)
-                raise RuntimeError(
-                    f"El análisis de stems no terminó en {analysis_timeout_sec}s (se colgó). "
-                    "Los stems separados están listos igual; revisar stem_analysis.py."
-                )
+            # SERIE: análisis de stems sin subproceso. Antes corría dentro de un
+            # ThreadPoolExecutor(max_workers=1) solo para tener timeout; como
+            # ahora todo el procesamiento de audio es estrictamente secuencial,
+            # se llama directo. Si analyze_stems_full se cuelga, el caller
+            # (job_store) verá el job sin progreso y podrá cancelarlo.
+            analysis = analyze_stems_full(stems, sr, measure_lufs_integrated)
 
             stem_dir = os.path.join(stems_dir, job_id)
             os.makedirs(stem_dir, exist_ok=True)
