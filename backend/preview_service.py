@@ -35,6 +35,14 @@ if mp.current_process().name != "MainProcess":
 SOURCE_ID_PATTERN = re.compile(r"^[a-f0-9]{16,128}$")
 
 
+def _safe_version(module_name: str) -> str:
+    try:
+        module = __import__(module_name)
+    except Exception as exc:  # noqa: BLE001
+        return f"absent({type(exc).__name__})"
+    return getattr(module, "__version__", "?")
+
+
 def _is_valid_source_id(source_id: str) -> bool:
     return bool(SOURCE_ID_PATTERN.fullmatch(source_id or ""))
 
@@ -166,6 +174,40 @@ class PreviewRenderer:
         expone como ``RuntimeError`` con el nombre real (``SIGSEGV``,
         ``SIGKILL``, etc.). No hay fallback: el preview siempre es render
         real, no copia del snapshot."""
+        import logging
+        import faulthandler
+        import sys
+        import traceback
+
+        log_path = os.environ.get(
+            "LGMDM_PREVIEW_LOG",
+            "/tmp/lgmdm-preview.log",
+        )
+        logger = logging.getLogger("lgmdm.preview")
+        logger.setLevel(logging.INFO)
+        if not logger.handlers:
+            try:
+                handler = logging.FileHandler(log_path, encoding="utf-8")
+                handler.setFormatter(
+                    logging.Formatter(
+                        "%(asctime)s [%(process)d] %(levelname)s %(message)s"
+                    )
+                )
+                logger.addHandler(handler)
+            except OSError:
+                pass
+
+        faulthandler.enable()
+        logger.info(
+            "render worker boot pid=%d python=%s numpy=%s scipy=%s numba=%s torch=%s",
+            os.getpid(),
+            sys.version.split()[0],
+            _safe_version("numpy"),
+            _safe_version("scipy"),
+            _safe_version("numba"),
+            _safe_version("torch"),
+        )
+
         try:
             from backend.mastering import process_audio
         except ImportError:
@@ -185,7 +227,19 @@ class PreviewRenderer:
         clean["output_format"] = "wav"
         clean["output_bit_depth"] = 24
 
-        result = process_audio(**clean)
+        logger.info(
+            "process_audio input=%s sr=%d shape=%s params=%d",
+            source_path,
+            sr_check,
+            audio_check.shape,
+            len(clean),
+        )
+        try:
+            result = process_audio(**clean)
+        except Exception as exc:
+            logger.error("process_audio raised: %s", exc)
+            logger.error("traceback:\n%s", traceback.format_exc())
+            raise
         produced = result.get("output_path")
         if not produced or not os.path.exists(produced):
             raise RuntimeError("El motor de mastering no generó el Preview")
@@ -202,6 +256,7 @@ class PreviewRenderer:
         with open(tmp_meters, "w", encoding="utf-8") as handle:
             json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
         os.replace(tmp_meters, meters_path)
+        logger.info("render worker done output=%s", output_path)
 
     def render_cancellable(
         self,
