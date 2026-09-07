@@ -14,6 +14,7 @@ import hashlib
 import json
 import multiprocessing as mp
 import shutil
+import signal
 import tempfile
 import time
 import uuid
@@ -23,6 +24,11 @@ from typing import Any, Callable, Optional
 import librosa
 import numpy as np
 import soundfile as sf
+
+# Preview workers must not initialize Numba's native JIT on Python versions
+# where its compiled extension may be incompatible with the host runtime.
+if mp.current_process().name != "MainProcess":
+    os.environ.setdefault("NUMBA_DISABLE_JIT", "1")
 
 try:
     from .mastering import _crop_preview, process_audio
@@ -227,6 +233,14 @@ class PreviewRenderer:
                 time.sleep(0.20)
             process.join(timeout=1)
             if process.exitcode != 0:
+                if process.exitcode < 0:
+                    try:
+                        signal_name = signal.Signals(-process.exitcode).name
+                    except ValueError:
+                        signal_name = f"SIG{-process.exitcode}"
+                    raise RuntimeError(
+                        f"Render de Preview terminó por señal {signal_name}"
+                    )
                 raise RuntimeError(f"Render de Preview finalizó con código {process.exitcode}")
             if not os.path.exists(output_path):
                 raise RuntimeError("Render de Preview finalizó sin archivo de salida")
