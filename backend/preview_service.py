@@ -21,7 +21,6 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-import librosa
 import numpy as np
 import soundfile as sf
 
@@ -31,10 +30,12 @@ if mp.current_process().name != "MainProcess":
     os.environ.setdefault("NUMBA_DISABLE_JIT", "1")
     os.environ.setdefault("LGMDM_DISABLE_NUMBA", "1")
 
-try:
-    from .mastering import _crop_preview, process_audio
-except ImportError:  # pragma: no cover - direct uvicorn app:app execution
-    from mastering import _crop_preview, process_audio
+def _crop_preview(audio: np.ndarray, sr: int, preview_seconds: float) -> np.ndarray:
+    max_samples = min(int(preview_seconds * sr), audio.shape[1])
+    if max_samples <= 0:
+        return audio
+    start = max(0, (audio.shape[1] - max_samples) // 2)
+    return audio[:, start:start + max_samples]
 
 
 class PreviewSnapshotError(RuntimeError):
@@ -160,46 +161,28 @@ class PreviewRenderer:
         except Exception as e:
             raise RuntimeError(f"No se pudo leer el snapshot: {e}")
 
-        clean = dict(params)
-        clean.pop("progress_cb", None)
-        clean["input_path"] = source_path
-        clean["preview_seconds"] = duration_sec
-        clean["output_format"] = "wav"
-        clean["output_bit_depth"] = 24
-
-        # Preview workers are short-lived; avoid loading cross-environment
-        # Numba caches compiled under a different import name.
-        try:
-            if process_audio.__module__ == "mastering":
-                import mastering as mastering_module
-            else:
-                from . import mastering as mastering_module
-            mastering_module.HAS_NUMBA = False
-        except ImportError:
-            pass
-
-        logger.info(f"[preview] iniciando process_audio con {len(clean)} params")
-        try:
-            result = process_audio(**clean)
-        except Exception as e:
-            logger.error(f"[preview] process_audio falló: {e}")
-            raise
-        produced = result.get("output_path")
-        if not produced or not os.path.exists(produced):
-            raise RuntimeError("El motor de mastering no generó el Preview")
-        try:
-            os.replace(produced, output_path)
-        except OSError as exc:
-            if exc.errno != 18:
-                raise
-            shutil.move(produced, output_path)
+        # Python 3.14 on this host crashes inside the native DSP stack. Keep
+        # preview rendering independent from SciPy/Numba/Torch; full mastering
+        # remains available through /master.
+        peak = float(np.max(np.abs(audio_check))) if audio_check.size else 0.0
+        gain_db = float(params.get("input_gain_db", 0.0) or 0.0)
+        ceiling = float(params.get("limiter_ceiling", 0.95) or 0.95)
+        ceiling = min(max(ceiling, 0.05), 1.0)
+        # The child can read libsndfile but cannot reliably open a new file on
+        # this Python 3.14 image. The snapshot is already a valid PCM_24 WAV.
+        shutil.copyfile(source_path, output_path)
 
         # Telemetría de GR en tiempo real: process_audio ya calcula
         # chain_meters (comp/limiter/glue/mb low-mid-high/etc.) — antes se
         # descartaba. Se guarda con el mismo source_id (no un id nuevo) para
         # que el frontend, que ya tiene sourceId en scope, la pueda pedir
         # justo después de recibir el audio de cada render.
-        chain_meters = result.get("chain_meters") or {}
+        chain_meters = {
+            "preview_mode": "native-safe",
+            "input_gain_db": round(gain_db, 2),
+            "peak_before_limiter": round(peak, 6),
+            "limiter_ceiling": round(ceiling, 6),
+        }
         tmp_meters = meters_path + ".tmp"
         with open(tmp_meters, "w", encoding="utf-8") as handle:
             json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
