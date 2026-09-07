@@ -12,6 +12,7 @@
 
   .lg-workspace-workspace {
     display: none;
+    min-width: 0;
     min-height: 0;
     flex: 1 1 auto;
     overflow: hidden;
@@ -1311,7 +1312,16 @@
    y compañía: no matchean ningún elemento del HTML actual, eran de una
    versión anterior del layout de la consola. ── */
 @layer console-master {
-  #lgMasterConsole.lg-console { min-width: 0; display: grid; gap: 11px; }
+  /* FIX: acá había "display: grid; gap: 11px" — un selector con ID
+     (#lgMasterConsole.lg-console) que le gana SIEMPRE por especificidad
+     a la regla base ".lg-console { display:flex; flex-direction:column }"
+     de más arriba en este mismo archivo, sin importar capas ni orden.
+     Rompía toda la cadena de flex:1 1 auto / height:100% del layout
+     "viewport-fit" — #lgMasterConsole terminaba siendo un grid de una
+     sola columna en vez de columna flex, así que .cns-console nunca
+     conseguía "el resto del alto disponible" y todo colapsaba a su
+     tamaño natural de contenido (de ahí el scroll/contenido cortado). */
+  #lgMasterConsole.lg-console { min-width: 0; }
   #lgMasterConsole > * { min-width: 0; }
   #lgMasterConsole .console-master-bus,
   #lgMasterConsole .master-bus {

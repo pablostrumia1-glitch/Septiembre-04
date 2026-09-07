@@ -38,6 +38,12 @@ def _crop_preview(audio: np.ndarray, sr: int, preview_seconds: float) -> np.ndar
     return audio[:, start:start + max_samples]
 
 
+try:
+    from .mastering import process_audio
+except ImportError:  # pragma: no cover - direct uvicorn app:app execution
+    from mastering import process_audio
+
+
 class PreviewSnapshotError(RuntimeError):
     pass
 
@@ -135,6 +141,30 @@ class PreviewRenderer:
         return str(source_path), meta
 
     @staticmethod
+    def _render_worker(
+        source_path: str,
+        output_path: str,
+        meters_path: str,
+        params: dict[str, Any],
+        duration_sec: int,
+    ) -> None:
+        clean = dict(params)
+        clean.pop("progress_cb", None)
+        clean["input_path"] = source_path
+        clean["preview_seconds"] = duration_sec
+        clean["output_format"] = "wav"
+        clean["output_bit_depth"] = 24
+        result = process_audio(**clean)
+        produced = result.get("output_path")
+        if not produced or not os.path.exists(produced):
+            raise RuntimeError("El motor de mastering no generó el Preview")
+        os.replace(produced, output_path)
+
+        chain_meters = result.get("chain_meters") or {}
+        tmp_meters = meters_path + ".tmp"
+        with open(tmp_meters, "w", encoding="utf-8") as handle:
+            json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
+        os.replace(tmp_meters, meters_path)
 
     def render_cancellable(
         self,
@@ -142,35 +172,47 @@ class PreviewRenderer:
         params: dict[str, Any],
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> str:
-        """Corre process_audio en el thread actual (sin subprocess).
-        Evita SIGSEGV/deadlock de OpenBLAS en procesos forked desde uvicorn multithreaded."""
+        """Corre process_audio en un subproceso aislado (spawn), no en el
+        thread actual. Esto es a propósito, aunque cueste un poco de
+        performance: process_audio ya tiene sus salvaguardas contra el
+        segfault original (torch perezoso, threads nativos limitados a 1,
+        numba sin cache) pero un segfault es un crash de sistema operativo,
+        no una excepción de Python — ningún try/except lo ataja si ocurre
+        en el proceso principal. Aislarlo en un subproceso es la única
+        forma real de que, si vuelve a pasar por cualquier motivo no
+        contemplado, muera solo ese render y no todo el servidor para
+        todos los usuarios conectados. De paso recupera la cancelación
+        real (process.terminate()), que el modelo in-thread no podía dar."""
         source_id = Path(source_path).stem
         output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
         meters_path = str(self._meters_path(source_id))
+        ctx = mp.get_context("spawn")
+        process = ctx.Process(
+            target=self._render_worker,
+            args=(source_path, output_path, meters_path, params, self.duration_sec),
+            daemon=True,
+        )
+        process.start()
         try:
-            clean = dict(params)
-            clean.pop("progress_cb", None)
-            clean["input_path"] = source_path
-            clean["preview_seconds"] = self.duration_sec
-            clean["output_format"] = "wav"
-            clean["output_bit_depth"] = 24
-            result = process_audio(**clean)
-            produced = result.get("output_path")
-            if not produced or not os.path.exists(produced):
-                raise RuntimeError("El motor de mastering no generó el Preview")
-            os.replace(produced, output_path)
-            chain_meters = result.get("chain_meters") or {}
-            tmp_meters = meters_path + ".tmp"
-            with open(tmp_meters, "w", encoding="utf-8") as handle:
-                json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
-            os.replace(tmp_meters, meters_path)
+            while process.is_alive():
+                if cancel_check is not None and cancel_check():
+                    process.terminate()
+                    process.join(timeout=5)
+                    if process.is_alive():
+                        process.kill()
+                        process.join(timeout=2)
+                    raise InterruptedError("Render de Preview cancelado")
+                time.sleep(0.20)
+            process.join(timeout=1)
+            if process.exitcode != 0:
+                raise RuntimeError(f"Render de Preview finalizó con código {process.exitcode}")
+            if not os.path.exists(output_path):
+                raise RuntimeError("Render de Preview finalizó sin archivo de salida")
             return output_path
-        except BaseException as _exc:
-            import traceback
-            import logging as _log
-            _log.getLogger("preview_service").error(
-                "process_audio falló:\n%s", traceback.format_exc()
-            )
+        except BaseException:
+            if process.is_alive():
+                process.terminate()
+                process.join(timeout=3)
             if os.path.exists(output_path):
                 os.remove(output_path)
             raise

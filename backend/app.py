@@ -271,14 +271,37 @@ def sanitize_track_name(name: Optional[str], fallback: str = "mastered") -> str:
     safe = safe[:120]
     return safe or fallback
 
+# Magic bytes por formato — RIFF/WAVE, FORM/AIFF y fLaC/OggS tienen firma
+# fija y confiable. MP3 no (ID3v2 opcional + frame sync variable sin un
+# patrón simple y confiable), así que se deja sin chequear, igual que
+# siempre — no vale la pena arriesgar falsos rechazos de MP3s legítimos.
+_AUDIO_MAGIC_CHECKS = {
+    ".wav":  lambda d: len(d) >= 12 and d[:4] == b"RIFF" and d[8:12] == b"WAVE",
+    ".aiff": lambda d: len(d) >= 12 and d[:4] == b"FORM" and d[8:12] == b"AIFF",
+    ".aif":  lambda d: len(d) >= 12 and d[:4] == b"FORM" and d[8:12] == b"AIFF",
+    ".flac": lambda d: len(d) >= 4 and d[:4] == b"fLaC",
+    ".ogg":  lambda d: len(d) >= 4 and d[:4] == b"OggS",
+}
+
+
+def _check_audio_magic_bytes(filename: str, data: bytes) -> None:
+    ext = os.path.splitext(filename)[-1].lower()
+    check = _AUDIO_MAGIC_CHECKS.get(ext)
+    if check and not check(data):
+        raise HTTPException(400, f"El archivo no parece ser un {ext} válido (cabecera incorrecta) — ¿le cambiaron la extensión?")
+
+
 async def read_and_validate(file: UploadFile) -> bytes:
-    """Lee y valida un archivo subido: extensión permitida + tamaño máximo."""
+    """Lee y valida un archivo subido: extensión permitida + tamaño máximo +
+    magic bytes (evita que un archivo con extensión falseada, ej. un .exe
+    renombrado a .wav, pase la validación solo por el nombre)."""
     # Validar extensión PRIMERO antes de leer (evita procesar datos innecesarios)
     validate_audio_file(file.filename)
     # Luego validar tamaño
     data = await file.read()
     if len(data) > MAX_FILE_SIZE:
         raise HTTPException(413, f"Archivo demasiado grande. Máximo: {MAX_FILE_SIZE // 1024 // 1024} MB")
+    _check_audio_magic_bytes(file.filename, data)
     logger.info(f"✓ Upload validado: {file.filename} ({len(data) / 1024 / 1024:.1f} MB)")
     return data
 
