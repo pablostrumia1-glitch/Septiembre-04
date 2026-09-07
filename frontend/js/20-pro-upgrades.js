@@ -115,14 +115,14 @@
       <div class="pro-compare-block">
         <div class="pro-compare-head"><strong>Reference delta</strong><span>${LG.ui.escapeHtml(refData.filename || 'Referencia')}</span></div>
         ${[
-          ['LUFS', data?.lufs, refData?.lufs, ' LUFS'],
-          ['True Peak', data?.true_peak_db, refData?.true_peak_db, ' dBTP'],
-          ['Dynamic', data?.dynamic_range_db ?? data?.crest_factor_db, refData?.dynamic_range_db ?? refData?.crest_factor_db, ' dB'],
-          ['Stereo', data?.stereo_correlation, refData?.stereo_correlation, ''],
-        ].map(([n, a, b, u]) => {
-          const delta = Number(a) - Number(b);
-          return `<div class="pro-delta-row"><span>${n}</span><b>${Number.isFinite(delta) ? (delta >= 0 ? '+' : '') + delta.toFixed(n === 'Stereo' ? 2 : 1) + u : '—'}</b><em>track vs ref</em></div>`;
-        }).join('')}
+        ['LUFS', data?.lufs, refData?.lufs, ' LUFS'],
+        ['True Peak', data?.true_peak_db, refData?.true_peak_db, ' dBTP'],
+        ['Dynamic', data?.dynamic_range_db ?? data?.crest_factor_db, refData?.dynamic_range_db ?? refData?.crest_factor_db, ' dB'],
+        ['Stereo', data?.stereo_correlation, refData?.stereo_correlation, ''],
+      ].map(([n, a, b, u]) => {
+        const delta = Number(a) - Number(b);
+        return `<div class="pro-delta-row"><span>${n}</span><b>${Number.isFinite(delta) ? (delta >= 0 ? '+' : '') + delta.toFixed(n === 'Stereo' ? 2 : 1) + u : '—'}</b><em>track vs ref</em></div>`;
+      }).join('')}
       </div>` : '';
     return `<div class="pro-meters-grid">${cards}</div>${compare}`;
   }
@@ -216,7 +216,7 @@
       const [a, b] = await Promise.all([postAnalyze(track), postAnalyze(ref)]);
       b.filename = ref.name;
       el('proRefContent').innerHTML = renderMetrics(a, b) + `<div class="pro-dialog-actions"><button class="pro-primary" id="openExistingRef">Abrir Reference Matching</button></div>`;
-      el('openExistingRef').addEventListener('click', () => { closeOverlay('proRefOverlay'); el('btnMasterRef')?.scrollIntoView({behavior:'smooth', block:'center'}); });
+      el('openExistingRef').addEventListener('click', () => { closeOverlay('proRefOverlay'); el('btnMasterRef')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
     } catch (e) {
       const box = el('proRefContent');
       if (box) { box.innerHTML = '<div class="pro-error"></div>'; box.querySelector('.pro-error').textContent = `Error: ${normalizeUiError(e)}`; }
@@ -238,7 +238,7 @@
         const data = await res.json();
         if (typeof window.LGMDM.ai.setContext === 'function') window.LGMDM.ai.setContext(data.analysis || null);
         else {
-                    window.dispatchEvent(new CustomEvent('analysis-updated', { detail: data.analysis || null }));
+          window.dispatchEvent(new CustomEvent('analysis-updated', { detail: data.analysis || null }));
         }
         renderMini(data.analysis || {});
         const d = data.ai_decision || {}; const { platform, reasoning, ...params } = d;

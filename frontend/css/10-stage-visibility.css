@@ -4,9 +4,12 @@
  * the first final pass; disabled modules remain available to re-enable later.
  */
 @layer stage-visibility {
+
   /* The current shell already communicates service state in the header. */
   .lg-health-strip,
-  .lg-footer { display: none !important; }
+  .lg-footer {
+    display: none !important;
+  }
 
   .lg-header-center {
     grid-column: 1;
@@ -33,11 +36,15 @@
   .lg-console-controlbar,
   .lg-chain-control-strip,
   .lg-spectrum-row,
-  .lg-console-transport { display: none !important; }
+  .lg-console-transport {
+    display: none !important;
+  }
 
   /* Keep only Studio + Analysis in the primary workspace navigation. */
   .lg-workspace-workspace-tab[data-workspace="presets"],
-  .lg-workspace-tab-actions { display: none !important; }
+  .lg-workspace-tab-actions {
+    display: none !important;
+  }
 
   .lg-main-stack {
     padding: 0 !important;
@@ -123,17 +130,24 @@
   }
 
   /* The upload block is intentionally reduced to the essential workflow. */
-  #pasoArchivo > summary { display: none; }
+  #pasoArchivo>summary {
+    display: none;
+  }
+
   #pasoArchivo .button-row,
   #pasoArchivo .panel-block-secondary,
   #pasoArchivo #saveToLibraryChk,
-  #pasoArchivo .process-card-body > div:nth-child(2),
-  #pasoArchivo .process-card-body > div:nth-child(3) { display: none !important; }
+  #pasoArchivo .process-card-body>div:nth-child(2),
+  #pasoArchivo .process-card-body>div:nth-child(3) {
+    display: none !important;
+  }
 
   #pasoArchivo,
-  #pasoArchivo .process-card-body { display: block; }
+  #pasoArchivo .process-card-body {
+    display: block;
+  }
 
-  .cns-panel-left > .cns-block:first-child {
+  .cns-panel-left>.cns-block:first-child {
     overflow-y: auto;
   }
 
@@ -154,21 +168,39 @@
 
   /* The quick-action path remains available through the real AI panel;
      the stage UI uses the embedded Laia surface instead. */
-  #aiPanel { z-index: 120; }
+  #aiPanel {
+    z-index: 120;
+  }
 
   @media (max-width: 1180px) {
-    .cns-body { grid-template-columns: var(--cns-left-w, 170px) var(--cns-handle-w, 6px) minmax(0, 1fr) var(--cns-handle-w, 6px) var(--cns-right-w, 180px); }
+    .cns-body {
+      grid-template-columns: var(--cns-left-w, 170px) var(--cns-handle-w, 6px) minmax(0, 1fr) var(--cns-handle-w, 6px) var(--cns-right-w, 180px);
+    }
   }
 
   @media (max-width: 960px) {
-    .cns-body { min-height: 0; height: auto; }
+    .cns-body {
+      min-height: 0;
+      height: auto;
+    }
+
     .lg-workspace-surface,
     #content,
     .cns-shell,
     .cns-console-wrap,
-    .lg-workspace-workspace-shell { min-height: 0; height: auto; }
-    .console-workspace { overflow: visible; }
-    .cns-console { min-height: 0; height: auto; }
+    .lg-workspace-workspace-shell {
+      min-height: 0;
+      height: auto;
+    }
+
+    .console-workspace {
+      overflow: visible;
+    }
+
+    .cns-console {
+      min-height: 0;
+      height: auto;
+    }
   }
 }
 
@@ -182,11 +214,13 @@
     border-radius: 4px;
     background: var(--s2);
   }
+
   .stage-track-kicker {
     color: var(--v4-accent, var(--a));
     font: 800 9px var(--v4-mono, var(--mono));
     letter-spacing: .12em;
   }
+
   #stageTrackName {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -194,6 +228,7 @@
     color: var(--v4-text, var(--text));
     font: 800 11px var(--v4-mono, var(--mono));
   }
+
   #stageTrackMeta {
     color: var(--v4-dim, var(--dim));
     font: 600 9px var(--v4-mono, var(--mono));
@@ -202,8 +237,9 @@
   #studioGrPanel .studio-gr-grid {
     gap: 6px;
   }
+
   #studioGrPanel .studio-gr-card {
-    grid-template-columns: 48px 52px minmax(0,1fr);
+    grid-template-columns: 48px 52px minmax(0, 1fr);
   }
 }
 
@@ -246,7 +282,7 @@
     gap: 6px;
   }
 
-  .cns-panel-left > .cns-block:first-child {
+  .cns-panel-left>.cns-block:first-child {
     display: flex;
     min-height: 0;
     overflow: hidden;
@@ -264,7 +300,7 @@
     overflow: visible;
   }
 
-  .cns-panel-left #pasoArchivo .process-card-body > div:first-child {
+  .cns-panel-left #pasoArchivo .process-card-body>div:first-child {
     display: block;
   }
 
@@ -341,7 +377,7 @@
     font-size: 9px;
   }
 
-  .cns-panel-left > .cns-block > .cns-block-grow {
+  .cns-panel-left>.cns-block>.cns-block-grow {
     min-height: 0;
     padding-top: 6px;
     overflow: hidden;
@@ -555,13 +591,16 @@
       --cns-left-w: 100%;
       --cns-right-w: 100%;
     }
+
     .cns-body {
       height: auto;
     }
+
     .cns-panel-left,
     .cns-panel-right {
       max-height: 360px;
     }
+
     .cns-console {
       grid-template-rows: 260px 6px minmax(210px, auto) 6px minmax(180px, auto);
     }
