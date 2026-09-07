@@ -82,6 +82,10 @@ class PreviewRenderer:
         if audio.shape[1] == 0 or sr <= 0:
             raise PreviewSnapshotError("El archivo no contiene audio utilizable")
 
+        # Validar que no haya NaN/Inf (causan SIGSEGV en scipy.fft)
+        if not np.isfinite(audio).all():
+            raise PreviewSnapshotError("El audio contiene valores NaN o Inf y no puede procesarse")
+
         cropped = _crop_preview(audio, sr, self.duration_sec).astype(np.float32, copy=False)
         source_path, meta_path = self._source_paths(source_id)
         tmp_audio = source_path.with_suffix(".tmp.wav")
@@ -121,13 +125,38 @@ class PreviewRenderer:
         params: dict[str, Any],
         duration_sec: int,
     ) -> None:
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # Limitar threads OpenMP para evitar segmentation faults con spawn
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["MKL_NUM_THREADS"] = "1"
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+        os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
+        # Validar audio de entrada antes de procesar (NaN/Inf causan SIGSEGV)
+        try:
+            audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
+            if not np.isfinite(audio_check).all():
+                raise RuntimeError("Audio de snapshot contiene NaN/Inf")
+            logger.info(f"[preview] audio válido: shape={audio_check.shape}, sr={sr_check}")
+        except Exception as e:
+            raise RuntimeError(f"No se pudo leer el snapshot: {e}")
+
         clean = dict(params)
         clean.pop("progress_cb", None)
         clean["input_path"] = source_path
         clean["preview_seconds"] = duration_sec
         clean["output_format"] = "wav"
         clean["output_bit_depth"] = 24
-        result = process_audio(**clean)
+
+        logger.info(f"[preview] iniciando process_audio con {len(clean)} params")
+        try:
+            result = process_audio(**clean)
+        except Exception as e:
+            logger.error(f"[preview] process_audio falló: {e}")
+            raise
         produced = result.get("output_path")
         if not produced or not os.path.exists(produced):
             raise RuntimeError("El motor de mastering no generó el Preview")
