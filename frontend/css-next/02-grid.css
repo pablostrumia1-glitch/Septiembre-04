@@ -1,0 +1,88 @@
+/* ==========================================
+   02-grid.css — Grid principal del shell
+   ==========================================
+   Responsabilidades únicas:
+   - Definir la estructura de grid de 3 columnas
+   - Manejar responsive breakpoints
+   - Configurar columnas de panel izquierdo/central/derecho
+   - Handles de resize
+   - Un solo namespace: .app-grid, .app-*, [data-resize]
+   - Nada de DSP, nada de colores de módulos
+   ========================================== */
+
+@layer main-grid;
+
+/* ── Grid principal ─────────────────────────────────────────────── */
+.app-grid {
+  display: grid;
+  grid-template-columns: var(--app-layout-min-panel-width) 1fr var(--app-layout-min-panel-width);
+  gap: var(--app-layout-gap);
+  height: 100%;
+  width: 100%;
+}
+
+/* ── Layout desktop (≥ 1200px) ─────────────────────────────────── */
+@media (min-width: 1200px) {
+  .app-grid {
+    grid-template-columns: var(--app-layout-min-panel-width) 1fr var(--app-layout-min-panel-width);
+  }
+}
+
+/* ── Layout tablet (768-1199px) ───────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-grid {
+    grid-template-columns: var(--app-layout-min-panel-width) 1fr var(--app-layout-min-panel-width);
+    gap: var(--app-layout-gap);
+  }
+}
+
+/* ── Layout móvil (< 768px) ─────────────────────────────────────── */
+@media (max-width: 767px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Handles de resize horizontal ───────────────────────────────── */
+.app-resize-handle {
+  width: 10px;
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.app-resize-handle[data-resize="left"] {
+  left: 100%;
+  margin-left: -5px;
+  /* Se posiciona vía JS, este es fallback */
+}
+
+.app-resize-handle[data-resize="right"] {
+  right: 100%;
+  margin-right: -5px;
+  /* Se posiciona vía JS, este es fallback */
+}
+
+/* ── Estado cuando el panel está colapsado ───────────────────────── */
+.app-panel--collapsed {
+  min-width: 0;
+  width: 0;
+}
+
+/* Ocultar contenido del panel colapsado pero mantener accessibility */
+.app-panel--collapsed .app-panel__header,
+.app-panel--collapsed .app-left__scroll,
+.app-panel--collapsed .app-right__scroll {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  clip: auto;
+  white-space: nowrap;
+  border: 0;
+}

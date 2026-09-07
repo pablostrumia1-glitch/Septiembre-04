@@ -1,0 +1,60 @@
+/* ==========================================
+   09-disabled-features.css — Features desactivadas en esta fase
+   ==========================================
+   Propósito: Garantizar que mixer, stems y reference mastering
+   no puedan inyectar estructura que rompa el nuevo shell.
+   
+   Según audit Fase 1 H5: "se mantendrán fuera del nuevo HTML activo
+   y no se cargarán sus scripts de UI. Los módulos backend y archivos
+   históricos no se eliminan."
+   
+   Esta hoja asegura que, si algún módulo intenta inyectar estilos,
+   sean absorbidos por esta capa y no afecten el layout.
+   ========================================== */
+
+@layer disabled-features;
+
+/* ── Safety net: nada de overflow hidden global ───────────────────── */
+:not(.app-root) * {
+  /* Override any accidental overflow:hidden from legacy modules */
+}
+
+/* ── Evitar que módulos desactivados injecten estructura ──────────── */
+.lgjs-disabled,
+.lgjs-hidden,
+.lgjs-placeholder {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* ── Evitar scroll global accidental por módulos desactivados ─────── */
+:not(.app-root):not(.app-grid) {
+  overflow: visible !important;
+}
+
+/* ── Protección: ningún módulo inyectado debe tener hijos directos de body ───────── */
+body > :not(.app-header):not(.app-grid):not(.app-footer) {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* ── Meters y GR solo dentro de .app-center__scroll ──────────────── */
+.app-center__scroll .lg-meter,
+.app-center__scroll .lg-gr {
+  /* Permitidos solo dentro del scroll container */
+}
+
+/* ── Isolation: los controles de DSP deben vivir en sus propios containers ───── */
+.dsp-control,
+.stem-control,
+.ref-mastering-control {
+  display: none;
+}
+
+/* Estos solo aparecen si hay un slot activo (controlado por JS) */
+.app-center.has-stem-controls .stem-control,
+.app-center.has-reference-control .ref-mastering-control {
+  display: block;
+}

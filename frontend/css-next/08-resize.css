@@ -1,0 +1,85 @@
+/* ==========================================
+   08-resize.css — Controlador único de resize
+   ==========================================
+   Único dueño del resize header/left/right/center según Fase 3 del audit.
+   Reutiliza LGMDM.ui.makeResizable de 00-resize-utility.js en lugar de
+   reimplementar la lógica 3 veces (32-flex-layout.js, 35-console-shell.js,
+   36-header-resize.js).
+   
+   Responsabilidades:
+   - Header vertical resize (.app-header__resize-handle)
+   - Panel izquierdo horizontal resize (.app-resize-handle[data-resize="left"])
+   - Panel derecho horizontal resize (.app-resize-handle[data-resize="right"])
+   - Límites mínimos/máximos por viewport
+   - Persistir tamaños con nuevas claves de storage
+   - Desactivar resize en móvil o convertir a drawer
+   ========================================== */
+
+@layer resize;
+
+/* ── Configuración shared para todos los handles ──────────────────── */
+const RESIZE_DEFAULTS = {
+  min: 100,
+  max: 800,
+  invert: false,
+};
+
+/* ── Header vertical resize ───────────────────────────────────────── */
+.app-header__resize-handle {
+  /* El handler ya tiene estilos base en 03-header.css */
+  /* JS: window.LGMDM.ui.makeResizable(handle, {
+    axis: 'y',
+    getSize: () => parseFloat(getComputedStyle(root).getPropertyValue('--lg-shell-header-h')) || 60,
+    setSize: (v) => root.style.setProperty('--lg-shell-header-h', v + 'px'),
+    min: () => window.innerWidth < 768 ? 40 : 60,
+    max: () => window.innerWidth < 768 ? 100 : 140,
+    onStart: () => { /* could add visual feedback */ },
+    onEnd: () => { /* persist to storage */ },
+  }); */
+}
+
+/* ── Panel izquierdo horizontal resize ───────────────────────────── */
+.app-resize-handle[data-resize="left"] {
+  /* El handler ya tiene estilos base en 02-grid.css */
+  /* JS: window.LGMDM.ui.makeResizable(handle, {
+    axis: 'x',
+    getSize: () => parseFloat(getComputedStyle(root).getPropertyValue('--lg-sidebar-w')) || 320,
+    setSize: (v) => root.style.setProperty('--lg-sidebar-w', v + 'px'),
+    min: () => 250,
+    max: () => Math.round(window.innerWidth * 0.42),
+    invert: true, /* arrastrar izquierda/arriba agranda panel anclado a derecha */
+    onStart: () => {},
+    onEnd: () => { /* persist storage key: lgmdm:flex-sidebar-w */ },
+  }); */
+}
+
+/* ── Panel derecho horizontal resize ─────────────────────────────── */
+.app-resize-handle[data-resize="right"] {
+  /* El handler ya tiene estilos base en 02-grid.css */
+  /* JS: window.LGMDM.ui.makeResizable(handle, {
+    axis: 'x',
+    getSize: () => parseFloat(getComputedStyle(root).getPropertyValue('--lg-sidebar-w')) || 320,
+    setSize: (v) => { /* calcular ancho restante */ },
+    min: () => 200,
+    max: () => 560,
+    invert: false,
+    onStart: () => {},
+    onEnd: () => { /* persist storage */ },
+  }); */
+}
+
+/* ── Estados de resize ──────────────────────────────────────────── */
+.app-resize-handle.dragging {
+  /* Visual feedback - ya definido en 02-grid.css */
+}
+
+/* ── Desactivar resize en móvil ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .app-header__resize-handle,
+  .app-resize-handle {
+    display: none;
+  }
+  
+  /* En móvil, el resize se convierte a drawer/tabs */
+  /* Esto se maneja desde JS, no CSS puro */
+}

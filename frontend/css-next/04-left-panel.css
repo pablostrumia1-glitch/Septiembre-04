@@ -1,0 +1,59 @@
+/* ==========================================
+   04-left-panel.css — Panel izquierdo
+   ==========================================
+   Responsabilidades únicas:
+   - Contenedor del panel lateral (.app-left)
+   - Header interno del panel (.app-panel__header)
+   - Scroll container único (.app-left__scroll)
+   - Min-width y min-height para resize
+   - Un solo namespace: .app-left__, .app-panel__header
+   - Nada de DSP, nada de colores de módulos complejos
+   ========================================== */
+
+@layer left-panel;
+
+/* ── Contenedor del panel izquierdo ─────────────────────────────── */
+.app-left {
+  display: flex;
+  flex-direction: column;
+  min-width: var(--app-layout-min-panel-width, 200px);
+  max-width: var(--app-layout-max-panel-width, 560px);
+  background-color: var(--s, #0b0e18);
+  border-right: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+  overflow: hidden;
+  /* Evitar que el panel contraiga el grid */
+  min-height: 0;
+}
+
+/* ── Header interno del panel ───────────────────────────────────── */
+.app-panel__header {
+  display: flex;
+  align-items: center;
+  padding: 8px var(--app-layout-gap, 10px);
+  gap: var(--app-layout-gap, 10px);
+  background-color: var(--s2, #12182a);
+  border-bottom: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+  color: var(--muted, #a8b2c0);
+  font-size: 12px;
+}
+
+/* ── Scroll container único por panel ───────────────────────────── */
+.app-left__scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Evitar scroll corporal accidental */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.app-left__scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  background: transparent;
+}
+
+.app-left__scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 2px;
+}

@@ -1,0 +1,79 @@
+/* ==========================================
+   07-responsive.css — Responsivo del shell
+   ==========================================
+   Breakpoints mínimos según audit Fase 4:
+   - >= 1200 px: tres columnas visibles
+   - 768-1199 px: paneles laterales reducidos y scroll independiente
+   - < 768 px: una columna, tabs o drawer para paneles laterales
+   - La consola central debe conservar sus controles esenciales en móvil
+   - No se debe ocultar contenido sin una alternativa de navegación
+   ========================================== */
+
+@layer responsive;
+
+/* ── Breakpoint grande: tres columnas completas ──────────────────── */
+@media (min-width: 1200px) {
+  .app-grid {
+    grid-template-columns: var(--app-layout-min-panel-width) 1fr var(--app-layout-min-panel-width);
+  }
+
+  .app-left,
+  .app-center,
+  .app-right {
+    /* Espacio completo en desktop */
+  }
+}
+
+/* ── Breakpoint tablet: paneles reducidos ───────────────────────── */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-grid {
+    grid-template-columns: var(--app-layout-min-panel-width) 1fr var(--app-layout-min-panel-width);
+    gap: calc(var(--app-layout-gap, 10px) * 2);
+  }
+
+  .app-left,
+  .app-center,
+  .app-right {
+    /* Los paneles mantienen ancho mínimo pero pueden reducirse */
+    min-width: var(--app-layout-min-panel-width, 200px);
+  }
+}
+
+/* ── Breakpoint móvil: una columna ──────────────────────────────── */
+@media (max-width: 767px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-left,
+  .app-center,
+  .app-right {
+    /* En móvil, apilar todos los paneles en una columna */
+    width: 100%;
+    order: 1;
+  }
+
+  .app-left { order: 1; }
+  .app-center { order: 2; }
+  .app-right { order: 3; }
+
+  /* Header full-width en móvil */
+  .app-header {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Ajustes finos para controles de consola en móvil ─────────────── */
+@media (max-width: 767px) {
+  .app-center__header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .app-header__brand,
+  .app-header__service-status,
+  .app-header__user,
+  .app-header__logout {
+    font-size: 12px;
+  }
+}

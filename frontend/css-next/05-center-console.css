@@ -1,0 +1,58 @@
+/* ==========================================
+   05-center-console.css — Consola central
+   ==========================================
+   Responsabilidades únicas:
+   - Contenedor de la consola (.app-center)
+   - Header interno (.app-center__header)
+   - Scroll container único (.app-center__scroll)
+   - Espacio para waveform, analyzer, preview, meters, GR
+   - Un solo namespace: .app-center__, .app-panel__header
+   - Nada de DSP directo, solo estructura para que los módulos
+     cargados después puedan insertar sus elementos
+   ========================================== */
+
+@layer center-console;
+
+/* ── Contenedor de la consola central ───────────────────────────── */
+.app-center {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--s, #0b0e18);
+  overflow: hidden;
+  min-height: 0;
+  /* Evitar contraer el grid */
+}
+
+/* ── Header interno de la consola ───────────────────────────────── */
+.app-center__header {
+  display: flex;
+  align-items: center;
+  padding: 8px var(--app-layout-gap, 10px);
+  gap: var(--app-layout-gap, 10px);
+  background-color: var(--s2, #12182a);
+  border-bottom: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+  color: var(--muted, #a8b2c0);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ── Scroll container único por consola ─────────────────────────── */
+.app-center__scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.app-center__scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  background: transparent;
+}
+
+.app-center__scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 2px;
+}

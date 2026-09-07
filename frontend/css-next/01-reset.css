@@ -1,0 +1,74 @@
+/* ==========================================
+   01-reset.css — Reset y base limpio
+   ==========================================
+   Responsabilidades únicas:
+   - Normalizar variables CSS raíz (colores, tipografía, layout)
+   - Configurar box-sizing global
+   - Establecer color-scheme y prefers-reduced-motion
+   - Nada de colores de módulos DSP, nada de selectores de componentes
+   - Un solo namespace: body, :root, html
+   ========================================== */
+
+@layer reset;
+
+/* ── Box-sizing global ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Color scheme y preferencias ────────────────────────────────── */
+@media (color-scheme: light) { :root { color-scheme: light; } }
+@media (prefers-color-scheme: light) { :root { color-scheme: light; } }
+@media (prefers-reduced-motion: reduce) { :root { animation-duration: 0s !important; transition-duration: 0s !important; } }
+
+/* ── Variables raíz limpias (solo layout/estructura) ───────────── */
+:root {
+  /* Layout base - sin valores de módulos DSP */
+  --app-layout-gap: 10px;
+  --app-layout-header-height: 60px;
+  --app-layout-min-panel-width: 200px;
+  --app-layout-max-panel-width: 560px;
+  --app-layout-viewport-height: 100dvh;
+
+  /* Estado visual */
+  --app-border-radius: 4px;
+  --app-shadow-soft: 0 1px 2px rgba(0,0,0,0.05);
+  --app-shadow-medium: 0 4px 6px rgba(0,0,0,0.1);
+
+  /* Focus outline base */
+  --app-focus-outline: 2px solid var(--v4-glow, #8bd2e8);
+  --app-focus-offset: 2px;
+}
+
+/* ── Elementos base ─────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: var(--sans, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color-scheme: dark;
+  color: var(--text, #edf2ff);
+  background-color: var(--bg, #070812);
+}
+
+/* Quitar márgenes y padding de uso general */
+h1, h2, h3, h4, h5, h6 { margin: 0; }
+p { margin: 0 0 1rem; }
+ul, ol { margin: 0; padding: 0; }
+dl { margin: 0; }
+
+/* Imágenes */
+img { max-width: 100%; height: auto; display: block; }
+
+/* Enlaces */
+a { color: inherit; text-decoration: none; }
+
+/* Quitar estilos de formulario por defecto */
+input, button, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+
+/* Evitar inputs enfocables que rompan el layout */
+button:focus-visible, input:focus-visible, textarea:focus-visible,
+[role="button"]:focus-visible { outline: var(--app-focus-outline) var(--app-focus-offset); }

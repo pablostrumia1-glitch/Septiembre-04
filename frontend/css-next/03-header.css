@@ -1,0 +1,127 @@
+/* ==========================================
+   03-header.css — Header del shell
+   ==========================================
+   Responsabilidades únicas (según audit H6):
+   - Nombre de la app (.app-header__brand)
+   - Estado del servicio (.app-header__service-status)
+   - Usuario/logout (.app-header__user, .app-header__logout)
+   - Handle vertical de resize (.app-header__resize-handle)
+   - Posicionamiento fixed dentro del header
+   - Nada de branding complejo, nada de DSP, nada de controles de módulos
+   - Un solo namespace: .app-header__*
+   ========================================== */
+
+@layer header;
+
+/* ── Contenedor del header ──────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  height: var(--app-layout-header-height, 60px);
+  padding: 0 var(--app-layout-gap, 10px);
+  gap: var(--app-layout-gap, 10px);
+  position: relative;
+  z-index: 100;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* ── Brand/app name ─────────────────────────────────────────────── */
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text, #edf2ff);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Icono/app logo simplificado */
+.app-header__brand-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+/* ── Área de estado y usuario ───────────────────────────────────── */
+.app-header__section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Estado del servicio ────────────────────────────────────────── */
+.app-header__service-status {
+  font-size: 12px;
+  color: var(--muted, #a8b2c0);
+  white-space: nowrap;
+}
+
+/* ── Contenedor usuario ─────────────────────────────────────────── */
+.app-header__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted, #a8b2c0);
+}
+
+.app-header__user-name {
+  font-weight: 500;
+}
+
+/* ── Botón logout ───────────────────────────────────────────────── */
+.app-header__logout {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid var(--line, rgba(148, 163, 184, 0.18));
+  border-radius: var(--app-border-radius, 4px);
+  background: transparent;
+  color: var(--muted, #a8b2c0);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.app-header__logout:hover {
+  border-color: var(--v4-accent, #ef9b42);
+  color: var(--v4-accent, #ef9b42);
+}
+
+.app-header__logout:focus-visible {
+  outline: var(--app-focus-outline) var(--app-focus-offset);
+  outline-offset: var(--app-focus-offset, 2px);
+}
+
+/* ── Handle vertical de resize ──────────────────────────────────── */
+.app-header__resize-handle {
+  width: 100%;
+  height: 8px;
+  cursor: row-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Indicador visual del handle */
+.app-header__resize-handle::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+/* Estado dragging (aplicado por JS) */
+.app-header__resize-handle.dragging {
+  background: rgba(255,255,255,0.05);
+}
