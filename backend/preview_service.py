@@ -182,7 +182,9 @@ class PreviewRenderer:
         source_id = Path(source_path).stem
         output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
         meters_path = str(self._meters_path(source_id))
-        ctx = mp.get_context("spawn")
+        # Usar fork en vez de spawn: fork preserva el estado de numpy/scipy
+        # que puede crashear con spawn en algunos sistemas (SIGSEGV -11)
+        ctx = mp.get_context("fork")
         process = ctx.Process(
             target=self._render_worker,
             args=(source_path, output_path, meters_path, params, self.duration_sec),
