@@ -157,9 +157,30 @@ class PreviewRenderer:
         params: dict[str, Any],
         duration_sec: int,
     ) -> None:
-        """Native-safe render: avoids process_audio and the heavyweight DSP
-        stack on hosts where those extensions segfault (notably Python 3.14).
-        Full mastering is still available through /master."""
+        """Render the snapshot. Two execution modes are supported:
+
+        * ``LGMDM_PREVIEW_FULL_DSP=1`` (opt-in): run the full
+          ``process_audio`` chain against the snapshot. The result is the
+          actual mastered 25 s preview. Falls back to the native-safe path
+          if the process exits non-zero.
+
+        * default: native-safe path that copies the snapshot to the
+          destination. Use this on hosts where the DSP stack segfaults.
+        """
+        if os.environ.get("LGMDM_PREVIEW_FULL_DSP") == "1":
+            try:
+                PreviewRenderer._render_worker_full_dsp(
+                    source_path, output_path, meters_path, params, duration_sec,
+                )
+                return
+            except Exception as exc:  # pragma: no cover - host-dependent
+                # Reintentamos con la ruta segura para no devolver 500.
+                import logging
+                logging.getLogger(__name__).warning(
+                    "process_audio falló en preview, usando ruta segura: %s",
+                    exc,
+                )
+
         audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
         if not np.isfinite(audio_check).all():
             raise RuntimeError("Audio de snapshot contiene NaN/Inf")
@@ -168,8 +189,6 @@ class PreviewRenderer:
         gain_db = float(params.get("input_gain_db", 0.0) or 0.0)
         ceiling = float(params.get("limiter_ceiling", 0.95) or 0.95)
         ceiling = min(max(ceiling, 0.05), 1.0)
-        # The child can read libsndfile but cannot reliably open a new file on
-        # Python 3.14 images. The snapshot is already a valid PCM_24 WAV.
         shutil.copyfile(source_path, output_path)
 
         chain_meters = {
@@ -180,6 +199,51 @@ class PreviewRenderer:
             "snapshot_sr": int(sr_check),
             "snapshot_channels": int(audio_check.shape[1]),
         }
+        tmp_meters = meters_path + ".tmp"
+        with open(tmp_meters, "w", encoding="utf-8") as handle:
+            json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
+        os.replace(tmp_meters, meters_path)
+
+    @staticmethod
+    def _render_worker_full_dsp(
+        source_path: str,
+        output_path: str,
+        meters_path: str,
+        params: dict[str, Any],
+        duration_sec: int,
+    ) -> None:
+        """Run the real ``process_audio`` chain in the preview worker.
+
+        The full DSP stack is heavy and depends on native extensions that can
+        segfault on Python 3.14 images; this path is therefore opt-in and
+        isolated to its own subprocess so a crash never affects the parent
+        server. The snapshot is already a 25 s PCM_24 WAV, so the output is
+        a real mastered preview instead of the original audio."""
+        try:
+            from backend.mastering import process_audio
+        except ImportError:
+            from mastering import process_audio
+
+        clean = dict(params)
+        clean.pop("progress_cb", None)
+        clean["input_path"] = source_path
+        clean["preview_seconds"] = duration_sec
+        clean["output_format"] = "wav"
+        clean["output_bit_depth"] = 24
+
+        result = process_audio(**clean)
+        produced = result.get("output_path")
+        if not produced or not os.path.exists(produced):
+            raise RuntimeError("El motor de mastering no generó el Preview")
+        if os.path.abspath(produced) != os.path.abspath(output_path):
+            shutil.move(produced, output_path)
+        else:
+            os.replace(produced, output_path)
+
+        chain_meters = result.get("chain_meters") or {}
+        if not isinstance(chain_meters, dict):
+            chain_meters = {"value": chain_meters}
+        chain_meters.setdefault("preview_mode", "full-dsp")
         tmp_meters = meters_path + ".tmp"
         with open(tmp_meters, "w", encoding="utf-8") as handle:
             json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)

@@ -226,6 +226,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 scripts/*
+!scripts/clean_pycache.py
 cambios-mios/*
 reportes/*
 scripts
