@@ -87,10 +87,18 @@ def create_preview_router(
         except PreviewSnapshotError as exc:
             raise HTTPException(404, str(exc)) from exc
 
-        if float(meta["duration_sec"]) > payload.preview_duration_sec:
-            raise HTTPException(409, "El snapshot original supera la duración solicitada")
+        snapshot_duration = float(meta["duration_sec"])
+        if abs(snapshot_duration - float(payload.preview_duration_sec)) > 0.25:
+            raise HTTPException(
+                409,
+                f"Duración incompatible: snapshot={snapshot_duration:.2f}s, "
+                f"solicitada={float(payload.preview_duration_sec):.2f}s",
+            )
 
-        params = payload.params.model_dump(exclude_unset=False)
+        # Solo los campos declarados en PreviewParams llegan al motor. Cualquier
+        # otra clave del payload queda descartada para mantener el contrato
+        # chico y no introducir parámetros ajenos a la ruta segura.
+        params = payload.params.model_dump()
         params["preview_seconds"] = payload.preview_duration_sec
         params["output_format"] = "wav"
         params["output_bit_depth"] = 24

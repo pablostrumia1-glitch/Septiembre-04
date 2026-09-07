@@ -1,29 +1,17 @@
 from __future__ import annotations
 
-import inspect
 import math
-from typing import Any, Optional, Union, get_args, get_origin
+import re
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator
-
-try:
-    from .mastering import process_audio
-except ImportError:  # pragma: no cover - direct uvicorn app:app execution
-    from mastering import process_audio
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-def _annotation_from_default(default: Any):
-    if default is None:
-        return Optional[str]
-    if isinstance(default, bool):
-        return bool
-    if isinstance(default, int) and not isinstance(default, bool):
-        return int
-    if isinstance(default, float):
-        return float
-    if isinstance(default, str):
-        return str
-    return Any
+SOURCE_ID_PATTERN = re.compile(r"^[a-f0-9]{16,128}$")
+
+
+def _is_valid_source_id(value: str) -> bool:
+    return bool(SOURCE_ID_PATTERN.fullmatch(value or ""))
 
 
 class _PreviewParamsBase(BaseModel):
@@ -31,42 +19,50 @@ class _PreviewParamsBase(BaseModel):
 
     @field_validator("*", mode="after")
     @classmethod
-    def validate_values(cls, value):
+    def validate_values(cls, value: Any) -> Any:
         if isinstance(value, float) and not math.isfinite(value):
             raise ValueError("Los parámetros numéricos deben ser finitos")
         return value
 
 
-def _build_preview_params_model():
-    fields: dict[str, tuple[Any, Any]] = {}
-    sig = inspect.signature(process_audio)
-    excluded = {"input_path", "progress_cb", "preview_seconds"}
-    for name, parameter in sig.parameters.items():
-        if name in excluded:
-            continue
-        default = parameter.default
-        if default is inspect.Parameter.empty:
-            annotation = parameter.annotation if parameter.annotation is not inspect.Parameter.empty else Any
-            fields[name] = (annotation, ...)
-        else:
-            fields[name] = (_annotation_from_default(default), default)
+class PreviewParams(BaseModel):
+    """Subset of mastering parameters exposed to the Preview API. The full
+    chain is owned by ``process_audio`` and is not required to validate
+    previews, so we declare the fields that the safe preview path actually
+    consumes. Additional keys sent by legacy clients are dropped at the
+    router boundary instead of being rejected."""
 
-    return create_model(
-        "PreviewParams",
-        __base__=_PreviewParamsBase,
-        __module__=__name__,
-        **fields,
-    )
+    model_config = ConfigDict(extra="ignore", validate_assignment=True)
 
-PreviewParams = _build_preview_params_model()
+    input_gain_db: float = 0.0
+    limiter_ceiling: float = 0.95
+    target_lufs: float = -14.0
+    target_peak: float = 0.95
+    use_lufs_normalize: bool = False
+    oversample_mode: str = "quality"
+    preset: str = "default"
+
+    @field_validator("*", mode="after")
+    @classmethod
+    def validate_values(cls, value: Any) -> Any:
+        if isinstance(value, float) and not math.isfinite(value):
+            raise ValueError("Los parámetros numéricos deben ser finitos")
+        return value
 
 
 class PreviewRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    preview_source_id: str = Field(min_length=8, max_length=128)
+    preview_source_id: str = Field(min_length=16, max_length=128)
     preview_duration_sec: int = Field(default=25, ge=25, le=25)
     params: PreviewParams
+
+    @field_validator("preview_source_id")
+    @classmethod
+    def validate_source_id(cls, value: str) -> str:
+        if not _is_valid_source_id(value):
+            raise ValueError("preview_source_id inválido")
+        return value
 
 
 class PreviewSourceResponse(BaseModel):

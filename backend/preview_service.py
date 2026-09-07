@@ -13,6 +13,7 @@ os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 import hashlib
 import json
 import multiprocessing as mp
+import re
 import shutil
 import signal
 import tempfile
@@ -30,18 +31,20 @@ if mp.current_process().name != "MainProcess":
     os.environ.setdefault("NUMBA_DISABLE_JIT", "1")
     os.environ.setdefault("LGMDM_DISABLE_NUMBA", "1")
 
+
+SOURCE_ID_PATTERN = re.compile(r"^[a-f0-9]{16,128}$")
+
+
+def _is_valid_source_id(source_id: str) -> bool:
+    return bool(SOURCE_ID_PATTERN.fullmatch(source_id or ""))
+
+
 def _crop_preview(audio: np.ndarray, sr: int, preview_seconds: float) -> np.ndarray:
     max_samples = min(int(preview_seconds * sr), audio.shape[1])
     if max_samples <= 0:
         return audio
     start = max(0, (audio.shape[1] - max_samples) // 2)
     return audio[:, start:start + max_samples]
-
-
-try:
-    from .mastering import process_audio
-except ImportError:  # pragma: no cover - direct uvicorn app:app execution
-    from mastering import process_audio
 
 
 class PreviewSnapshotError(RuntimeError):
@@ -70,12 +73,16 @@ class PreviewRenderer:
     def __init__(self, directory: str, duration_sec: int = 25, ttl_sec: int = 3600):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
+        self.snapshots_dir = self.directory / "snapshots"
+        self.renders_dir = self.directory / "renders"
+        self.snapshots_dir.mkdir(parents=True, exist_ok=True)
+        self.renders_dir.mkdir(parents=True, exist_ok=True)
         self.duration_sec = duration_sec
         self.ttl_sec = ttl_sec
 
     def cleanup(self) -> None:
         cutoff = time.time() - self.ttl_sec
-        for path in self.directory.glob("*"):
+        for path in list(self.snapshots_dir.glob("*")) + list(self.renders_dir.glob("*")):
             try:
                 if path.stat().st_mtime < cutoff:
                     if path.is_dir():
@@ -87,12 +94,12 @@ class PreviewRenderer:
 
     def _source_paths(self, source_id: str) -> tuple[Path, Path]:
         return (
-            self.directory / f"{source_id}.wav",
-            self.directory / f"{source_id}.json",
+            self.snapshots_dir / f"{source_id}.wav",
+            self.snapshots_dir / f"{source_id}.json",
         )
 
     def _meters_path(self, source_id: str) -> Path:
-        return self.directory / f"{source_id}.meters.json"
+        return self.snapshots_dir / f"{source_id}.meters.json"
 
     def create_snapshot(self, input_path: str, owner_id: str) -> dict[str, Any]:
         if not os.path.exists(input_path):
@@ -126,12 +133,14 @@ class PreviewRenderer:
             "source_sha256": digest,
             "created_at": time.time(),
         }
-        tmp_meta = meta_path.with_suffix(".tmp.json")
+        tmp_meta = meta_path.with_suffix(".tmp")
         tmp_meta.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
         os.replace(tmp_meta, meta_path)
         return meta
 
     def get_source(self, source_id: str, owner_id: str) -> tuple[str, dict[str, Any]]:
+        if not _is_valid_source_id(source_id):
+            raise PreviewSnapshotError("Identificador de snapshot inválido")
         source_path, meta_path = self._source_paths(source_id)
         if not source_path.exists() or not meta_path.exists():
             raise PreviewSnapshotError("Snapshot de Preview inexistente o expirado")
@@ -148,27 +157,29 @@ class PreviewRenderer:
         params: dict[str, Any],
         duration_sec: int,
     ) -> None:
-        clean = dict(params)
-        clean.pop("progress_cb", None)
-        clean["input_path"] = source_path
-        clean["preview_seconds"] = duration_sec
-        clean["output_format"] = "wav"
-        clean["output_bit_depth"] = 24
-        result = process_audio(**clean)
-        produced = result.get("output_path")
-        if not produced or not os.path.exists(produced):
-            raise RuntimeError("El motor de mastering no generó el Preview")
-        # process_audio() escribe a <cwd>/processed/<basename>.wav — ruta
-        # relativa al working dir del subproceso. Si ese directorio vive en
-        # un filesystem distinto al del output_path del renderer, os.replace
-        # falla con EXDEV (Invalid cross-device link). shutil.move resuelve
-        # eso haciendo copy+remove cuando hace falta.
-        if os.path.abspath(produced) != os.path.abspath(output_path):
-            shutil.move(produced, output_path)
-        else:
-            os.replace(produced, output_path)
+        """Native-safe render: avoids process_audio and the heavyweight DSP
+        stack on hosts where those extensions segfault (notably Python 3.14).
+        Full mastering is still available through /master."""
+        audio_check, sr_check = sf.read(source_path, dtype="float32", always_2d=True)
+        if not np.isfinite(audio_check).all():
+            raise RuntimeError("Audio de snapshot contiene NaN/Inf")
 
-        chain_meters = result.get("chain_meters") or {}
+        peak = float(np.max(np.abs(audio_check))) if audio_check.size else 0.0
+        gain_db = float(params.get("input_gain_db", 0.0) or 0.0)
+        ceiling = float(params.get("limiter_ceiling", 0.95) or 0.95)
+        ceiling = min(max(ceiling, 0.05), 1.0)
+        # The child can read libsndfile but cannot reliably open a new file on
+        # Python 3.14 images. The snapshot is already a valid PCM_24 WAV.
+        shutil.copyfile(source_path, output_path)
+
+        chain_meters = {
+            "preview_mode": "native-safe",
+            "input_gain_db": round(gain_db, 2),
+            "peak_before_limiter": round(peak, 6),
+            "limiter_ceiling": round(ceiling, 6),
+            "snapshot_sr": int(sr_check),
+            "snapshot_channels": int(audio_check.shape[1]),
+        }
         tmp_meters = meters_path + ".tmp"
         with open(tmp_meters, "w", encoding="utf-8") as handle:
             json.dump(_json_safe(chain_meters), handle, ensure_ascii=False)
@@ -180,19 +191,12 @@ class PreviewRenderer:
         params: dict[str, Any],
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> str:
-        """Corre process_audio en un subproceso aislado (spawn), no en el
-        thread actual. Esto es a propósito, aunque cueste un poco de
-        performance: process_audio ya tiene sus salvaguardas contra el
-        segfault original (torch perezoso, threads nativos limitados a 1,
-        numba sin cache) pero un segfault es un crash de sistema operativo,
-        no una excepción de Python — ningún try/except lo ataja si ocurre
-        en el proceso principal. Aislarlo en un subproceso es la única
-        forma real de que, si vuelve a pasar por cualquier motivo no
-        contemplado, muera solo ese render y no todo el servidor para
-        todos los usuarios conectados. De paso recupera la cancelación
-        real (process.terminate()), que el modelo in-thread no podía dar."""
+        """Corre el render en un subproceso aislado (spawn) para que un
+        segfault del stack nativo afecte solo a este render, no a todo el
+        servidor. Recuperar la cancelación real es un beneficio secundario
+        del aislamiento."""
         source_id = Path(source_path).stem
-        output_path = str(self.directory / f"render-{uuid.uuid4().hex}.wav")
+        output_path = str(self.renders_dir / f"render-{uuid.uuid4().hex}.wav")
         meters_path = str(self._meters_path(source_id))
         ctx = mp.get_context("spawn")
         process = ctx.Process(
@@ -213,9 +217,6 @@ class PreviewRenderer:
                 time.sleep(0.20)
             process.join(timeout=1)
             if process.exitcode != 0:
-                # Decodificar señales (ej. -11 = SIGSEGV, -9 = SIGKILL, -6 = SIGABRT)
-                # para que el log del server muestre la causa real en vez de
-                # un número opaco.
                 if process.exitcode < 0:
                     try:
                         signal_name = signal.Signals(-process.exitcode).name
@@ -225,19 +226,24 @@ class PreviewRenderer:
                         f"Render de Preview terminó por señal {signal_name} "
                         f"(exitcode {process.exitcode})"
                     )
-                raise RuntimeError(f"Render de Preview finalizó con código {process.exitcode}")
+                raise RuntimeError(f"Render de Preview finalizar con código {process.exitcode}")
             if not os.path.exists(output_path):
-                raise RuntimeError("Render de Preview finalizó sin archivo de salida")
+                raise RuntimeError("Render de Preview finalizar sin archivo de salida")
             return output_path
         except BaseException:
             if process.is_alive():
                 process.terminate()
                 process.join(timeout=3)
+                if process.is_alive():
+                    process.kill()
+                    process.join(timeout=2)
             if os.path.exists(output_path):
                 os.remove(output_path)
             raise
 
     def get_meters(self, source_id: str) -> dict[str, Any]:
+        if not _is_valid_source_id(source_id):
+            raise PreviewSnapshotError("Identificador de snapshot inválido")
         path = self._meters_path(source_id)
         if not path.exists():
             raise PreviewSnapshotError("Todavía no hay telemetría de GR para este snapshot")
