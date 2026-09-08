@@ -67,6 +67,15 @@
   <!-- 11. Features desactivadas (mixer, stems, reference mastering) -->
   <link href="css/11-disabled-features.css" rel="stylesheet"/>
 
+  <!-- 12. Health dropdown + chat button -->
+  <link href="css/12-drawer-history.css" rel="stylesheet"/>
+
+  <!-- Estilos alucinantes (4 propuestas + extras) -->
+  <link href="css-next/11-neon-glow.css" rel="stylesheet"/>
+  <link href="css-next/12-glassmorphism.css" rel="stylesheet"/>
+  <link href="css-next/13-hologram-spectrum.css" rel="stylesheet"/>
+  <link href="css-next/14-dark-orbit.css" rel="stylesheet"/>
+
   <!-- Favicon -->
   <link href="favicon.svg" rel="icon" type="image/svg+xml"/>
 </head>
@@ -1166,7 +1175,7 @@
                           <input accept=".wav,.mp3,.flac,.ogg,.aiff,.aif" aria-label="Archivo de audio principal" id="fileInput" type="file"/>
                           <div class="icon" aria-hidden="true">🎵</div>
                           <label class="stage-upload-button" for="fileInput">SUBIR TRACK</label>
-                          <p class="stage-upload-help">Arrastrá el audio aquí<br/><small>WAV · MP3 · FLAC · OGG · AIFF — máx <span data-lgmdm-max-file-mb=""></span> MB</small></p>
+                          <p class="stage-upload-help">Arrastrá el audio aquí<br/><small>WAV · MP3 · FLAC · OGG · AIFF — máx <span data-stfx-max-file-mb=""></span> MB</small></p>
                           <div class="uppy-picker" id="uppyPicker"></div>
                           <div class="file-name" id="fileName"></div>
                           <div class="file-size-warn" id="fileSizeWarn"></div>
@@ -1284,7 +1293,7 @@
                               Arrastrá el track de referencia
                             </p>
                             <p class="drop-zone-note">
-                              WAV · MP3 · FLAC · OGG · AIFF — máx <span data-lgmdm-max-file-mb=""></span> MB
+                              WAV · MP3 · FLAC · OGG · AIFF — máx <span data-stfx-max-file-mb=""></span> MB
                             </p>
                             <div class="file-name" id="refFileName"></div>
                             <!-- Label para mostrar referencia seleccionada -->
@@ -1609,10 +1618,10 @@
 
               <!-- Consola central -->
               <div class="cns-console-wrap" id="cnsConsoleWrap">
-                <div class="lg-workspace-workspace-shell" id="lgmdmWorkspaceShell">
+                <div class="lg-workspace-workspace-shell" id="workspaceShell">
 
                   <!-- Tabs -->
-                  <nav aria-label="Espacios de trabajo LGMDM" class="lg-workspace-workspace-tabs" role="tablist">
+                  <nav aria-label="Espacios de trabajo STFX" class="lg-workspace-workspace-tabs" role="tablist">
                     <button aria-selected="true" class="lg-workspace-workspace-tab active" data-workspace="console" role="tab" type="button"><span class="lg-workspace-tab-icon">🎛</span>Studio</button>
                     <button aria-selected="false" class="lg-workspace-workspace-tab" data-workspace="analysis" role="tab" type="button"><span class="lg-workspace-tab-icon">📊</span>Analysis</button>
                     <button aria-selected="false" class="lg-workspace-workspace-tab" data-workspace="presets" role="tab" type="button"><span class="lg-workspace-tab-icon">🎚</span>Presets</button>
@@ -1626,7 +1635,7 @@
 
                   <!-- Workspace: Console -->
                   <section class="lg-workspace-workspace console-workspace active" data-workspace="console" role="tabpanel">
-                    <section aria-label="LGMDM Mastering Console" class="lg-console" id="lgMasterConsole">
+                    <section aria-label="STFX Mastering Console" class="lg-console" id="lgMasterConsole">
                       <!-- Topbar -->
                       <div class="lg-console-topbar">
                         <div class="lg-console-title">
@@ -1673,7 +1682,7 @@
                               </div>
                             </div>
                             <div class="lg-wave-stage cns-card-body">
-                              <canvas aria-label="Visualización de señal" id="lgmdmWaveformCanvas"></canvas>
+                              <canvas aria-label="Visualización de señal" id="waveformCanvas"></canvas>
                               <div class="lg-wave-grid"></div>
                               <div class="lg-wave-marker lg-wave-marker-left">-∞</div>
                               <div class="lg-wave-marker lg-wave-marker-right">0 dB</div>
@@ -1801,7 +1810,7 @@
                         <!-- Spectrum canvas (añadido para 31-spectrum-controller.js) -->
                         <div class="lg-spectrum-panel">
                           <div class="lg-panel-head compact"><div><span class="lg-panel-kicker">CONSOLE SPECTRUM</span></div></div>
-                          <div class="lg-spectrum-stage"><canvas id="lgmdmConsoleSpectrum" style="width:100%;height:100%;display:block;"></canvas></div>
+                          <div class="lg-spectrum-stage"><canvas id="consoleSpectrum" style="width:100%;height:100%;display:block;"></canvas></div>
                         </div>
                       </div>
 
@@ -1901,7 +1910,7 @@
                     <!-- Spectrum panel -->
                     <div class="lg-spectrum-panel" id="analysisPanel">
                       <div class="lg-panel-head compact"><div><span class="lg-panel-kicker">ANALYZER</span><strong>Frequency Spectrum</strong></div><span class="lg-live"><i></i>LIVE</span></div>
-                      <div class="lg-spectrum-stage" id="analysisSpectrumStage"><canvas aria-label="Espectro de análisis" id="lgmdmSpectrum"></canvas></div>
+                      <div class="lg-spectrum-stage" id="analysisSpectrumStage"><canvas aria-label="Espectro de análisis" id="spectrumCanvas"></canvas></div>
                     </div>
                   </section>
 
@@ -1935,7 +1944,7 @@
 
   <!-- FOOTER (oculto temporalmente) -->
   <footer class="lg-footer">
-    <span>LGMDM • Intelligent Mastering Console</span>
+    <span>STFX • Intelligent Mastering Console</span>
     <span>Frontend rebuild • responsive shell</span>
   </footer>
 
@@ -1973,6 +1982,7 @@
 <script src="js/00-config.js"></script>
 <script src="js/00-error-wrapper.js"></script>
 <script src="js/00-dom-safety.js"></script>
+<script src="js/00-ui-core.js"></script>
 <script src="js/00-xss-protection.js"></script>
 <script src="js/00-async-safety.js"></script>
 <script src="js/00-storage.js"></script>
@@ -1991,7 +2001,7 @@
 <script src="js/00-bootstrap.js"></script>
 <script src="js/00-components.js"></script>
 <!-- Q3 (audit): 00-helpers.js borrado — los helpers fueron absorbidos
-     por 00-dom-safety.js (LGMDM.dom.value/checked/text/setInputValue/...). -->
+     por 00-dom-safety.js (STFX.dom.value/checked/text/setInputValue/...). -->
 <script src="js/00-library-service.js"></script>
 <script src="js/00-logging-filter.js"></script>
 <script src="js/00-memory-cleanup.js"></script>
@@ -2007,24 +2017,30 @@
 <script src="js/05-eq-waveform.js"></script>
 <script src="js/06-params-builder.js"></script>
 <script src="js/07-mastering-actions.js"></script>
+<!-- DESACTIVADO: reference mastering
 <script src="js/08-reference-mastering.js"></script>
+-->
 <script src="js/12-lufs-normalize.js"></script>
 <script src="js/09-visualizers.js"></script>
 <script src="js/10-meters-dashboard.js"></script>
 <script src="js/30-metrics-store.js"></script>
 <script src="js/30-preview-controller.js"></script>
 <script src="js/31-spectrum-controller.js"></script>
+<!-- DESACTIVADO: mixer
 <script src="js/13-mixer-model.js"></script>
 <script src="js/13-mixer-engine.js"></script>
 <script src="js/13-mixer-library.js"></script>
 <script src="js/13-mixer-ui.js"></script>
+-->
 <script src="js/15-master-console.js"></script>
 <script src="js/25-workspace-tabs.js"></script>
 <script src="js/32-chain-family-tabs.js"></script>
 <script src="js/32-flex-layout.js"></script>
 <script src="js/22-tabs-handler.js"></script>
 <script src="js/26-slider-wheel-control.js"></script>
+<!-- DESACTIVADO: preset compare modal
 <script src="js/28-ux-workflow.js"></script>
+-->
 <script src="js/29-analysis-view.js"></script>
 <script src="js/33-studio-controller.js"></script>
 <script src="js/34-shell-bridge.js"></script>
@@ -2035,8 +2051,10 @@
 <!-- NOTA: 17-keyboard-shortcuts.js, 18-undo-redo.js, 20-pro-upgrades.js,
      23-pro-console.js y 27-health-tooltips.js se cargan perezosamente
      desde 00-module-loader.js; no enlazarlos aquí para evitar duplicados. -->
+<!-- DESACTIVADO: projects + reference library picker
 <script src="js/21-projects-ui.js"></script>
 <script src="js/reference-library-picker.js"></script>
+-->
 <script src="js/00-cleanup.js"></script>
 <script src="js-next/00-disabled-features.js"></script>
 
