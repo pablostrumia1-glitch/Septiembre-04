@@ -9,7 +9,7 @@
    - Un solo namespace: body, :root, html
    ========================================== */
 
-@layer reset;
+@layer reset {
 
 /* ── Box-sizing global ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -446,3 +446,5 @@ input, button, select, textarea {
 /* Evitar inputs enfocables que rompan el layout */
 button:focus-visible, input:focus-visible, textarea:focus-visible,
 [role="button"]:focus-visible { outline: var(--app-focus-outline) var(--app-focus-offset); }
+
+}

@@ -165,7 +165,7 @@
         if (presetData.ms_comp_bypass != null)
           LGMDM.dom.requireById("s-mscomp-bypass", "03-presets.js").checked = !!presetData.ms_comp_bypass;
         if (presetData.eq_mode) LGMDM.dom.requireById("s-eq-mode", "03-presets.js").value = presetData.eq_mode;
-        drawEQCurve();
+        if (typeof drawEQCurve === 'function') drawEQCurve();
         window.LGMDM?.previewController?.request?.();
       }
 

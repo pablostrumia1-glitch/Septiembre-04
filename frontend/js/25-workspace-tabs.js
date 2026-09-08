@@ -29,7 +29,7 @@
   }
 
   tabs.forEach((tab,i)=>{
-    const bind = window.LGMDM.ui.bindOnce;
+    const bind = window.LGMDM?.ui?.bindOnce;
     bind(tab,'click',()=>setWorkspace(tab.dataset.workspace),'workspace-click');
     bind(tab,'keydown',e=>{
       if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();tabs[(i+1)%tabs.length].focus();}
@@ -40,7 +40,7 @@
 
   // Existing chain buttons and sidebar pane links jump back to Console while opening the requested drawer/pane.
   document.querySelectorAll('.lg-chain-node[data-pane], .lg-chain-control-strip [data-stage]').forEach(el=>{
-    const bind = window.LGMDM.ui.bindOnce;
+    const bind = window.LGMDM?.ui?.bindOnce;
     bind(el,'click',()=>setWorkspace('console'),'workspace-jump');
   });
 
@@ -69,7 +69,7 @@
       note.textContent='Aplicar preset al motor y volver a consola.';
       const btn=document.createElement('button');
       btn.type='button'; btn.textContent='APLICAR PRESET';
-      const bind = window.LGMDM.ui.bindOnce;
+      const bind = window.LGMDM?.ui?.bindOnce;
       bind(btn,'click',()=>{src.click();setWorkspace('console');},'workspace-preset-apply');
       card.append(title,note,btn); presetGrid.appendChild(card);
     });

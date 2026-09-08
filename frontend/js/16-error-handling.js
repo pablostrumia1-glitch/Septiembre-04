@@ -89,9 +89,6 @@
   LGMDM.errors.normalize = normalizeError;
   LGMDM.errors.classify = classifyError;
   LGMDM.errors.userMessage = userMessage;
-  LGMDM.errors.validateInput = validateInput;
-  LGMDM.errors.fetchWithRetry = fetchWithRetry;
-  LGMDM.errors.showProgress = showProgress;
 
   LGMDM.html = LGMDM.html || {};
   LGMDM.html.escape = escapeHtml;
@@ -233,5 +230,8 @@
   };
 
   // ── Inicializar ──
+  LGMDM.errors.validateInput = validateInput;
+  LGMDM.errors.fetchWithRetry = fetchWithRetry;
+  LGMDM.errors.showProgress = showProgress;
 
 })();

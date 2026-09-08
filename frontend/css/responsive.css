@@ -50,14 +50,13 @@
   @media (max-width: 900px) {
     body {
       overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow-y: hidden;
     }
     .lg-app {
       height: auto;
       min-height: 100vh;
       min-height: 100dvh;
-      overflow: visible;
+      overflow: hidden;
     }
     .lg-header {
       grid-template-columns: minmax(0, 1fr) auto;
@@ -77,7 +76,7 @@
     .lg-app-body {
       grid-template-columns: minmax(0, 1fr);
       min-height: calc(100dvh - var(--lg-shell-header-h));
-      overflow: visible;
+      overflow: hidden;
     }
     .lg-sidebar {
       max-height: none;
@@ -95,7 +94,6 @@
     .lg-main-stack {
       padding: 8px;
       min-height: 40vh;
-      overflow: visible !important;
     }
     .sidebarResizeHandle {
       display: none;

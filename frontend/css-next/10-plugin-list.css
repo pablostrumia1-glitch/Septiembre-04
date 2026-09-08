@@ -5,7 +5,7 @@
    Monta dentro de .app-left__scroll
    ============================================================ */
 
-@layer plugin-list;
+@layer plugin-list {
 
 /* ── Contenedor raíz ─────────────────────────────────────────── */
 .pl-list {
@@ -254,4 +254,6 @@
 /* ── Transición de colapso ────────────────────────────────────── */
 .pl-family__rows[hidden] {
   display: none;
+}
+
 }

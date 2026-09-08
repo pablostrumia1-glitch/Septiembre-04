@@ -10,7 +10,7 @@
    - Nada activo DSP, solo estructura para futuros módulos
    ========================================== */
 
-@layer right-rack;
+@layer right-rack {
 
 /* ── Contenedor del rack derecho ────────────────────────────────── */
 .app-right {
@@ -54,4 +54,6 @@
 .app-right__scroll::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.28);
   border-radius: 2px;
+}
+
 }

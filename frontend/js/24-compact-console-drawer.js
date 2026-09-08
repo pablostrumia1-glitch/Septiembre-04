@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const bindOnce = window.LGMDM.ui.bindOnce;
+  const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
   const storageKey = 'lgmdm.drawer-width';
   function readSavedWidth(){
     try {

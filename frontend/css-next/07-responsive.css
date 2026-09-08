@@ -9,7 +9,7 @@
    - No se debe ocultar contenido sin una alternativa de navegación
    ========================================== */
 
-@layer responsive;
+@layer responsive {
 
 /* ── Breakpoint grande: tres columnas completas ──────────────────── */
 @media (min-width: 1200px) {
@@ -76,4 +76,5 @@
   .app-header__logout {
     font-size: 12px;
   }
+
 }

@@ -151,9 +151,63 @@
   function position(){if(!target||!tip.classList.contains('show'))return; const r=target.getBoundingClientRect(), w=320; let x=r.left, y=r.top-tip.offsetHeight-8; if(y<8)y=r.bottom+8; x=Math.max(8,Math.min(window.innerWidth-w-8,x)); tip.style.left=x+'px'; tip.style.top=y+'px';}
   document.addEventListener('mouseover',e=>{const el=e.target.closest('input[type="range"],select,button[data-engineer-tip]'); if(el)show(el);});
   document.addEventListener('mouseout',e=>{const el=e.target.closest('input[type="range"],select,button[data-engineer-tip]'); if(el&&(!e.relatedTarget||!el.contains(e.relatedTarget)))hide();});
-  const bindOnce = window.LGMDM.ui.bindOnce;
+  const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
   bindOnce(window,'scroll',position,'health-tip-scroll',{capture:true});
   bindOnce(window,'resize',position,'health-tip-resize');
   document.addEventListener('focusin',e=>{const el=e.target.closest('input[type="range"],select'); if(el)show(el);});
   document.addEventListener('focusout',e=>{if(e.target.matches('input[type="range"],select'))hide();});
+
+  // ── Health dropdown toggle (header) ──
+  const dropdown = document.getElementById('lgHealthDropdown');
+  const trigger = document.getElementById('lgHealthTrigger');
+  const dot = document.getElementById('lgHealthDot');
+  if (trigger && dropdown) {
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropdown.classList.toggle('open');
+      trigger.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dropdown.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+  // Actualizar dot color según estado
+  const origSetHealth = setHealth;
+  const _origSummary = checkHealth;
+  const patchDot = () => {
+    if (!dot) return;
+    const bad = Object.values(state).filter(v => v === 'error').length;
+    const warn = Object.values(state).filter(v => v === 'warn').length;
+    dot.classList.remove('warn', 'error');
+    if (bad) dot.classList.add('error');
+    else if (warn) dot.classList.add('warn');
+    // Actualizar texto del trigger
+    const triggerText = document.getElementById('lgHealthSummary');
+    if (triggerText) {
+      triggerText.textContent = bad ? `${bad} error${bad > 1 ? 's' : ''}` : warn ? `${warn} aviso${warn > 1 ? 's' : ''}` : 'OK';
+    }
+  };
+  // Patch checkHealth to also update dot
+  const origCheck = checkHealth;
+  const patchedCheck = async function() {
+    await origCheck.call(this);
+    patchDot();
+  };
+  // Rebind refresh button to patched version
+  const refreshBtn = document.getElementById('lgHealthRefresh');
+  if (refreshBtn) {
+    refreshBtn.removeEventListener('click', checkHealth);
+    refreshBtn.addEventListener('click', patchedCheck);
+  }
+  // Initial dot update after first check
+  setTimeout(patchDot, 100);
 })();

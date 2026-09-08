@@ -78,96 +78,14 @@
 .responsive-md { width: 90%; }
 .responsive-lg { width: 80%; }
 
-/* Focus states */
-:focus-visible { outline: 2px solid #00d2a0; outline-offset: 2px; }
-
 /* Border radius variants */
 .square { border-radius: 0; }
 .circular { border-radius: 50%; }
 
 /* Utility prefixes (optional - for custom themes) */
-.theme-* { 
-  opacity: 0.7; 
-  transition: opacity 0.2s; 
-}
-
-/* Print styles */
-.printable { page-break-inside: avoid; }
-
-/* Mobile adjustments */
-.mobile-only { display: none; }
-@media (max-width: 480px) {
-  .mobile-only { display: block; }
-}
-
-/* Spacing */
-.space-0 { margin: 0; padding: 0; }
-.space-1 { margin: 0.25rem; padding: 0.25rem; }
-.space-2 { margin: 0.5rem; padding: 0.5rem; }
-.space-3 { margin: 1rem; padding: 1rem; }
-.space-4 { margin: 1.5rem; padding: 1.5rem; }
-.space-5 { margin: 2rem; padding: 2rem; }
-
-/* Alignment */
-.align-start { text-align: left; }
-.align-center { text-align: center; }
-.align-end { text-align: right; }
-
-/* Borders */
-.bordered { border: 1px solid #ddd; }
-.bordered-inner { border: 1px solid #ddd; }
-.bordered-outside { border: 1px solid #ddd; }
-
-/* Gradients */
-.gradient-1 { background: linear-gradient(135deg, #1a1a2e, #16213e); }
-.gradient-2 { background: linear-gradient(135deg, #0f3460, #533483); }
-
-/* Radius */
-.rounded { border-radius: 4px; }
-.rounded-sm { border-radius: 2px; }
-.rounded-md { border-radius: 6px; }
-.rounded-lg { border-radius: 8px; }
-
-/* Shadows */
-.shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-.shadow-md { box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-.shadow-lg { box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-
-/* Text */
-.highlight { color: #fff; }
-.font-bold { font-weight: 600; }
-.font-medium { font-weight: 500; }
-.font-normal { font-weight: 400; }
-
-/* Links */
-.text-link { color: #007aff; text-decoration: none; }
-.text-link-active { color: #00d2a0; }
-
-/* Discrete elements */
-.checkbox { display: flex; align-items: center; }
-.checkbox-input { width: 16px; height: 16px; }
-
-/* Form elements */
-.form-field { display: flex; flex-direction: column; }
-.form-field label { margin-top: 0.5rem; font-weight: bold; }
-.form-field input, .form-field select, .form-field textarea { margin-top: 0; }
-
-/* Responsive */
-.responsive-sm { width: 100%; }
-.responsive-md { width: 90%; }
-.responsive-lg { width: 80%; }
-
-/* Focus states */
-:focus-visible { outline: 2px solid #00d2a0; outline-offset: 2px; }
-
-/* Border radius variants */
-.square { border-radius: 0; }
-.circular { border-radius: 50%; }
-
-/* Utility prefixes (optional - for custom themes) */
-.theme-* { 
-  opacity: 0.7; 
-  transition: opacity 0.2s; 
+.theme-* {
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
 /* Print styles */

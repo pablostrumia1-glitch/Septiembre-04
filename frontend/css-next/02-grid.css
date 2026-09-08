@@ -10,7 +10,7 @@
    - Nada de DSP, nada de colores de módulos
    ========================================== */
 
-@layer main-grid;
+@layer main-grid {
 
 /* ── Grid principal ─────────────────────────────────────────────── */
 .app-grid {
@@ -85,4 +85,6 @@
   clip: auto;
   white-space: nowrap;
   border: 0;
+}
+
 }

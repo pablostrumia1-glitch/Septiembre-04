@@ -36,7 +36,7 @@
    ============================================================ */
 /* CL-1: 'tokens' se eliminó porque @layer tokens estaba vacío y sus
    utilities se movieron a @layer utilities (99-utilities.css). */
-@layer variables, reset, main-grid, header, components, panel-left-shell, sidebar, studio-left, workspace-shell, workspace, console, console-master, studio-center, console-center-group-b, console-shell, pro-console, studio-right, studio-theme, auth-ai, stage-visibility, responsive, accessibility, utilities;
+@layer variables, reset, main-grid, left-panel, center-console, right-rack, resize, header, components, panel-left-shell, sidebar, studio-left, workspace-shell, workspace, console, console-master, studio-center, console-center-group-b, console-shell, pro-console, studio-right, studio-theme, auth-ai, plugin-list, stage-visibility, responsive, accessibility, utilities;
 
 /* ───────────────────────────────────────────────────────────────────────
    CONVENCIÓN DE PREFIJOS DE VARIABLES LOCALES (CL-3)

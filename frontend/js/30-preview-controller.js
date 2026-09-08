@@ -246,6 +246,7 @@
       limiter_meters: chainMeters?.limiter || {},
       glue_meters: chainMeters?.glue || {},
       mb_meters: chainMeters?.mb || {},
+      spectrum: chainMeters?.spectrum || null,
     };
   }
 

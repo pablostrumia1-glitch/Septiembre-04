@@ -1,4 +1,7 @@
-/* Product areas intentionally disabled for the current release. */
+/* Product areas intentionally disabled for the current release.
+   NO envolver en @layer: el !important sin capa tiene la máxima
+   precedencia en el cascade. Dentro de @layer perdería contra
+   reglas !important de capas anteriores. */
 [data-workspace="mixer"],
 .sidebar-pane-mixer,
 #mixerContentArea,
@@ -11,6 +14,9 @@
 #refPreviewPanel,
 #btnOpenRefLib,
 #quickReference,
-#proRefBtn {
+#proRefBtn,
+#pitchCorrectionPanel,
+#btnPitchCorrection,
+#quickPitch {
     display: none !important;
 }

@@ -11,7 +11,7 @@
      cargados después puedan insertar sus elementos
    ========================================== */
 
-@layer center-console;
+@layer center-console {
 
 /* ── Contenedor de la consola central ───────────────────────────── */
 .app-center {
@@ -55,4 +55,6 @@
 .app-center__scroll::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.28);
   border-radius: 2px;
+}
+
 }

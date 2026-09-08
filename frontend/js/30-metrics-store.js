@@ -15,16 +15,20 @@
     const copy = { ...metrics };
     if (Array.isArray(metrics.spectrum)) copy.spectrum = metrics.spectrum.slice();
     else if (metrics.spectrum && typeof metrics.spectrum === 'object') {
-      const bands = metrics.spectrum.bands_db || metrics.spectrum.values_db || metrics.spectrum.values || null;
+      const bands = metrics.spectrum.bands_db || metrics.spectrum.magnitudes_db || metrics.spectrum.values_db || metrics.spectrum.values || null;
       if (Array.isArray(bands)) copy.spectrum = bands.slice();
     }
     const chain = copy.chain_meters || copy.chainMeters || {};
     const comp = chain.comp || copy.comp_meters || {};
     const limiter = chain.limiter || copy.limiter_meters || {};
     const glue = chain.glue || copy.glue_meters || {};
+    const mb = chain.mb || copy.mb_meters || {};
     if (copy.comp_gr_db == null && comp.gr_db != null) copy.comp_gr_db = Number(comp.gr_db);
     if (copy.limiter_gr_db == null && limiter.gr_db != null) copy.limiter_gr_db = Number(limiter.gr_db);
     if (copy.glue_gr_db == null && glue.gr_db != null) copy.glue_gr_db = Number(glue.gr_db);
+    if (copy.mb_low_gr_db == null && mb.low_gr_db != null) copy.mb_low_gr_db = Number(mb.low_gr_db);
+    if (copy.mb_mid_gr_db == null && mb.mid_gr_db != null) copy.mb_mid_gr_db = Number(mb.mid_gr_db);
+    if (copy.mb_high_gr_db == null && mb.high_gr_db != null) copy.mb_high_gr_db = Number(mb.high_gr_db);
     return copy;
   }
 

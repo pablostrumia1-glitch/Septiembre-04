@@ -44,7 +44,7 @@
   function _applySearch(q) {
     q = q.trim().toLowerCase();
     _filtered = q
-      ? _entries.filter((e) => e.filename.toLowerCase().includes(q))
+      ? _entries.filter((e) => (e.filename || e.original_filename || '').toLowerCase().includes(q))
       : [..._entries];
     _renderList();
   }

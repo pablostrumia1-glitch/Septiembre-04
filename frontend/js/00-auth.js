@@ -89,7 +89,7 @@
     }
 
     if (headerLogout) {
-      const bindOnce = window.LGMDM.ui.bindOnce;
+      const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
       bindOnce(headerLogout, 'click', () => {
         clearSession();
         location.reload();
@@ -110,7 +110,7 @@
     logoutBtn.textContent = 'Cerrar sesión';
     bar.append(nameSpan, logoutBtn);
     (document.querySelector('header') || document.body).appendChild(bar);
-    const bindOnce = window.LGMDM.ui.bindOnce;
+    const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
     bindOnce(logoutBtn, 'click', () => {
       clearSession();
       location.reload();
@@ -223,16 +223,16 @@
   function bindAuthEvents() {
     // Tabs
     document.getElementById('tab-login')?.addEventListener('click', () => {
-      document.getElementById('form-login').classList.remove('lgjs-hidden');
-      document.getElementById('form-register').classList.add('lgjs-hidden');
-      document.getElementById('tab-login').classList.add('active');
-      document.getElementById('tab-register').classList.remove('active');
+      document.getElementById('form-login')?.classList.remove('lgjs-hidden');
+      document.getElementById('form-register')?.classList.add('lgjs-hidden');
+      document.getElementById('tab-login')?.classList.add('active');
+      document.getElementById('tab-register')?.classList.remove('active');
     });
     document.getElementById('tab-register')?.addEventListener('click', () => {
-      document.getElementById('form-login').classList.add('lgjs-hidden');
-      document.getElementById('form-register').classList.remove('lgjs-hidden');
-      document.getElementById('tab-login').classList.remove('active');
-      document.getElementById('tab-register').classList.add('active');
+      document.getElementById('form-login')?.classList.add('lgjs-hidden');
+      document.getElementById('form-register')?.classList.remove('lgjs-hidden');
+      document.getElementById('tab-login')?.classList.remove('active');
+      document.getElementById('tab-register')?.classList.add('active');
     });
 
     // Login

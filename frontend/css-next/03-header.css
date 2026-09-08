@@ -11,7 +11,7 @@
    - Un solo namespace: .app-header__*
    ========================================== */
 
-@layer header;
+@layer header {
 
 /* ── Contenedor del header ──────────────────────────────────────── */
 .app-header {
@@ -124,4 +124,6 @@
 /* Estado dragging (aplicado por JS) */
 .app-header__resize-handle.dragging {
   background: rgba(255,255,255,0.05);
+}
+
 }

@@ -20,7 +20,7 @@
   }
 
   const LG = window.LGMDM = window.LGMDM || {};
-  const bindOnce = LG.ui.bindOnce;
+  const bindOnce = LG?.ui?.bindOnce;
   const runtime = window.LGMDM?.mixerEngine;
   if (!runtime) throw new Error('LGMDM mixer engine no inicializado');
   const { cachedEl, invalidateCachedEl, mixerState, previewEngine, serverPreview, getGenUUID,
@@ -1593,7 +1593,7 @@ function requireChannelChild(parent, selector, owner) {
 
 
   if (document.readyState === 'loading') {
-    (LG.ui.bindOnce)(document, 'DOMContentLoaded', init, 'mixer-ui-dom-ready', { once: true });
+    (LG?.ui?.bindOnce)(document, 'DOMContentLoaded', init, 'mixer-ui-dom-ready', { once: true });
   } else {
     init();
   }

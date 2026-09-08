@@ -215,26 +215,7 @@
     const panel = document.createElement('div');
     panel.id = 'history-panel';
     panel.className = "history-panel";
-  /* remaining runtime styles are defined in lgmdm.css */
-  panel.dataset.historyPanel = "true";
-  panel.style.cssText = `
-      position: fixed;
-      top: 60px;
-      right: 0;
-      width: 280px;
-      max-height: 400px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-left: 2px solid var(--accent);
-      border-radius: 8px;
-      padding: 12px;
-      z-index: 8999;
-      box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.3);
-      font-family: var(--sans);
-      font-size: 0.85em;
-      color: var(--text);
-      display: none;
-    `;
+    panel.dataset.historyPanel = "true";
 
     panel.innerHTML = `
       <div class="history-panel__header">
@@ -266,23 +247,8 @@
 
         history.undo.slice().reverse().forEach(item => {
           const li = document.createElement('div');
-          li.style.cssText = `
-            padding: 4px 8px;
-            background: var(--surface3);
-            border-radius: 4px;
-            margin-bottom: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.8em;
-          `;
           li.textContent = `• ${item.label}`;
           li.addEventListener('click', window.LGMDM.undo.undoLastChange);
-          li.addEventListener('mouseenter', () => {
-            li.style.background = 'var(--border)';
-          });
-          li.addEventListener('mouseleave', () => {
-            li.style.background = 'var(--surface3)';
-          });
           list.appendChild(li);
         });
       }
@@ -291,28 +257,13 @@
       if (history.redo.length > 0) {
         const redoTitle = document.createElement('div');
         redoTitle.textContent = '🔜 Rehacer';
-        redoTitle.style.cssText = 'font-weight: 600; margin: 12px 0 4px 0; color: var(--vu-green);';
+        redoTitle.className = 'undo-history-title';
         list.appendChild(redoTitle);
 
         history.redo.slice().reverse().forEach(item => {
           const li = document.createElement('div');
-          li.style.cssText = `
-            padding: 4px 8px;
-            background: var(--surface3);
-            border-radius: 4px;
-            margin-bottom: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.8em;
-          `;
           li.textContent = `• ${item.label}`;
           li.addEventListener('click', window.LGMDM.undo.redoLastChange);
-          li.addEventListener('mouseenter', () => {
-            li.style.background = 'var(--border)';
-          });
-          li.addEventListener('mouseleave', () => {
-            li.style.background = 'var(--surface3)';
-          });
           list.appendChild(li);
         });
       }
@@ -320,7 +271,7 @@
       if (history.undo.length === 0 && history.redo.length === 0) {
         const empty = document.createElement('div');
         empty.textContent = 'Sin historial aún';
-        empty.style.cssText = 'color: var(--muted); text-align: center; padding: 16px 0;';
+        empty.className = 'history-panel__empty';
         list.appendChild(empty);
       }
     });
@@ -366,7 +317,6 @@
   }
 
   // ── Agregar atajo Ctrl+H para mostrar historial ──
-  const originalKeydownHandler = document.onkeydown;
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
       e.preventDefault();

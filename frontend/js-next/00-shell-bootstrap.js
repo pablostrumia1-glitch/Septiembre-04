@@ -22,7 +22,7 @@
   const LGMDM = window.LGMDM = window.LGMDM || {};
 
   // ── Verificar que LGMDM.ui.makeResizable esté disponible ────────
-  if (typeof LGMDM.ui !== 'function' && typeof LGMDM.ui.makeResizable !== 'function') {
+  if (!LGMDM.ui || typeof LGMDM.ui.makeResizable !== 'function') {
     console.warn('00-shell-bootstrap: LGMDM.ui.makeResizable no disponible');
     return;
   }
@@ -164,6 +164,52 @@
   left.appendChild(leftHeader);
   left.appendChild(leftScroll);
   left.appendChild(leftStyle);
+
+  // Center console — creado antes de los slots que lo referencian
+  const center = document.createElement('section');
+  center.className = 'app-center';
+  center.style.display = 'flex';
+  center.style.flexDirection = 'column';
+  center.style.width = '100%';
+  center.style.backgroundColor = 'var(--s, #0b0e18)';
+  center.style.minHeight = '0';
+
+  const centerHeader = document.createElement('div');
+  centerHeader.className = 'app-center__header';
+  centerHeader.style.padding = '8px var(--app-layout-gap, 10px)';
+  centerHeader.style.gap = 'var(--app-layout-gap, 10px)';
+  centerHeader.style.backgroundColor = 'var(--s2, #12182a)';
+  centerHeader.style.borderBottom = '1px solid var(--line, rgba(148, 163, 184, 0.18))';
+  centerHeader.style.color = 'var(--muted, #a8b2c0)';
+  centerHeader.style.fontSize = '12px';
+  centerHeader.style.whiteSpace = 'nowrap';
+  centerHeader.textContent = 'Consola Central';
+
+  const centerScroll = document.createElement('div');
+  centerScroll.className = 'app-center__scroll';
+  centerScroll.style.flex = '1';
+  centerScroll.style.overflowY = 'auto';
+  centerScroll.style.WebkitOverflowScrolling = 'touch';
+  centerScroll.style.msOverflowStyle = 'none';
+  centerScroll.style.scrollbarWidth = 'none';
+
+  // Scrollbar WebKit
+  const centerStyle = document.createElement('style');
+  centerStyle.textContent = `
+    .app-center__scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+      background: transparent;
+    }
+    .app-center__scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.28);
+      border-radius: 2px;
+    }
+  `;
+
+  center.appendChild(centerHeader);
+  center.appendChild(centerScroll);
+  center.appendChild(centerStyle);
 
   // ── Slot: Upload / Biblioteca de tracks (panel izquierdo) ────────
   const uploadSlot = document.createElement('div');
@@ -330,52 +376,6 @@
   right.appendChild(rightHeader);
   right.appendChild(rightScroll);
   right.appendChild(rightStyle);
-
-  // Center console
-  const center = document.createElement('section');
-  center.className = 'app-center';
-  center.style.display = 'flex';
-  center.style.flexDirection = 'column';
-  center.style.width = '100%';
-  center.style.backgroundColor = 'var(--s, #0b0e18)';
-  center.style.minHeight = '0';
-
-  const centerHeader = document.createElement('div');
-  centerHeader.className = 'app-center__header';
-  centerHeader.style.padding = '8px var(--app-layout-gap, 10px)';
-  centerHeader.style.gap = 'var(--app-layout-gap, 10px)';
-  centerHeader.style.backgroundColor = 'var(--s2, #12182a)';
-  centerHeader.style.borderBottom = '1px solid var(--line, rgba(148, 163, 184, 0.18))';
-  centerHeader.style.color = 'var(--muted, #a8b2c0)';
-  centerHeader.style.fontSize = '12px';
-  centerHeader.style.whiteSpace = 'nowrap';
-  centerHeader.textContent = 'Consola Central';
-
-  const centerScroll = document.createElement('div');
-  centerScroll.className = 'app-center__scroll';
-  centerScroll.style.flex = '1';
-  centerScroll.style.overflowY = 'auto';
-  centerScroll.style.WebkitOverflowScrolling = 'touch';
-  centerScroll.style.msOverflowStyle = 'none';
-  centerScroll.style.scrollbarWidth = 'none';
-
-  // Scrollbar WebKit
-  const centerStyle = document.createElement('style');
-  centerStyle.textContent = `
-    .app-center__scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-      background: transparent;
-    }
-    .app-center__scroll::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.28);
-      border-radius: 2px;
-    }
-  `;
-
-  center.appendChild(centerHeader);
-  center.appendChild(centerScroll);
-  center.appendChild(centerStyle);
 
   // Resize handles
   const leftHandle = document.createElement('div');

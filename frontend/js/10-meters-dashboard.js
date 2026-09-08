@@ -146,7 +146,7 @@ previewTriggerIds.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
   const evt = el.tagName === "SELECT" || el.type === "checkbox" ? "change" : "input";
-  const bind = window.LGMDM.ui.bindOnce;
+  const bind = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); return true; });
   bind(el, evt, () => window.LGMDM?.previewController?.request?.(), `preview-${evt}`);
 });
 
@@ -155,20 +155,21 @@ let dashboardWS = null,
   dashboardPollTimer = null;
 
 function renderDashboard(stats) {
-  LGMDM.dom.cachedEl("dashCpu").textContent = stats.cpu_percent.toFixed(1) + "%";
-  LGMDM.dom.cachedEl("dashCpuBar").style.width = Math.min(100, stats.cpu_percent) + "%";
-  LGMDM.dom.cachedEl("dashRam").textContent = stats.ram_percent.toFixed(1) + "%";
-  LGMDM.dom.cachedEl("dashRamBar").style.width = Math.min(100, stats.ram_percent) + "%";
-  LGMDM.dom.cachedEl("dashQueueTotal").textContent = stats.queue.total;
-  LGMDM.dom.cachedEl("dashQueued").textContent = `en cola: ${stats.queue.queued}`;
-  LGMDM.dom.cachedEl("dashProcessing").textContent = `procesando: ${stats.queue.processing}`;
+  const el = (id) => LGMDM.dom.cachedEl(id);
+  el("dashCpu")?.textContent && (el("dashCpu").textContent = stats.cpu_percent.toFixed(1) + "%");
+  el("dashCpuBar")?.style && (el("dashCpuBar").style.width = Math.min(100, stats.cpu_percent) + "%");
+  el("dashRam")?.textContent && (el("dashRam").textContent = stats.ram_percent.toFixed(1) + "%");
+  el("dashRamBar")?.style && (el("dashRamBar").style.width = Math.min(100, stats.ram_percent) + "%");
+  el("dashQueueTotal")?.textContent && (el("dashQueueTotal").textContent = stats.queue.total);
+  el("dashQueued")?.textContent && (el("dashQueued").textContent = `en cola: ${stats.queue.queued}`);
+  el("dashProcessing")?.textContent && (el("dashProcessing").textContent = `procesando: ${stats.queue.processing}`);
   if (stats.active_job) {
     const eta = stats.active_job.eta_sec;
-    LGMDM.dom.cachedEl("dashEta").textContent = eta != null ? `~${eta}s restante` : "Procesando…";
-    LGMDM.dom.cachedEl("dashActiveFile").textContent = stats.active_job.filename || "";
+    el("dashEta")?.textContent && (el("dashEta").textContent = eta != null ? `~${eta}s restante` : "Procesando…");
+    el("dashActiveFile")?.textContent && (el("dashActiveFile").textContent = stats.active_job.filename || "");
   } else {
-    LGMDM.dom.cachedEl("dashEta").textContent = "Inactivo";
-    LGMDM.dom.cachedEl("dashActiveFile").textContent = "";
+    el("dashEta")?.textContent && (el("dashEta").textContent = "Inactivo");
+    el("dashActiveFile")?.textContent && (el("dashActiveFile").textContent = "");
   }
 }
 
@@ -231,7 +232,7 @@ async function startDashboard() {
   }
 }
 
-const dashboardBindOnce = window.LGMDM.ui.bindOnce;
+const dashboardBindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
 dashboardBindOnce(LGMDM.dom.cachedEl('dashToggle'), 'click', () => {
   const body = LGMDM.dom.cachedEl("dashboardBody");
   const hidden = body.style.display === "none";

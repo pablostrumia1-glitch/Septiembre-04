@@ -72,4 +72,17 @@
     isDesktop() { return global.innerWidth >= 960; },
   };
   Object.assign(dom, api);
+
+  // bindOnce: registra un listener con key para evitar duplicados.
+  // Si ya existe un listener con la misma key, no agrega otro.
+  const ui = LG.ui = LG.ui || {};
+  const _bindOnceKeys = new WeakMap();
+  ui.bindOnce = function bindOnce(el, type, fn, key, opts) {
+    if (!el || typeof fn !== 'function') return false;
+    const keyMap = _bindOnceKeys.get(el) || (_bindOnceKeys.set(el, {}), _bindOnceKeys.get(el));
+    if (key && keyMap[key]) return false;
+    el.addEventListener(type, fn, opts);
+    if (key) keyMap[key] = true;
+    return true;
+  };
 })(window);

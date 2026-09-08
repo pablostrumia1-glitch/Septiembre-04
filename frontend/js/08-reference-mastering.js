@@ -12,7 +12,6 @@
   LGMDM.polling.reference = null;
 
 // ============================================================
-LGMDM.reference = LGMDM.reference || {};
 // 08-reference-mastering.js — Master con referencia, bandas EQ dinámicas, preview en vivo, análisis
 // ============================================================
 
@@ -73,7 +72,53 @@ function collectReferenceParamsObj() {
     max_target_lufs: parseFloat(LGMDM.dom.requireById("s-ref-max-lufs", "08-reference-mastering")?.value || "-12"),
   };
 }
-const REF_PARAM_LABELS = { /* ... igual que antes ... */ };
+const REF_PARAM_LABELS = {
+  eq_max_boost_db: "EQ max boost (dB)",
+  eq_max_cut_db: "EQ max cut (dB)",
+  eq_fit_method: "EQ fit method",
+  match_loudness: "Match loudness",
+  match_dynamics: "Match dynamics",
+  match_stereo_width: "Match stereo width",
+  match_transient: "Match transient",
+  match_sub_bass: "Match sub-bass",
+  match_desser: "Match de-esser",
+  match_saturation: "Match saturation",
+  output_format: "Formato salida",
+  output_bit_depth: "Bit depth",
+  dither_mode: "Modo de dither",
+  dynamics_margin_db: "Dynamics margin (dB)",
+  stereo_blend: "Stereo blend",
+  band_gains_array: "Band gains",
+  ms_eq_matching: "EQ M/S matching",
+  adaptive_loudness_weighting: "LUFS adaptativo al oído",
+  loudness_sensitivity_amount: "Sensibilidad auditiva 3-6kHz",
+  premium_match_profile: "Premium profile",
+  premium_vocal_protect: "Vocal protect",
+  premium_translation_check: "Translation check",
+  premium_alt_versions: "Alt versions",
+  iterative_eq_passes: "EQ passes",
+  match_crest: "Match crest factor",
+  crest_amount: "Crest amount",
+  match_spectral_dynamics: "Match spectral dynamics",
+  spectral_dynamics_amount: "Spectral dynamics amount",
+  spectral_dynamics_bins: "Spectral dynamics bins",
+  loudness_target_lufs: "LUFS target fijo",
+  use_parallel_compression: "Compresión paralela",
+  parallel_mix: "Parallel mix",
+  parallel_threshold_db: "Parallel threshold (dB)",
+  parallel_ratio: "Parallel ratio",
+  parallel_makeup_db: "Parallel makeup (dB)",
+  use_multiband_saturation: "Saturación multibanda",
+  mb_sat_mix: "MB sat mix",
+  mb_sat_low_drive: "MB sat low drive",
+  mb_sat_mid_drive: "MB sat mid drive",
+  mb_sat_high_drive: "MB sat high drive",
+  mb_sat_mode: "MB saturation mode",
+  use_two_stage_limiter: "Limiter dos etapas",
+  gentle_ceiling_db: "Gentle ceiling (dB)",
+  gentle_release_ms: "Gentle release (ms)",
+  max_target_lufs: "Max target LUFS",
+};
 
 async function submitReferenceMasterJob() {
   LGMDM.ui.clearResults();
@@ -269,7 +314,7 @@ LGMDM.reference.bandEQ = (function() {
     const gains = curve.map(p => p.gain_db);
     const MAX_G = Math.max(6, ...gains.map(Math.abs));
     ctx.beginPath();
-    ctx.strokeStyle = "var(--accent2, #06b6d4)";
+    ctx.strokeStyle = themeColors().get('--accent2') || '#06b6d4';
     ctx.lineWidth = 1.5;
     curve.forEach((p, i) => {
       const x = (i / (curve.length - 1)) * W;
@@ -537,7 +582,7 @@ function startReferencePolling(jobId) {
             btn.disabled = true;
             await LGMDM.api.downloadAuthenticated(downloadUrl + currentTrackNameParam(), { filename: "reference-master.wav" });
           } catch (e) {
-            if (typeof handleClientError === "function") handleClientError(e, "No se pudo descargar el master de referencia.", { context: "reference-download" });
+            if (typeof window.LGMDM?.errors?.handleClientError === "function") window.LGMDM.errors.handleClientError(e, "No se pudo descargar el master de referencia.", { context: "reference-download" });
             else window.LGMDM.ui.showToast?.(e.message || "No se pudo descargar el master de referencia.", "error");
           } finally { btn.disabled = false; }
         };
@@ -580,8 +625,7 @@ function startReferencePolling(jobId) {
         const rBtn = LGMDM.dom.requireById("btnReport", "08-reference-mastering");
         rBtn.style.display = "block";
         rBtn.onclick = () => downloadReport(jobId);
-        if (data.analysis_before?.lufs != null)
-          showLoudnessMeter(data.analysis_after?.lufs ?? data.analysis_before.lufs);
+        // showLoudnessMeter eliminado: función no existía en ningún módulo
         if (data.reference_match) renderReferenceMatch(data.reference_match, data.analysis_reference, data.analysis_after);
         renderAnalysisComparison(data.analysis_before, data.analysis_after);
         if (data.analysis_reference?.fft_spectrum && data.analysis_after?.fft_spectrum) {
@@ -711,8 +755,8 @@ function renderReferenceAnalysisPanel(refAnalysis, ownAnalysis, rm) {
       ctx.clearRect(0, 0, W, H);
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(0, ZERO); ctx.lineTo(W, ZERO); ctx.stroke();
-      [[rm.eq_curve_mid_db, 'var(--accent2,#06b6d4)'],
-       [rm.eq_curve_side_db, 'var(--accent,#7c3aed)']].forEach(([curve, color]) => {
+      [[rm.eq_curve_mid_db, themeColors().get('--accent2') || '#06b6d4'],
+       [rm.eq_curve_side_db, themeColors().get('--accent') || '#7c3aed']].forEach(([curve, color]) => {
         if (!curve || !curve.length) return;
         const gains = curve.map(p => p.gain_db);
         const maxG = Math.max(6, ...gains.map(Math.abs));
@@ -936,7 +980,8 @@ async function captureAB(slot) {
   const fd = new FormData();
   fd.append("file", selectedFile);
   try {
-    const params = buildParams();
+    const buildFn = (window.LGMDM?.params?.build) || window.buildParams;
+    const params = buildFn ? buildFn() : new URLSearchParams();
     params.set("preview_seconds", "10");
     const url = `${LGMDM.api.apiBase()}/preview?${params.toString()}`;
     const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });

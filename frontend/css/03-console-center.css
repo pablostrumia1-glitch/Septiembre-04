@@ -95,7 +95,7 @@
     padding: 6px 14px;
     border-radius: 4px;
     cursor: pointer;
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
     transition: all 0.15s;
   }
 
@@ -197,7 +197,7 @@
   .lg-panel-head strong {
     display: block;
     color: var(--v4-text);
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
   }
 
   .lg-readouts {
@@ -212,7 +212,7 @@
 
   .lg-readouts b {
     color: var(--v4-text);
-    font: 800 13px var(--v4-mono);
+    font: 800 12px var(--v4-mono);
   }
 
   .lg-readouts small {
@@ -601,7 +601,7 @@
     align-items: center;
     gap: 6px;
     color: var(--v4-text-2);
-    font: 600 13px var(--v4-mono);
+    font: 600 12px var(--v4-mono);
   }
   /* .lg-status-dot → 02-header.css */
 
@@ -641,7 +641,7 @@
   .lg-workspace-preset-head p {
     margin: 0;
     color: var(--v4-muted);
-    font: 600 13px var(--v4-mono);
+    font: 600 12px var(--v4-mono);
   }
 
   .lg-workspace-presets-grid {
@@ -665,7 +665,7 @@
     border-radius: 4px 4px 0 0;
     background: transparent;
     color: var(--v4-muted);
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -940,22 +940,6 @@
     color: var(--v4-dim);
     font: 500 10px/1.3 var(--v4-mono);
   }
-
-  .ai-fab {
-    display: none !important;
-  }
-
-  .ai-fab-dot {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--v4-accent);
-    box-shadow: 0 0 6px var(--v4-accent);
-    pointer-events: none;
-  }
 }
 
 /* Dashboard y health */
@@ -974,7 +958,7 @@
     gap: 6px;
     margin: 0 0 8px;
     color: var(--v4-text-2);
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
     text-transform: uppercase;
     letter-spacing: .06em;
   }
@@ -1011,7 +995,7 @@
 
   .dash-value {
     color: var(--v4-text);
-    font: 800 13px var(--v4-mono);
+    font: 800 12px var(--v4-mono);
   }
 
   .dash-value--eta {
@@ -1108,7 +1092,7 @@
     justify-content: space-between;
     margin-bottom: 8px;
     color: var(--v4-text-2);
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
     text-transform: uppercase;
     letter-spacing: .06em;
   }
@@ -1129,7 +1113,7 @@
   .lg-health-item b {
     display: block;
     color: var(--v4-text);
-    font: 700 13px var(--v4-mono);
+    font: 700 12px var(--v4-mono);
   }
 
   .lg-health-item small {
@@ -1338,8 +1322,8 @@
   #consoleTrackTitle { font-size: 14px; font-weight: 900; }
   #consoleTrackMeta, #consoleStatus { color: var(--muted); font-size: 10px; }
   #consoleAnalyzeBtn, #consoleMasterBtn, #consoleAnalyzeSmall, #consoleMasterSmall {
-    min-height: 32px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--s3); font-size: 13px; font-weight: 900;
+    min-height: 28px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--v4-border);
+    background: var(--v4-panel-3, var(--s3)); font: 700 12px var(--v4-mono);
   }
 }
 @layer console-center-group-b {

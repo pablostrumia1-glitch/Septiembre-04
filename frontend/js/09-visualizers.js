@@ -415,7 +415,7 @@ function _abGetCtx() {
 }
 
 function _abCurrentPosition() {
-  const ctx = window.LGMDM.state.audio.context;
+  const ctx = window.LGMDM?.state?.audio?.context;
   if (!_abPlaying || !ctx) return _abOffset;
   return _abOffset + (ctx.currentTime - _abStartTime);
 }
@@ -456,7 +456,7 @@ function _abSetMode(mode) {
   if (_abPlaying && buf) {
     _abStop();
     _abPlay(buf, pos);
-    const ctx = window.LGMDM.state.audio.context;
+    const ctx = window.LGMDM?.state?.audio?.context;
     if (_abGain && ctx) {
       _abGain.gain.cancelScheduledValues(ctx.currentTime);
       _abGain.gain.setValueAtTime(1, ctx.currentTime);
@@ -469,17 +469,17 @@ function _abSetMode(mode) {
 
 function _abToggle() {
   const pos = _abCurrentPosition();
-  const ctx = window.LGMDM.state.audio.context;
+  const ctx = window.LGMDM?.state?.audio?.context;
   _abMode = _abMode === "master" ? "original" : "master";
   const buf = _abMode === "master" ? _abMasterBuf : _abOriginalBuf;
   if (_abPlaying) {
     // Fade out suave 30ms, cambia buffer, fade in — sin corte audible
-    if (_abGain) {
+    if (_abGain && ctx) {
       _abGain.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
       setTimeout(() => {
         _abPlay(buf, pos);
-        const currentCtx = window.LGMDM.state.audio.context;
-        if (currentCtx) _abGain.gain.setTargetAtTime(1, currentCtx.currentTime, 0.015);
+        const currentCtx = window.LGMDM?.state?.audio?.context;
+        if (currentCtx && _abGain) _abGain.gain.setTargetAtTime(1, currentCtx.currentTime, 0.015);
         _updateABUI();
       }, 40);
     } else {

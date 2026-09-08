@@ -10,7 +10,7 @@
    - Nada de DSP, nada de colores de módulos complejos
    ========================================== */
 
-@layer left-panel;
+@layer left-panel {
 
 /* ── Contenedor del panel izquierdo ─────────────────────────────── */
 .app-left {
@@ -56,4 +56,6 @@
 .app-left__scroll::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.28);
   border-radius: 2px;
+}
+
 }

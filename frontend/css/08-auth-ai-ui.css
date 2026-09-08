@@ -10,7 +10,6 @@
 .auth-msg.error{color:var(--danger)}
 .auth-msg.success{color:var(--ok)}
 #auth-user-bar{position:absolute;right:12px;top:calc(100% + 8px);z-index:90;display:flex;gap:8px;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:10px;background:var(--s2);box-shadow:0 12px 24px rgba(2,4,9,.4)}
-.ai-fab{position:fixed;right:22px;bottom:22px;z-index:100;width:50px;height:50px;border:1px solid rgba(139,210,232,.45);border-radius:50%;background:linear-gradient(135deg,var(--p),var(--p2))}
 .ai-panel{position:fixed;right:22px;bottom:82px;z-index:99;width:var(--ai-panel-w, 380px);max-width:calc(100vw - 28px);max-height:var(--ai-panel-h, 620px);height:auto;display:flex;flex-direction:column;border:1px solid rgba(142,129,200,.20);border-radius:12px;background:var(--s2)}
 
 /* Handle de resize del panel de Laia — esquina superior izquierda.
@@ -44,7 +43,4 @@
   border-color:var(--p);
 }
 .ai-panel.hidden{display:none!important}
-
-/* ── Alias Grupo A ── */
-.hidden-input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; clip:rect(0 0 0 0); pointer-events:none; }
 }

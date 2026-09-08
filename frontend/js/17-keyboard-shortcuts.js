@@ -160,7 +160,7 @@
 
         try {
           action.handler(e);
-          window.LGMDM?.a11y?.announce?.(`Atalajo ejecutado: ${action.label}`, 'assertive');
+          window.LGMDM?.a11y?.announce?.(`Atajo ejecutado: ${action.label}`, 'assertive');
         } catch (err) {
           console.error(`Error executing shortcut "${shortcut}":`, err);
           window.LGMDM.ui.showToast?.(`Error ejecutando atajo: ${err.message}`, 'error');
@@ -354,9 +354,7 @@
   // ── Help indicator ──
   function addHelpIndicator() {
     if (document.getElementById('lgmdm-shortcut-help')) return;
-    if (document.getElementById('lgmdm-shortcut-help')) return;
     const indicator = document.createElement('div');
-    indicator.id = 'lgmdm-shortcut-help';
     indicator.id = 'lgmdm-shortcut-help';
     indicator.style.cssText = `
       position: fixed;

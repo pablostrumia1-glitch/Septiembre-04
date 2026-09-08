@@ -27,20 +27,29 @@
   function normalizeBands(input){
     if (Array.isArray(input)) return input.slice();
     if (input && typeof input === 'object') {
-      const bands = input.bands_db || input.values_db || input.values;
+      const bands = input.bands_db || input.magnitudes_db || input.values_db || input.values;
       return Array.isArray(bands) ? bands.slice() : null;
     }
     return null;
   }
   function setData(bands){ state.last=normalizeBands(bands); state.dirty=true; schedule(); }
+  function clear(){ state.last=null; state.dirty=false; schedule(); }
   function draw(){ state.raf=0; if(!state.last) return; const ws=document.body.dataset.workspace||'console'; const canvas = ws==='analysis'?document.getElementById(state.analysisCanvasId):document.getElementById(state.consoleCanvasId); drawCanvas(canvas,state.last); state.dirty=false; }
   function schedule(){ if(!state.raf) state.raf=requestAnimationFrame(draw); }
   function redraw(){ schedule(); }
   function init(){
     if(init.done) return; init.done=true;
-    LG.spectrum = Object.assign(LG.spectrum || {}, { setData, redraw, drawCanvas });
-    const bind=LG.ui.bindOnce;
+    LG.spectrum = Object.assign(LG.spectrum || {}, { setData, clear, redraw, drawCanvas });
+    const bind = LG.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
     bind(global,'resize',schedule,'spectrum-resize',{passive:true});
+    const store = LG.metrics;
+    if (store?.subscribe) {
+      store.subscribe(({ metrics }) => {
+        if (!metrics) return;
+        const sp = metrics.spectrum;
+        if (sp != null) setData(sp);
+      });
+    }
   }
   init();
 })(window);

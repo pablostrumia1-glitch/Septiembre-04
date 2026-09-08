@@ -6,6 +6,7 @@
 (function () {
   const PC_PANEL_ID = 'pitchCorrectionPanel';
   const PC_MODES = ['OFF', 'LIGHT', 'MEDIUM', 'STRONG'];
+  let _pcListenersBound = false;
 
 
   function createPitchCorrectionPanel() {
@@ -29,8 +30,7 @@
           <label class="lgjs-s-a4c301cf" id="pcModeLabel">Mode</label>
           <div class="lgjs-s-de2ef6e2" role="radiogroup" aria-labelledby="pcModeLabel">
             ${PC_MODES.map(m => `
-              <button type="button" data-mode="${m}" role="radio" aria-checked="${m === 'MEDIUM' ? 'true' : 'false'}" aria-label="Pitch correction mode: ${m}" style="padding:.5rem;background:var(--surface2);border:2px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-weight:${m==='MEDIUM'?'bold':'normal'};transition:all 200ms"
-                ${m==='MEDIUM'?' class="lgjs-s-65dc0d12"':''}>
+              <button type="button" class="pc-mode-btn${m === 'MEDIUM' ? ' lgjs-s-65dc0d12' : ''}" data-mode="${m}" data-selected="${m === 'MEDIUM' ? 'true' : 'false'}" role="radio" aria-checked="${m === 'MEDIUM' ? 'true' : 'false'}" aria-label="Pitch correction mode: ${m}" style="padding:.5rem;background:var(--surface2);border:2px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-weight:${m==='MEDIUM'?'bold':'normal'};transition:all 200ms">
                 ${m}
               </button>
             `).join('')}
@@ -110,29 +110,34 @@
     // Cargar librería de stems
     loadPitchCorrectionLibrary();
 
-    // Listeners
-    document.getElementById('pitchCorrectionClose')?.addEventListener('click', () => {
-      panel.style.display = 'none';
-    });
-
-    document.querySelectorAll('.pc-mode-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.pc-mode-btn').forEach(b => {
-          b.style.borderColor = 'var(--border)';
-          b.style.color = 'var(--text)';
-          b.setAttribute('aria-checked', 'false'); // A5: sincronizar aria-checked
-        });
-        e.target.style.borderColor = 'var(--amber)';
-        e.target.style.color = 'var(--amber)';
-        e.target.setAttribute('aria-checked', 'true');
+    // Listeners (solo la primera vez)
+    if (!_pcListenersBound) {
+      _pcListenersBound = true;
+      document.getElementById('pitchCorrectionClose')?.addEventListener('click', () => {
+        panel.style.display = 'none';
       });
-    });
 
-    document.getElementById('pitchCorrectionGlide')?.addEventListener('input', (e) => {
-      LGMDM.dom.requireById('pitchCorrectionGlideVal', '14-pitch-correction:glide').textContent = e.target.value + 'ms';
-    });
+      document.querySelectorAll('.pc-mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.pc-mode-btn').forEach(b => {
+            b.style.borderColor = 'var(--border)';
+            b.style.color = 'var(--text)';
+            b.setAttribute('aria-checked', 'false');
+            b.setAttribute('data-selected', 'false');
+          });
+          e.target.style.borderColor = 'var(--amber)';
+          e.target.style.color = 'var(--amber)';
+          e.target.setAttribute('aria-checked', 'true');
+          e.target.setAttribute('data-selected', 'true');
+        });
+      });
 
-    document.getElementById('pitchCorrectionApply')?.addEventListener('click', applyPitchCorrection);
+      document.getElementById('pitchCorrectionGlide')?.addEventListener('input', (e) => {
+        LGMDM.dom.requireById('pitchCorrectionGlideVal', '14-pitch-correction:glide').textContent = e.target.value + 'ms';
+      });
+
+      document.getElementById('pitchCorrectionApply')?.addEventListener('click', applyPitchCorrection);
+    }
   }
 
   function loadPitchCorrectionLibrary() {
@@ -186,7 +191,6 @@
     formData.append('glide_time_ms', glideTime);
     formData.append('output_format', format);
 
-    const token = LGMDM.api.authToken();
     const api = LGMDM.api.apiBase();
 
     try {
@@ -195,7 +199,6 @@
 
       const response = await LGMDM.api.apiFetch(`${api}/pitch-correct`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
 
