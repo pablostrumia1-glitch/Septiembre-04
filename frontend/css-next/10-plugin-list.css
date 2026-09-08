@@ -1,0 +1,257 @@
+/* ============================================================
+   10-plugin-list.css — Panel izquierdo: lista de plugins DSP
+   ============================================================
+   Scope: .pl-* (plugin-list namespace)
+   Monta dentro de .app-left__scroll
+   ============================================================ */
+
+@layer plugin-list;
+
+/* ── Contenedor raíz ─────────────────────────────────────────── */
+.pl-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 16px;
+}
+
+/* ── Sección de familia ──────────────────────────────────────── */
+.pl-family {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header de familia */
+.pl-family__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line, rgba(148,163,184,0.12));
+  color: var(--muted, #a8b2c0);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.pl-family__header:hover {
+  background: var(--s2, rgba(255,255,255,0.04));
+}
+
+/* Dot de color de familia */
+.pl-family__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--led-color, #64748b);
+}
+
+.pl-family__name {
+  flex: 1;
+}
+
+/* Contador de plugins en la familia */
+.pl-family__count {
+  font-size: 9px;
+  opacity: 0.5;
+  background: var(--s3, rgba(255,255,255,0.08));
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+/* Chevron */
+.pl-family__chevron {
+  font-size: 9px;
+  opacity: 0.5;
+  transition: transform 0.15s;
+}
+
+.pl-family__header[aria-expanded="false"] .pl-family__chevron::before { content: '▶'; }
+.pl-family__header[aria-expanded="true"]  .pl-family__chevron::before { content: '▼'; }
+
+/* Filas de plugins */
+.pl-family__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Plugin row ──────────────────────────────────────────────── */
+.pl-plugin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 14px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--line, rgba(148,163,184,0.06));
+  transition: background 0.1s;
+  position: relative;
+}
+
+.pl-plugin:hover {
+  background: var(--s2, rgba(255,255,255,0.04));
+}
+
+/* Estado activo */
+.pl-plugin--active {
+  background: var(--s2, rgba(255,255,255,0.03));
+}
+
+.pl-plugin--active:hover {
+  background: var(--s3, rgba(255,255,255,0.07));
+}
+
+/* Estado bypassed */
+.pl-plugin--bypassed .pl-plugin__name {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+
+/* Checkbox real (oculto, accesible por teclado) */
+.pl-plugin__checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* LED de estado */
+.pl-plugin__led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--s3, rgba(255,255,255,0.15));
+  border: 1px solid var(--line, rgba(255,255,255,0.12));
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.pl-plugin--active .pl-plugin__led {
+  background: var(--led-color, #10b981);
+  box-shadow: 0 0 5px var(--led-color, #10b981);
+  border-color: transparent;
+}
+
+.pl-plugin--bypassed .pl-plugin__led {
+  background: #f59e0b;
+  box-shadow: 0 0 4px #f59e0b88;
+  border-color: transparent;
+}
+
+/* Nombre del plugin */
+.pl-plugin__name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text, #edf2ff);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s;
+}
+
+.pl-plugin:not(.pl-plugin--active) .pl-plugin__name {
+  color: var(--muted, #a8b2c0);
+  font-weight: 300;
+}
+
+/* Badges */
+.pl-plugin__badges {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pl-badge {
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.pl-badge--core {
+  background: var(--s3, rgba(255,255,255,0.1));
+  color: var(--muted, #a8b2c0);
+}
+
+.pl-badge--gr {
+  background: rgba(16,185,129,0.18);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.pl-badge--bypass {
+  background: rgba(245,158,11,0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+/* Botón bypass */
+.pl-plugin__bypass {
+  flex-shrink: 0;
+  width: 22px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line, rgba(148,163,184,0.18));
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s, background 0.1s, border-color 0.1s;
+  font-size: 8px;
+  color: var(--muted, #a8b2c0);
+}
+
+.pl-plugin__bypass::before { content: 'BYP'; font-weight: 700; letter-spacing: 0.04em; }
+
+/* Mostrar bypass al hover de la fila */
+.pl-plugin:hover .pl-plugin__bypass {
+  opacity: 1;
+}
+
+/* Bypass activo */
+.pl-plugin__bypass--on {
+  opacity: 1 !important;
+  background: rgba(245,158,11,0.2);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+/* Plugin pinned — no pointer-events en checkbox */
+.pl-plugin--pinned {
+  cursor: default;
+}
+.pl-plugin--pinned .pl-plugin__checkbox {
+  pointer-events: none;
+}
+
+/* ── Focus visible (a11y) ────────────────────────────────────── */
+.pl-family__header:focus-visible,
+.pl-plugin__bypass:focus-visible {
+  outline: 2px solid var(--v4-accent, #ef9b42);
+  outline-offset: -1px;
+}
+
+.pl-plugin:focus-within {
+  outline: 1px solid var(--v4-accent, #ef9b4244);
+}
+
+/* ── Transición de colapso ────────────────────────────────────── */
+.pl-family__rows[hidden] {
+  display: none;
+}

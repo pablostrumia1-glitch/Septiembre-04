@@ -265,6 +265,26 @@
   `;
   centerScroll.appendChild(previewSlot);
 
+  // ── Slot: Preview con meters en tiempo real (consola central) ─────
+  // Usa 30-preview-controller.js para sincronizar con el server
+  const previewRealTimeSlot = document.createElement('div');
+  previewRealTimeSlot.className = 'slot-preview-realtime';
+  previewRealTimeSlot.id = 'previewRealTimeSlot';
+  previewRealTimeSlot.style.padding = '12px';
+  previewRealTimeSlot.innerHTML = `
+    <h3 style="font-size: 13px; color: var(--text, #edf2ff); margin: 0 0 8px;">Preview + Meters en Tiempo Real</h3>
+    <div style="font-size: 11px; color: var(--muted, #a8b2c0); line-height: 1.4;">
+      <p style="margin: 2px 0;">Estado: <strong id="previewStatus">Esperando archivo</strong></p>
+      <p style="margin: 2px 0;">Duración: <strong id="previewDuration">25 s</strong></p>
+      <p style="margin: 2px 0;">GR en vivo: <strong id="liveGR">-- dB</strong></p>
+      <p style="margin: 2px 0;">LUFS en vivo: <strong id="liveLUFS">-- LUFS</strong></p>
+    </div>
+    <div style="margin-top: 8px; padding: 8px; background: var(--s2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); font-size: 10px; color: var(--dim, #6e7a8a);">
+      <p style="margin: 0;">Nota: los meters se sincronizan con el server en cada render del preview. La telemetría de gain reduction llega en tiempo real.</p>
+    </div>
+  `;
+  centerScroll.appendChild(previewRealTimeSlot);
+
   // Right panel
   const right = document.createElement('aside');
   right.className = 'app-right';
@@ -546,6 +566,50 @@
     <button onclick="console.log('Descargando master...')" style="width: 100%; padding: 8px; background: var(--v4-accent, #ef9b42); border: none; border-radius: var(--app-border-radius, 4px); color: #070812; font-size: 12px; cursor: pointer;">Descargar Master</button>
   `;
   rightScroll.appendChild(downloadSlot);
+
+  // ── Botones LAIA: ocultar/ver panel del chat ─────────────────────
+  const laiaToggleSlot = document.createElement('div');
+  laiaToggleSlot.className = 'slot-laia-toggle';
+  laiaToggleSlot.style.padding = '8px 12px';
+  laiaToggleSlot.style.display = 'flex';
+  laiaToggleSlot.style.gap = '8px';
+  laiaToggleSlot.style.justifyContent = 'flex-end';
+  laiaToggleSlot.innerHTML = `
+    <button onclick="document.getElementById('chatSlot')?.style.display = document.getElementById('chatSlot')?.style.display === 'none' ? 'block' : 'none'; this.textContent = document.getElementById('chatSlot')?.style.display === 'none' ? 'Ver Chat' : 'Ocultar Chat';" style="padding: 4px 8px; font-size: 10px; background: var(--v4-panel-2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); color: var(--text, #edf2ff); cursor: pointer;">Ocultar Chat</button>
+  `;
+  // Insertar antes del chat slot para que esté visible
+  const chatSlotRef = document.querySelector('.slot-chat-laia');
+  if (chatSlotRef && chatSlotRef.parentElement) {
+    chatSlotRef.parentElement.insertBefore(laiaToggleSlot, chatSlotRef);
+  } else {
+    centerScroll.appendChild(laiaToggleSlot);
+  }
+
+  // ── Conectar plugin registry y plugin list ───────────────────────
+  // Cargar los módulos nuevos de plugins
+  const pluginRegistryScript = document.createElement('script');
+  pluginRegistryScript.src = 'js-next/04-plugin-registry.js';
+  pluginRegistryScript.onload = () => {
+    console.log('00-shell-bootstrap: plugin registry cargado');
+    // Después de cargar el registry, cargar la lista
+    const pluginListScript = document.createElement('script');
+    pluginListScript.src = 'js-next/05-plugin-list.js';
+    pluginListScript.onload = () => {
+      console.log('00-shell-bootstrap: plugin list cargado');
+      // Inicializar la lista de plugins en el panel izquierdo
+      if (typeof window.LGMDM?.plugins?.init === 'function') {
+        window.LGMDM.plugins.init();
+      }
+    };
+    document.body.appendChild(pluginListScript);
+  };
+  document.body.appendChild(pluginRegistryScript);
+
+  // ── Cargar CSS de plugin list ───────────────────────────────────
+  const pluginCssLink = document.createElement('link');
+  pluginCssLink.rel = 'stylesheet';
+  pluginCssLink.href = 'css-next/10-plugin-list.css';
+  document.head.appendChild(pluginCssLink);
 
   console.log('00-shell-bootstrap: shell nuevo montado y slots conectados');
 })();
