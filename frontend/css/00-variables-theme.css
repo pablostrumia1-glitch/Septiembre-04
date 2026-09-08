@@ -118,5 +118,39 @@ html.theme-light {
   --v4-shadow: 0 8px 24px rgba(0, 0, 0, .08);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   DARK-ORBIT THEME (integrado desde css-next/14)
+   ════════════════════════════════════════════════════════════════ */
+html[data-theme="dark-orbit"],
+html.theme-dark-orbit {
+  --bg: #010208;
+  --bg2: #03040a;
+  --s: #0a0a14;
+  --s2: #10121e;
+  --s3: #14142a;
+  --s4: #1a1a33;
+  --text: #e8e6f0;
+  --muted: rgba(200, 196, 220, 0.55);
+  --dim: rgba(160, 155, 175, 0.35);
+  --line: rgba(255, 255, 255, .09);
+  --line2: rgba(255, 255, 255, .15);
+  --p: #a855f7;
+  --p2: #6366f1;
+  --a: #ffd268;
+  --ok: #22d3ee;
+  --warn: #f59e0b;
+  --danger: #f43f5e;
+  --v4-text: #e8e6f0;
+  --v4-text-2: #c0bec8;
+  --v4-muted: rgba(200, 196, 220, 0.55);
+  --v4-dim: rgba(160, 155, 175, 0.35);
+  --v4-accent: #a855f7;
+  --v4-accent-soft: rgba(168, 85, 247, .16);
+  --v4-cyan: #0ea5e9;
+  --v4-border: rgba(255, 255, 255, .09);
+  --v4-border-strong: rgba(255, 255, 255, .15);
+  --v4-shadow: 0 8px 32px rgba(2, 4, 9, .6);
+}
+
 
 }

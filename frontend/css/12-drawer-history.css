@@ -7,7 +7,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: var(--lgmdm-drawer-width, 400px);
+  width: var(--stfx-drawer-width, 400px);
   height: 100dvh;
   z-index: 9500;
   display: flex;

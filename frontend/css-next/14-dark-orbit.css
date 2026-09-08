@@ -1,0 +1,122 @@
+@layer dark-orbit {
+/* ════════════════════════════════════════════════════════════════
+   DARK-ORBIT THEME — Estilo alucinante #4
+   Modo espacial / noche profunda con acentos intensificados.
+   ════════════════════════════════════════════════════════════════ */
+
+  :root {
+    --bg-deep: #010208;
+    --surface-deep: rgba(16, 18, 30, 0.72);
+    --line-deep: rgba(255,255,255,.09);
+    --text-deep: #e8e6f0;
+    --muted-deep: rgba(200, 196, 220, 0.55);
+    --p-deep: #a855f7;
+    --p2-deep: #6366f1;
+    --accent2-deep: #0ea5e9;
+    --danger-deep: #f43f5e;
+    --ok-deep: #22d3ee;
+  }
+
+  body,
+  .lg-app,
+  .lg-app-body,
+  .lg-header,
+  .cns-shell,
+  .cns-body,
+  .lg-sidebar,
+  .cns-panel-left,
+  .cns-panel-right,
+  .analysis-workspace,
+  .presets-workspace,
+  .dashboard-wrap,
+  .meters-wrap,
+  .lg-workspace-workspace,
+  .lg-spectrum-panel {
+    background: linear-gradient(180deg, var(--bg-deep), #03040a) !important;
+    color: var(--text-deep) !important;
+  }
+
+  /* Header con halo espacial */
+  .lg-header {
+    background: linear-gradient(180deg, rgba(1,2,8,.92), rgba(3,4,10,.98)) !important;
+    border-bottom: 1px solid rgba(139,210,232,.20) !important;
+    box-shadow: 0 0 0 1px rgba(142,129,200,.10) inset, 0 8px 24px rgba(2,4,9,.8) !important;
+  }
+
+  /* Tabs activos con halo */
+  .lg-workspace-tab.active,
+  .sidebar-tab.active,
+  .auth-tab.active,
+  .process-card {
+    background: linear-gradient(135deg, rgba(168,85,247,.12), rgba(99,102,241,.08)) !important;
+    border: 1px solid rgba(168,85,247,.25) !important;
+    box-shadow: 0 0 0 1px rgba(168,85,247,.15) inset, 0 4px 12px rgba(168,85,247,.15) !important;
+  }
+
+  /* Session chip brillante */
+  .lg-session-chip {
+    background: linear-gradient(135deg, rgba(34,211,238,.15), rgba(168,85,247,.12)) !important;
+    border-color: rgba(34,211,238,.35) !important;
+    animation: pulse-deep 3.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-deep {
+    0% { box-shadow: 0 0 4px rgba(168,85,247,.15); }
+    100% { box-shadow: 0 0 16px rgba(34,211,238,.35), 0 0 4px rgba(168,85,247,.25); }
+  }
+
+  /* Botones con borde neón */
+  .lg-icon-btn,
+  .auth-submit,
+  .auth-tab,
+  .btn,
+  .btn-secondary,
+  .btn-primary,
+  .pro-primary,
+  .pro-dialog-actions button,
+  .ai-suggestion-btn,
+  .ai-suggestion-cancel-btn,
+  .ai-suggestion-apply-btn {
+    border: 1px solid rgba(255,255,255,.10) !important;
+    box-shadow: 0 0 6px rgba(168,85,247,.12), inset 0 1px 0 rgba(255,255,255,.06) !important;
+    transition: all 0.15s ease-out;
+  }
+  .lg-icon-btn:hover,
+  .auth-submit:hover,
+  .btn:hover,
+  .btn-secondary:hover,
+  .btn-primary:hover {
+    border-color: rgba(168,85,247,.55) !important;
+    box-shadow: 0 0 14px rgba(168,85,247,.35), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  }
+
+  /* Texto con sombra espacial */
+  .lg-brand,
+  .control-card h3,
+  .process-card-header > span,
+  .analysis-panel h3,
+  .ai-msg.assistant,
+  .ai-msg.user,
+  .ai-suggestion-card-title,
+  .lg-session-chip,
+  .status-dot + span,
+  .lg-header-service-label,
+  .lg-user-name,
+  .dash-label,
+  .meter-name,
+  .meter-readout,
+  .meter-label,
+  #analysisStatus,
+  #consoleStatus,
+  #previewStatus,
+  .advice-score-circle .score-num,
+  .pro-dialog-actions .btn,
+  .auth-box .auth-logo,
+  .auth-box h3,
+  .auth-submit,
+  .analysis-workspace h3,
+  .presets-workspace h3,
+  .pro-dialog h3 {
+    text-shadow: 0 0 8px rgba(168,85,247,.25), 0 0 2px rgba(34,211,238,.20);
+  }
+}

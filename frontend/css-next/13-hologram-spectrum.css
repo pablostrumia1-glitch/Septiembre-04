@@ -1,0 +1,88 @@
+@layer hologram {
+/* ════════════════════════════════════════════════════════════════
+   HOLOGRAPHIC SPECTRUM (FFT ANIMADO EN CSS PURO) — Estilo alucinante #3
+   Aplicado a los espectros de análisis y a los meters de frecuencia.
+   ════════════════════════════════════════════════════════════════ */
+
+  /* Contenedor del espectro con gradiente holográfico */
+  #analysisPanel,
+  .lg-spectrum-stage,
+  .fft-wrap,
+  .spectrum-wrap,
+  .spectrum-bars,
+  .bar-wrap,
+  .meter-col .meter-track,
+  .meter-track,
+  #consoleSpectrum {
+    background: linear-gradient(135deg, rgba(139,210,232,.06), rgba(142,129,200,.08), rgba(7,8,18,.92)) !important;
+    border: 1px solid rgba(139,210,232,.25) !important;
+    border-radius: 14px !important;
+    box-shadow:
+      0 0 0 1px rgba(142,129,200,.10) inset,
+      0 12px 36px rgba(2,4,9,.65) !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Barras del espectro animadas (simula FFT sin canvas) */
+  .bar-wrap,
+  .spectrum-bars > .bar-wrap,
+  .meter-col,
+  .freqband-row,
+  .meter-track {
+    position: relative;
+  }
+
+  /* Barras animadas con shimmer holográfico */
+  .bar-before,
+  .bar-after,
+  .freqband-fill,
+  .meter-fill,
+  #meterPeakFill,
+  #meterRmsFill,
+  #meterLufsFill,
+  #meterTruePeakFill,
+  #meterPeakFill,
+  #stereoMeterFill,
+  #fb-sub,
+  #fb-bass,
+  #fb-lowmid,
+  #fb-mid,
+  #fb-highmid,
+  #fb-air {
+    animation: shimmer-hologram 3.2s linear infinite alternate;
+    background: linear-gradient(90deg, rgba(139,210,232,.85), rgba(142,129,200,.85), rgba(255,255,255,.6), rgba(142,129,200,.85), rgba(139,210,232,.85)) !important;
+    background-size: 200% 100% !important;
+  }
+
+  @keyframes shimmer-hologram {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Etiquetas de frecuencia holográficas */
+  .bar-label,
+  .freqband-label,
+  .meter-name,
+  .meter-readout,
+  .meter-label,
+  #consoleSpectrum,
+  #analysisPanel,
+  .fft-wrap h3,
+  .spectrum-wrap h3 {
+    color: rgba(255,255,255,.92) !important;
+    text-shadow: 0 0 8px rgba(139,210,232,.45), 0 0 2px rgba(142,129,200,.35);
+    font-family: var(--mono, monospace);
+    letter-spacing: .06em;
+  }
+
+  /* Puntos de espectro vivos */
+  .fft-wrap canvas,
+  .spectrum-wrap canvas,
+  #consoleSpectrum,
+  #spectrumCanvas,
+  #analysisSpectrumStage {
+    filter: drop-shadow(0 0 6px rgba(139,210,232,.35)) drop-shadow(0 0 14px rgba(142,129,200,.25));
+  }
+}

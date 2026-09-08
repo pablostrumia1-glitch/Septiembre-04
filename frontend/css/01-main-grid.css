@@ -1,4 +1,4 @@
-/* LGMDM V4 — main general grid ONLY
+/* STFX V4 — main general grid ONLY
    Única fuente de verdad para el layout de .lg-app / .lg-app-body.
    NO duplicar estas reglas (ni display:grid ni grid-template-*) en otro
    CSS sin @layer: una regla sin @layer le gana siempre a una con @layer,

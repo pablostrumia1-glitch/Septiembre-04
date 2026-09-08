@@ -1,0 +1,57 @@
+@layer glass {
+/* ════════════════════════════════════════════════════════════════
+   GLASSMORPHISM PANEL — Estilo alucinante #2
+   Aplicado a sidebar, paneles activos, AI panel y overlays.
+   ════════════════════════════════════════════════════════════════ */
+
+  .lg-sidebar,
+  .cns-panel-left,
+  .cns-panel-right,
+  .lg-workspace-workspace,
+  .ai-panel,
+  .auth-box,
+  .admin-box > div,
+  .dashboard-wrap,
+  .meters-wrap,
+  .lg-spectrum-panel,
+  .pro-dialog,
+  .pro-tools-shell {
+    background: rgba(7, 8, 18, 0.52) !important;
+    backdrop-filter: blur(18px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 14px !important;
+    box-shadow:
+      0 8px 32px rgba(2, 4, 9, 0.55),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 0 0 1px rgba(139, 210, 232, 0.08) inset !important;
+  }
+
+  /* Borde brillante dinámico en el panel de la consola */
+  .cns-panel-left,
+  .cns-panel-right {
+    border-color: rgba(142, 129, 200, 0.18) !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cns-panel-left:hover,
+  .cns-panel-right:hover {
+    border-color: rgba(139, 210, 232, 0.35) !important;
+    box-shadow: 0 8px 32px rgba(2, 4, 9, 0.65), 0 0 0 1px rgba(139, 210, 232, 0.15) inset !important;
+  }
+
+  /* Glass en los cards internos */
+  .control-card,
+  .process-card,
+  .mb-wrap,
+  .stem-card,
+  .pro-dialog,
+  .auth-form,
+  .auth-tabs button.active {
+    background: rgba(18, 20, 30, 0.42) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 16px rgba(2, 4, 9, 0.35) !important;
+  }
+}

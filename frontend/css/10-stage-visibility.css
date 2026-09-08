@@ -1,4 +1,4 @@
-/* LGMDM — Stage 1 console contract
+/* STFX — Stage 1 console contract
  * This layer gates secondary/legacy surfaces without deleting their DOM.
  * The current release exposes only the Studio/Analysis shell requested for
  * the first final pass; disabled modules remain available to re-enable later.

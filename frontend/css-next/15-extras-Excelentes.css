@@ -1,0 +1,77 @@
+@layer extras {
+/* ════════════════════════════════════════════════════════════════
+   EXTRAS Excelente — Estilos adicionales
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ── CYBERPUNK GRID (líneas animadas) ───────────────────────────── */
+  .lg-app-body,
+  .cns-shell,
+  .lg-main-stack,
+  .analysis-workspace,
+  .presets-workspace,
+  .lg-sidebar,
+  .cns-panel-left,
+  .cns-panel-right,
+  .dashboard-wrap,
+  .meters-wrap,
+  .lg-workspace-workspace {
+    position: relative;
+  }
+  .lg-app-body::before,
+  .cns-shell::before,
+  .lg-main-stack::before,
+  .analysis-workspace::before,
+  .presets-workspace::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(142,129,200,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(142,129,200,.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    animation: grid-shift 12s linear infinite;
+  }
+  @keyframes grid-shift {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  /* ── AUDIO-REACTIVE BORDER (reacciona a STFX.meters) ─────────── */
+  .meter-col,
+  .meter-col .meter-track,
+  .meter-col [id^="meter"] > .meter-track,
+  #meterPeakFill,
+  #meterRmsFill,
+  #meterLufsFill,
+  #meterTruePeakFill,
+  #stereoMeterFill,
+  .meter-bar,
+  #analysisPanel,
+  #consoleSpectrum,
+  .fft-wrap,
+  .waveform-wrap,
+  .analyzer-wrap,
+  .spectrum-wrap {
+    border-color: rgba(142,129,200,.25) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  /* ── FLOATING CHAT BUBBLE (mensajes del usuario) ─────────────── */
+  .ai-msg.user {
+    align-self: flex-end !important;
+    border-radius: 999px 999px 8px 999px !important;
+    background: linear-gradient(135deg, var(--p), rgba(168,85,247,.65)) !important;
+    color: #fff !important;
+    padding: 10px 14px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 16px rgba(168,85,247,.35) !important;
+    border: 1px solid rgba(142,129,200,.35) !important;
+  }
+  .ai-msg.assistant {
+    border-radius: 12px 12px 12px 4px !important;
+    background: linear-gradient(135deg, var(--s2), rgba(142,129,200,.08)) !important;
+    border: 1px solid rgba(142,129,200,.15) !important;
+  }
+}

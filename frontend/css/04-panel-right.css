@@ -1,4 +1,4 @@
-/* LGMDM V4 — right active FX rack */
+/* STFX V4 — right active FX rack */
 @layer studio-right {
   .lg-studio-right { min-height:0; height:100%; max-height:none; display:flex; flex-direction:column; padding:7px; overflow:hidden; }
   .studio-heading, .studio-rack-head, .studio-center-kicker { display:flex; align-items:center; justify-content:space-between; gap:6px; }

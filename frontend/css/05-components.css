@@ -236,3 +236,45 @@ input[type="range"]::-moz-range-thumb {
 }
 
 }
+
+@layer waveform {
+/* ════════════════════════════════════════════════════════════════
+   NEON-GLOW AUDIO WAVEFORM (integrado desde css-next/11)
+   ════════════════════════════════════════════════════════════════ */
+  .meter-fill,
+  .meter-fill[id],
+  .meter-bar > *,
+  .meter-track > .meter-fill,
+  #meterPeakFill,
+  #meterRmsFill,
+  #meterLufsFill,
+  #meterTruePeakFill,
+  #stereoMeterFill,
+  #fb-sub, #fb-bass, #fb-lowmid, #fb-mid, #fb-highmid, #fb-air,
+  .meter-col .meter-fill,
+  .meter-col [id^="meter"] > .meter-fill {
+    animation: neon-glow 2.4s ease-in-out infinite alternate;
+  }
+  @keyframes neon-glow {
+    0%   { box-shadow: 0 0 4px rgba(139,210,232,.35), 0 0 12px rgba(142,129,200,.18); filter: drop-shadow(0 0 4px rgba(139,210,232,.55)); }
+    50%  { box-shadow: 0 0 10px rgba(139,210,232,.65), 0 0 28px rgba(142,129,200,.45), 0 0 4px rgba(255,255,255,.25); filter: drop-shadow(0 0 12px rgba(142,129,200,.75)); }
+    100% { box-shadow: 0 0 6px rgba(139,210,232,.45), 0 0 16px rgba(142,129,200,.30); filter: drop-shadow(0 0 6px rgba(139,210,232,.55)); }
+  }
+  #previewAudioWrap,
+  .fft-wrap,
+  .waveform-wrap,
+  .spectrum-wrap,
+  .analyzer-wrap,
+  #consoleSpectrum,
+  #analysisPanel {
+    border-color: rgba(139,210,232,.30) !important;
+    box-shadow: 0 0 8px rgba(139,210,232,.15), inset 0 0 18px rgba(142,129,200,.06);
+    animation: neon-panel-glow 4s ease-in-out infinite alternate;
+  }
+  @keyframes neon-panel-glow {
+    0%   { border-color: rgba(139,210,232,.25) !important; box-shadow: 0 0 6px rgba(139,210,232,.12), inset 0 0 14px rgba(142,129,200,.05); }
+    33%  { border-color: rgba(142,129,200,.45) !important; box-shadow: 0 0 16px rgba(142,129,200,.25), inset 0 0 28px rgba(139,210,232,.10); }
+    66%  { border-color: rgba(139,210,232,.35) !important; box-shadow: 0 0 10px rgba(139,210,232,.18), inset 0 0 20px rgba(142,129,200,.08); }
+    100% { border-color: rgba(139,210,232,.25) !important; box-shadow: 0 0 6px rgba(139,210,232,.12), inset 0 0 14px rgba(142,129,200,.05); }
+  }
+}
