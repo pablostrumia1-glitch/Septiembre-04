@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
   const pools = new Map();
   let taskId = 0;
   const DEFAULT_TIMEOUT = 30000;
@@ -73,16 +73,16 @@
     `;
     const url = URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }));
     const worker = new Worker(url);
-    worker.__lgmdmUrl = url;
+    worker.__stfxUrl = url;
     return worker;
   }
 
   function disposeWorker(worker) {
     if (!worker) return;
     try { worker.terminate(); } catch (_) {}
-    if (worker.__lgmdmUrl) {
-      try { URL.revokeObjectURL(worker.__lgmdmUrl); } catch (_) {}
-      worker.__lgmdmUrl = null;
+    if (worker.__stfxUrl) {
+      try { URL.revokeObjectURL(worker.__stfxUrl); } catch (_) {}
+      worker.__stfxUrl = null;
     }
   }
 
@@ -176,6 +176,6 @@
     }
   };
 
-  LGMDM.workers = { run: WorkerPool.run.bind(WorkerPool), tasksApi: WorkerTasks, tasks: Object.freeze(Object.keys(TASK_SOURCES)), maxWorkers: MAX_WORKERS };
+  STFX.workers = { run: WorkerPool.run.bind(WorkerPool), tasksApi: WorkerTasks, tasks: Object.freeze(Object.keys(TASK_SOURCES)), maxWorkers: MAX_WORKERS };
   global.addEventListener('beforeunload', () => WorkerPool.terminateAll(), { once: true });
 })(window);

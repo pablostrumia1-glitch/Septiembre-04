@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const root = window.LGMDM = window.LGMDM || {};
+  const root = window.STFX = window.STFX || {};
   root.console = root.console || {};
   const $ = (id) => document.getElementById(id);
   const state = {
@@ -26,7 +26,7 @@
   // duplicados silenciosos.
   const _mirrored = new WeakSet();
   function mirror(srcId, dstId) {
-    const src = LGMDM.dom.byId(srcId), dst = LGMDM.dom.byId(dstId);
+    const src = STFX.dom.byId(srcId), dst = STFX.dom.byId(dstId);
     if (!src || !dst) return;
     if (_mirrored.has(src) || _mirrored.has(dst)) return;
     _mirrored.add(src);
@@ -54,7 +54,7 @@
       limiter: ['s-ceiling'],
     }[stage] || [];
     related.forEach((id) => {
-      const el = LGMDM.dom.byId(id);
+      const el = STFX.dom.byId(id);
       if (!el) return;
       if (state.stageBypass[stage]) {
         if (el.dataset.consoleSaved == null) el.dataset.consoleSaved = el.value;
@@ -70,19 +70,19 @@
   }
 
   function updateReadouts() {
-    const input = Number(LGMDM.dom.byId('s-ingain')?.value ?? 0);
-    const ct = Number(LGMDM.dom.byId('s-thresh')?.value ?? -18);
-    const cr = Number(LGMDM.dom.byId('s-ratio')?.value ?? 4);
-    const sw = Number(LGMDM.dom.byId('s-width')?.value ?? 1);
-    const ceil = Number(LGMDM.dom.byId('s-ceiling')?.value ?? .891);
-    if (LGMDM.dom.byId('consoleInputReadout')) LGMDM.dom.byId('consoleInputReadout').textContent = formatDb(input);
-    if (LGMDM.dom.byId('consoleCompReadout')) LGMDM.dom.byId('consoleCompReadout').textContent = `${ct.toFixed(1)} dB · ${cr.toFixed(1)}:1`;
-    if (LGMDM.dom.byId('consoleStereoReadout')) LGMDM.dom.byId('consoleStereoReadout').textContent = `${Math.round(sw * 100)}%`;
-    if (LGMDM.dom.byId('consoleLimiterControlReadout')) LGMDM.dom.byId('consoleLimiterControlReadout').textContent = `${ceilingDb(ceil).toFixed(1)} dB`;
-    if (LGMDM.dom.byId('consoleInputGr')) LGMDM.dom.byId('consoleInputGr').textContent = formatDb(input);
-    if (LGMDM.dom.byId('consoleStereoGr')) LGMDM.dom.byId('consoleStereoGr').textContent = `WIDTH ${Math.round(sw * 100)}%`;
-    if (LGMDM.dom.byId('consoleLimiterReadout')) LGMDM.dom.byId('consoleLimiterReadout').textContent = `CEILING ${ceilingDb(ceil).toFixed(1)}`;
-    if (LGMDM.dom.byId('consoleCompGr')) LGMDM.dom.byId('consoleCompGr').textContent = `GR 0.0 dB`;
+    const input = Number(STFX.dom.byId('s-ingain')?.value ?? 0);
+    const ct = Number(STFX.dom.byId('s-thresh')?.value ?? -18);
+    const cr = Number(STFX.dom.byId('s-ratio')?.value ?? 4);
+    const sw = Number(STFX.dom.byId('s-width')?.value ?? 1);
+    const ceil = Number(STFX.dom.byId('s-ceiling')?.value ?? .891);
+    if (STFX.dom.byId('consoleInputReadout')) STFX.dom.byId('consoleInputReadout').textContent = formatDb(input);
+    if (STFX.dom.byId('consoleCompReadout')) STFX.dom.byId('consoleCompReadout').textContent = `${ct.toFixed(1)} dB · ${cr.toFixed(1)}:1`;
+    if (STFX.dom.byId('consoleStereoReadout')) STFX.dom.byId('consoleStereoReadout').textContent = `${Math.round(sw * 100)}%`;
+    if (STFX.dom.byId('consoleLimiterControlReadout')) STFX.dom.byId('consoleLimiterControlReadout').textContent = `${ceilingDb(ceil).toFixed(1)} dB`;
+    if (STFX.dom.byId('consoleInputGr')) STFX.dom.byId('consoleInputGr').textContent = formatDb(input);
+    if (STFX.dom.byId('consoleStereoGr')) STFX.dom.byId('consoleStereoGr').textContent = `WIDTH ${Math.round(sw * 100)}%`;
+    if (STFX.dom.byId('consoleLimiterReadout')) STFX.dom.byId('consoleLimiterReadout').textContent = `CEILING ${ceilingDb(ceil).toFixed(1)}`;
+    if (STFX.dom.byId('consoleCompGr')) STFX.dom.byId('consoleCompGr').textContent = `GR 0.0 dB`;
   }
 
   function updateStageCards() {
@@ -96,17 +96,14 @@
 
   function setAB(mode) {
     state.ab = mode;
-    LGMDM.dom.byId('consoleABReadout')?.replaceChildren(document.createTextNode(mode === 'master' ? 'MASTER' : 'ORIGINAL'));
-    LGMDM.dom.byId('consoleABMaster')?.classList.toggle('active', mode === 'master');
-    LGMDM.dom.byId('consoleABOriginal')?.classList.toggle('active', mode === 'original');
+    STFX.dom.byId('consoleAbReadout')?.replaceChildren(document.createTextNode(mode === 'master' ? 'MASTER' : 'ORIGINAL'));
+    STFX.dom.byId('consoleABMaster')?.classList.toggle('active', mode === 'master');
+    STFX.dom.byId('consoleABOriginal')?.classList.toggle('active', mode === 'original');
     // A7 (audit): sincronizar aria-pressed del botón A/B. Sin esto,
     // los screen readers no anuncian el estado actual (MASTER vs ORIGINAL).
     // WCAG 4.1.2.
-    const abBtn = LGMDM.dom.byId('consoleABToggle');
+    const abBtn = STFX.dom.byId('consoleABToggle');
     if (abBtn) abBtn.setAttribute('aria-pressed', mode === 'master' ? 'true' : 'false');
-    if (typeof window.LGMDM?.ab?.setMode === 'function') {
-      try { window.LGMDM.ab.setMode(mode); return; } catch (_) {}
-    }
     const audio = getPreviewAudio();
     if (audio) audio.dataset.abMode = mode;
   }
@@ -127,7 +124,7 @@
   function metricAmp(db, floor = -72) { return clamp01((Number(db ?? floor) - floor) / (0 - floor)); }
 
   function drawWaveform() {
-    const canvas = LGMDM.dom.byId('lgmdmWaveformCanvas'); if (!canvas) return;
+    const canvas = STFX.dom.byId('waveformCanvas'); if (!canvas) return;
     const rect = canvas.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.max(320, Math.floor(rect.width * dpr)), h = Math.max(120, Math.floor(rect.height * dpr));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -169,7 +166,7 @@
   }
 
   function updateConsoleStereoVu() {
-    const l = LGMDM.dom.byId('consoleMeterL'), r = LGMDM.dom.byId('consoleMeterR'); if(!l || !r) return;
+    const l = STFX.dom.byId('consoleMeterL'), r = STFX.dom.byId('consoleMeterR'); if(!l || !r) return;
     const m=state.metrics||{}; const peak=metricAmp(m.peak_db,-60); const corr=Math.max(-1,Math.min(1,Number(m.stereo_correlation ?? 1)));
     const spread=(1-Math.max(0,corr))*0.18;
     l.style.height=`${Math.max(3,Math.min(100,(peak*(1+spread))*100))}%`;
@@ -177,22 +174,22 @@
     l.style.opacity = corr < 0 ? '1' : '.92'; r.style.opacity = corr < 0 ? '1' : '.92';
   }
 
-  function setStatus(text, active=false) { LGMDM.dom.byId('consoleStatus')?.replaceChildren(document.createTextNode(text)); document.querySelector('.lg-status-dot')?.classList.toggle('active',active); }
+  function setStatus(text, active=false) { STFX.dom.byId('consoleStatus')?.replaceChildren(document.createTextNode(text)); document.querySelector('.lg-status-dot')?.classList.toggle('active',active); }
   function syncTrackInfo() {
     const file=window.selectedFile;
     if(!file){
-      LGMDM.dom.byId('consoleTrackTitle')?.replaceChildren(document.createTextNode('Sin archivo cargado'));
-      LGMDM.dom.byId('consoleTrackMeta')?.replaceChildren(document.createTextNode('Esperando señal'));
+      STFX.dom.byId('consoleTrackTitle')?.replaceChildren(document.createTextNode('Sin archivo cargado'));
+      STFX.dom.byId('consoleTrackMeta')?.replaceChildren(document.createTextNode('Esperando señal'));
       return;
     }
     const title=file.name.replace(/\.[^/.]+$/,'');
-    LGMDM.dom.byId('consoleTrackTitle')?.replaceChildren(document.createTextNode(title));
-    LGMDM.dom.byId('consoleTrackMeta')?.replaceChildren(document.createTextNode(`${file.type||'audio'} · ${(file.size/1024/1024).toFixed(1)} MB`));
+    STFX.dom.byId('consoleTrackTitle')?.replaceChildren(document.createTextNode(title));
+    STFX.dom.byId('consoleTrackMeta')?.replaceChildren(document.createTextNode(`${file.type||'audio'} · ${(file.size/1024/1024).toFixed(1)} MB`));
     setStatus('Audio cargado · listo para analizar',true);
   }
   function syncMetersFromDom(){
     const map=[['meterPeakReadout','consolePeak'],['meterLufsReadout','consoleLufs'],['meterTruePeakReadout','consoleTruePeak'],['meterRmsReadout','consoleRms'],['stereoMeterReadout','consoleCorr']];
-    for(const [src,dst] of map){const a=LGMDM.dom.byId(src),b=LGMDM.dom.byId(dst);if(a&&b&&a.textContent)b.textContent=a.textContent.replace(/^corr:\s*/i,'');}
+    for(const [src,dst] of map){const a=STFX.dom.byId(src),b=STFX.dom.byId(dst);if(a&&b&&a.textContent)b.textContent=a.textContent.replace(/^corr:\s*/i,'');}
     updateConsoleStereoVu();
   }
 
@@ -205,10 +202,10 @@
     const compGr = Number(comp.gr_db ?? metrics.comp_gr_db ?? 0);
     const glueGr = Number(glue.gr_db ?? 0);
     const limGr = Number(limiter.gr_db ?? metrics.limiter_gr_db ?? 0);
-    if (LGMDM.dom.byId('consoleCompGr')) LGMDM.dom.byId('consoleCompGr').textContent = `GR ${(Number.isFinite(compGr)?compGr:0).toFixed(1)} dB`;
-    if (LGMDM.dom.byId('consoleLimiterGr')) LGMDM.dom.byId('consoleLimiterGr').textContent = `GR ${(Number.isFinite(limGr)?limGr:0).toFixed(1)} dB`;
-    const glueReadout = LGMDM.dom.byId('consoleGlueGr'); if (glueReadout) glueReadout.textContent = `GR ${(Number.isFinite(glueGr)?glueGr:0).toFixed(1)} dB`;
-    if (LGMDM.dom.byId('consoleOutputReadout')) LGMDM.dom.byId('consoleOutputReadout').textContent = metrics.output_lufs != null ? `${Number(metrics.output_lufs).toFixed(1)} LUFS` : (LGMDM.dom.byId('consoleLufs')?.textContent || '-∞ LUFS');
+    if (STFX.dom.byId('consoleCompGr')) STFX.dom.byId('consoleCompGr').textContent = `GR ${(Number.isFinite(compGr)?compGr:0).toFixed(1)} dB`;
+    if (STFX.dom.byId('consoleLimiterGr')) STFX.dom.byId('consoleLimiterGr').textContent = `GR ${(Number.isFinite(limGr)?limGr:0).toFixed(1)} dB`;
+    const glueReadout = STFX.dom.byId('consoleGlueGr'); if (glueReadout) glueReadout.textContent = `GR ${(Number.isFinite(glueGr)?glueGr:0).toFixed(1)} dB`;
+    if (STFX.dom.byId('consoleOutputReadout')) STFX.dom.byId('consoleOutputReadout').textContent = metrics.output_lufs != null ? `${Number(metrics.output_lufs).toFixed(1)} LUFS` : (STFX.dom.byId('consoleLufs')?.textContent || '-∞ LUFS');
   }
 
   root.console.syncChainMeters = syncChainMeters;
@@ -218,34 +215,34 @@
     if (wired) return;
     wired = true;
     mirror(...refs.input); mirror(...refs.compThreshold); mirror(...refs.compRatio); mirror(...refs.stereo); mirror(...refs.limiter);
-    LGMDM.dom.byId('consoleAnalyzeBtn')?.addEventListener('click',()=>{LGMDM.dom.byId('btnAnalyze')?.click();setStatus('Analizando audio…',true);});
-    LGMDM.dom.byId('consoleAnalyzeSmall')?.addEventListener('click',()=>{LGMDM.dom.byId('btnAnalyze')?.click();setStatus('Analizando audio…',true);});
-    LGMDM.dom.byId('consoleMasterBtn')?.addEventListener('click',()=>{LGMDM.dom.byId('btnMasterAsync')?.click();setStatus('Mastering en cola…',true);});
-    LGMDM.dom.byId('consoleMasterSmall')?.addEventListener('click',()=>{LGMDM.dom.byId('btnMasterAsync')?.click();setStatus('Mastering en cola…',true);});
-    LGMDM.dom.byId('consolePlayBtn')?.addEventListener('click',()=>{
+    STFX.dom.byId('consoleAnalyzeBtn')?.addEventListener('click',()=>{STFX.dom.byId('btnAnalyze')?.click();setStatus('Analizando audio…',true);});
+    STFX.dom.byId('consoleAnalyzeSmall')?.addEventListener('click',()=>{STFX.dom.byId('btnAnalyze')?.click();setStatus('Analizando audio…',true);});
+    STFX.dom.byId('consoleMasterBtn')?.addEventListener('click',()=>{STFX.dom.byId('btnMasterAsync')?.click();setStatus('Mastering en cola…',true);});
+    STFX.dom.byId('consoleMasterSmall')?.addEventListener('click',()=>{STFX.dom.byId('btnMasterAsync')?.click();setStatus('Mastering en cola…',true);});
+    STFX.dom.byId('consolePlayBtn')?.addEventListener('click',()=>{
       const audio=getPreviewAudio();
-      if(!audio || !window.LGMDM?.previewController?.isReady?.()) {
+      if(!audio || !window.STFX?.previewController?.isReady?.()) {
         return setStatus('El Preview todavía no está listo: debe terminar el procesamiento del servidor.');
       }
-      if(audio.paused){audio.play().catch((e)=>setStatus('No se pudo reproducir el Preview: '+e.message));LGMDM.dom.byId('consolePlayBtn').textContent='❚❚';state.playing=true;state.start=performance.now();setStatus('Preview reproduciendo',true);}else{audio.pause();LGMDM.dom.byId('consolePlayBtn').textContent='▶';state.playing=false;setStatus('Preview en pausa');}
+      if(audio.paused){audio.play().catch((e)=>setStatus('No se pudo reproducir el Preview: '+e.message));STFX.dom.byId('consolePlayBtn').textContent='❚❚';state.playing=true;state.start=performance.now();setStatus('Preview reproduciendo',true);}else{audio.pause();STFX.dom.byId('consolePlayBtn').textContent='▶';state.playing=false;setStatus('Preview en pausa');}
     });
-    LGMDM.dom.byId('consoleStopBtn')?.addEventListener('click',()=>{
+    STFX.dom.byId('consoleStopBtn')?.addEventListener('click',()=>{
       // Preview is server-rendered; stopping the controller invalidates any active render.
       const audio=getPreviewAudio();if(audio){audio.pause();audio.currentTime=0;}
-      window.LGMDM?.previewController?.stop?.();
-      state.playing=false;LGMDM.dom.byId('consolePlayBtn').textContent='▶';setStatus('Preview detenido');
+      window.STFX?.previewController?.stop?.();
+      state.playing=false;STFX.dom.byId('consolePlayBtn').textContent='▶';setStatus('Preview detenido');
     });
     // Preview server-side: el único propietario del toggle y debounce es
     // js/30-preview-controller.js. Este controlador solo refleja su estado
-    // mediante el evento lgmdm:preview-state.
-        LGMDM.dom.byId('consoleABMaster')?.addEventListener('click',()=>setAB('master')); LGMDM.dom.byId('consoleABOriginal')?.addEventListener('click',()=>setAB('original')); LGMDM.dom.byId('consoleABToggle')?.addEventListener('click',toggleAB);
+    // mediante el evento stfx:preview-state.
+        STFX.dom.byId('consoleABMaster')?.addEventListener('click',()=>setAB('master')); STFX.dom.byId('consoleABOriginal')?.addEventListener('click',()=>setAB('original')); STFX.dom.byId('consoleABToggle')?.addEventListener('click',toggleAB);
     document.querySelectorAll('.lg-stage-card').forEach(btn=>btn.addEventListener('click',()=>toggleStage(btn.dataset.stage)));
     document.querySelectorAll('.lg-chain-node').forEach(btn=>btn.addEventListener('click',()=>document.querySelector(`.sidebar-tab[data-pane="${btn.dataset.pane}"]`)?.click()));
-    LGMDM.dom.byId('consoleShowChain')?.addEventListener('click',()=>document.querySelector('.sidebar-tab[data-pane="pane-cadena"]')?.click());
-    LGMDM.dom.byId('btnAnalyze')?.addEventListener('click',()=>setStatus('Analizando audio…',true)); LGMDM.dom.byId('btnMasterAsync')?.addEventListener('click',()=>setStatus('Mastering en cola…',true)); LGMDM.dom.byId('btnMasterSync')?.addEventListener('click',()=>setStatus('Mastering en proceso…',true));
-    LGMDM.dom.byId('fileInput')?.addEventListener('change',syncTrackInfo);
-    window.addEventListener('lgmdm:preview-state', (ev) => {
-      const btn = LGMDM.dom.byId('consolePlayBtn');
+    STFX.dom.byId('consoleShowChain')?.addEventListener('click',()=>document.querySelector('.sidebar-tab[data-pane="pane-cadena"]')?.click());
+    STFX.dom.byId('btnAnalyze')?.addEventListener('click',()=>setStatus('Analizando audio…',true)); STFX.dom.byId('btnMasterAsync')?.addEventListener('click',()=>setStatus('Mastering en cola…',true)); STFX.dom.byId('btnMasterSync')?.addEventListener('click',()=>setStatus('Mastering en proceso…',true));
+    STFX.dom.byId('fileInput')?.addEventListener('change',syncTrackInfo);
+    window.addEventListener('stfx:preview-state', (ev) => {
+      const btn = STFX.dom.byId('consolePlayBtn');
       const detail = ev.detail || {};
       if (btn) btn.disabled = detail.state !== 'ready';
       if (detail.state === 'ready') setStatus('Preview completo listo para reproducir', true);
@@ -253,7 +250,7 @@
       else if (detail.state === 'disabled') setStatus(detail.text || 'Preview deshabilitado');
     });
     syncTrackInfo(); updateReadouts(); updateStageCards();
-    const observer=new MutationObserver(syncTrackInfo); const fileName=LGMDM.dom.byId('fileName'); if(fileName)observer.observe(fileName,{childList:true,subtree:true,characterData:true});
+    const observer=new MutationObserver(syncTrackInfo); const fileName=STFX.dom.byId('fileName'); if(fileName)observer.observe(fileName,{childList:true,subtree:true,characterData:true});
     // P5 (audit): antes tick() corría a 60fps y llamaba drawWaveform()
     // en cada frame. La animación de phase cambia con el tiempo,
     // así que el draw no es 100% cacheable, pero sí podemos
@@ -268,15 +265,15 @@
       if (onConsole && (now - lastFrame) >= FRAME_MS) {
         drawWaveform();
         syncMetersFromDom();
-        window.LGMDM?.spectrum?.redraw?.();
+        window.STFX?.spectrum?.redraw?.();
         lastFrame = now;
       }
       state.audio=getPreviewAudio();
       const audio=state.audio;
-      if(audio && onConsole){LGMDM.dom.byId('consoleTime').textContent=formatTime(audio.currentTime);LGMDM.dom.byId('consoleDuration').textContent=formatTime(audio.duration);const ph=LGMDM.dom.byId('consolePlayhead');if(Number.isFinite(audio.duration)&&audio.duration>0&&ph)ph.style.left=`${audio.currentTime/audio.duration*100}%`; } state.raf=requestAnimationFrame(tick);};
+      if(audio && onConsole){STFX.dom.byId('consoleTime').textContent=formatTime(audio.currentTime);STFX.dom.byId('consoleDuration').textContent=formatTime(audio.duration);const ph=STFX.dom.byId('consolePlayhead');if(Number.isFinite(audio.duration)&&audio.duration>0&&ph)ph.style.left=`${audio.currentTime/audio.duration*100}%`; } state.raf=requestAnimationFrame(tick);};
     state.raf=requestAnimationFrame(tick);
     // Consume the shared Metrics Store instead of wrapping another producer.
-    const metricsStore = window.LGMDM?.metrics;
+    const metricsStore = window.STFX?.metrics;
     if (metricsStore) {
       state.unsubscribeMetrics?.();
       state.unsubscribeMetrics = metricsStore.subscribe(({ metrics }) => {
@@ -294,7 +291,7 @@
       limiter: ['s-ceiling'],
     }[stage] || [];
     related.forEach((controlId) => {
-      const el = LGMDM.dom.byId(controlId);
+      const el = STFX.dom.byId(controlId);
       if (!el) throw new Error(`[Master Console] falta control técnico #${controlId}`);
       if (state.stageBypass[stage]) {
         if (el.dataset.consoleSaved == null) el.dataset.consoleSaved = el.value;
@@ -307,7 +304,7 @@
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
     updateReadouts(); updateStageCards();
-    scheduleConsolePreview();
+    window.STFX?.previewController?.request?.();
   };
   root.console.getChainOverrides = () => ({
     comp_bypass: !!state.stageBypass.comp,

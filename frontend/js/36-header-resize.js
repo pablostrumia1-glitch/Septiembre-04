@@ -1,11 +1,11 @@
-/* LGMDM — Header Resize
+/* STFX — Header Resize
  * Deja que el usuario arrastre el borde inferior del header para
  * cambiar su alto a gusto. Ajusta --lg-shell-header-h en :root,
  * que es la misma variable que ya usan .lg-app y .lg-header
  * (min/max-height) — así ambas quedan siempre sincronizadas.
  *
  * Q11 + Q12 (audit): reescrito para usar el helper compartido
- * LGMDM.ui.makeResizable (00-resize-utility.js) en vez de
+ * STFX.ui.makeResizable (00-resize-utility.js) en vez de
  * reimplementar el drag a mano. Beneficios:
  *   - Cleanup correcto de listeners (removeEventListener en onUp)
  *   - No más getComputedStyle en cada onUp — makeResizable
@@ -39,15 +39,15 @@
     function onEnd() {
       // Persistir al final del drag (no en cada onMove).
       const final = getComputedStyle(root).getPropertyValue('--lg-shell-header-h').trim();
-      try { window.LGMDM?.storage?.set?.('lgmdm.headerHeight', final); } catch (_) { /* noop */ }
+      try { window.STFX?.storage?.set?.('stfx.headerHeight', final); } catch (_) { /* noop */ }
     }
 
-    if (typeof window.LGMDM?.ui?.makeResizable !== 'function') {
-      console.warn('36-header-resize: LGMDM.ui.makeResizable no disponible, header no se podrá redimensionar');
+    if (typeof window.STFX?.ui?.makeResizable !== 'function') {
+      console.warn('36-header-resize: STFX.ui.makeResizable no disponible, header no se podrá redimensionar');
       return;
     }
 
-    window.LGMDM.ui.makeResizable(handle, {
+    window.STFX.ui.makeResizable(handle, {
       axis: 'y',
       getSize,
       setSize,
@@ -58,7 +58,7 @@
 
     // Restaurar el último alto elegido por el usuario, si hay uno guardado.
     try {
-      const saved = window.LGMDM?.storage?.get?.('lgmdm.headerHeight');
+      const saved = window.STFX?.storage?.get?.('stfx.headerHeight');
       if (saved) root.style.setProperty('--lg-shell-header-h', saved);
     } catch (_) { /* noop */ }
   }

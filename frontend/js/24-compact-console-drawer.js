@@ -1,11 +1,11 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
-  const storageKey = 'lgmdm.drawer-width';
+  const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+  const storageKey = 'stfx.drawer-width';
   function readSavedWidth(){
     try {
-      const current = LGMDM.storage.get(storageKey);
+      const current = STFX.storage.get(storageKey);
       if (current) return Number(current);
     } catch (_) {}
     return NaN;
@@ -48,16 +48,16 @@
   let current = 'input';
   const chainButtons = [...document.querySelectorAll('.lg-chain-node')];
 
-  function sourceValue(id) { const el=LGMDM.dom.byId(id); return el ? el.value : ''; }
+  function sourceValue(id) { const el=STFX.dom.byId(id); return el ? el.value : ''; }
   function renderParam([label, id, readout]) {
-    const el=LGMDM.dom.byId(id); if(!el) return '';
+    const el=STFX.dom.byId(id); if(!el) return '';
     const value=sourceValue(id);
     return `<div class="lg-compact-param"><div class="lg-compact-param-head"><span>${label}</span><b data-compact-readout="${readout}">${value}</b></div><input type="range" data-compact-proxy="${id}" min="${el.min||''}" max="${el.max||''}" step="${el.step||''}" value="${value}"></div>`;
   }
   function requireDrawerChild(selector) {
-    const node = LGMDM.dom.query(selector, drawer);
+    const node = STFX.dom.query(selector, drawer);
     if (!node) {
-      throw new Error(`[LGMDM DOM CONTRACT] 24-compact-console-drawer: template missing ${selector}`);
+      throw new Error(`[STFX DOM CONTRACT] 24-compact-console-drawer: template missing ${selector}`);
     }
     return node;
   }
@@ -69,8 +69,8 @@
     requireDrawerChild('#lgCompactDrawerNote').textContent=m.note;
     drawer.querySelector('#lgCompactDrawerParams').innerHTML=(m.ids||[]).map(renderParam).join('') || '<div class="lg-compact-drawer-note">Este módulo tiene controles detallados en la consola lateral.</div>';
     drawer.querySelectorAll('[data-compact-proxy]').forEach(proxy=>bindOnce(proxy,'input',()=>{
-      const target=LGMDM.dom.byId(proxy.dataset.compactProxy); if(!target)return; target.value=proxy.value; target.dispatchEvent(new Event('input',{bubbles:true}));
-      const r=proxy.closest('.lg-compact-param')?.querySelector('[data-compact-readout]'); if(r){const source=LGMDM.dom.byId(r.dataset.compactReadout); if(source)r.textContent=source.textContent;}
+      const target=STFX.dom.byId(proxy.dataset.compactProxy); if(!target)return; target.value=proxy.value; target.dispatchEvent(new Event('input',{bubbles:true}));
+      const r=proxy.closest('.lg-compact-param')?.querySelector('[data-compact-readout]'); if(r){const source=STFX.dom.byId(r.dataset.compactReadout); if(source)r.textContent=source.textContent;}
     }));
     drawer.classList.add('open'); backdrop.classList.add('open'); document.body.classList.add('lg-compact-drawer-open'); drawer.setAttribute('aria-hidden','false');
   }
@@ -98,8 +98,8 @@
   function setDrawerWidth(px) {
     const {min, max} = getBounds();
     const w = Math.round(Math.max(min, Math.min(max, px)));
-    drawer.style.setProperty('--lgmdm-drawer-width', `${w}px`);
-    try { LGMDM.storage.set(storageKey, String(w)); } catch(_) {}
+    drawer.style.setProperty('--stfx-drawer-width', `${w}px`);
+    try { STFX.storage.set(storageKey, String(w)); } catch(_) {}
   }
   function startResize(clientX) {
     const rect = drawer.getBoundingClientRect();

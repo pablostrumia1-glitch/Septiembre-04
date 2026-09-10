@@ -1,12 +1,12 @@
-/* LGMDM — Studio Controller
+/* STFX — Studio Controller
  * Modular mastering studio UI. One visible control surface, real backend-bound parameters.
  * No simulated DSP: controls proxy the existing mastering inputs and chain bypass state.
  */
 (function (global) {
   'use strict';
 
-  const LG = global.LGMDM = global.LGMDM || {};
-  const STORAGE_KEY = 'lgmdm.studio.state.v1';
+  const LG = global.STFX = global.STFX || {};
+  const STORAGE_KEY = 'stfx.studio.state.v1';
 
   const PLUGINS = {
     input: {
@@ -141,14 +141,11 @@
   };
 
   const id = (value) => document.getElementById(value);
-  const getInput = (inputId) => {
-    const el = id(inputId);
-    if (!el) throw new Error(`[Studio] Falta control técnico requerido: #${inputId}`);
-    return el;
-  };
-  function read(inputId) { const el = getInput(inputId); return el.value; }
+  const getInput = (inputId) => id(inputId) || null;
+  function read(inputId) { const el = getInput(inputId); return el?.value ?? ''; }
   function set(inputId, value) {
     const el = getInput(inputId);
+    if (!el) return;
     el.value = String(value);
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -232,7 +229,7 @@
     state.expanded = enabled ? key : (state.expanded === key ? null : state.expanded);
     render();
     saveStorage();
-    window.dispatchEvent(new CustomEvent('lgmdm:studio-chain-changed', { detail: { active: [...state.active], plugin: key, enabled } }));
+    window.dispatchEvent(new CustomEvent('stfx:studio-chain-changed', { detail: { active: [...state.active], plugin: key, enabled } }));
   }
 
   function renderFamilies() {
@@ -285,6 +282,7 @@
     }
     defs.forEach(def => {
       const source = getInput(def.input);
+      if (!source) return;
       const row = document.createElement('label');
       row.className = 'studio-control-row';
       row.innerHTML = `<span class="studio-control-label">${def.label}</span><input type="range" min="${def.min}" max="${def.max}" step="${def.step}" value="${source.value}" class="studio-range" data-studio-input="${def.input}"><output>${formatValue(source.value, def)}</output>`;
@@ -304,7 +302,7 @@
       setPluginBypass(key, true);
       render();
       saveStorage();
-      window.dispatchEvent(new CustomEvent('lgmdm:studio-chain-changed', {
+      window.dispatchEvent(new CustomEvent('stfx:studio-chain-changed', {
         detail: { active: [...state.active], plugin: key, enabled: true, bypassed: true },
       }));
     });
@@ -360,8 +358,9 @@
     ['low', 'mid', 'high'].forEach(band => {
       const value = Number(values?.[band] ?? 0);
       const out = id(`studioGr_${band}`); const bar = id(`studioGrBar_${band}`);
-      if (out) out.textContent = Number.isFinite(value) ? `${value.toFixed(1)} dB` : '-- dB';
-      if (bar) bar.style.width = Number.isFinite(value) ? `${Math.min(100, Math.max(0, Math.abs(value) * 8))}%` : '0%';
+      const magnitude = Number.isFinite(value) ? Math.abs(value) : 0;
+      if (out) out.textContent = magnitude > 0 ? `${magnitude.toFixed(1)} dB` : '-- dB';
+      if (bar) bar.style.width = `${Math.min(100, Math.max(0, magnitude / 18))}%`;
     });
   }
 
@@ -404,13 +403,13 @@
 
     let hasData = false;
     defs.forEach(([key, barId, outId]) => {
-      const value = values[key];
-      const finite = Number.isFinite(value);
-      hasData = hasData || finite;
-      const out = id(outId);
-      const bar = id(barId);
-      if (out) out.textContent = finite ? `${value.toFixed(1)} dB` : '-- dB';
-      if (bar) bar.style.width = finite ? `${Math.min(100, Math.max(0, Math.abs(value) * 8))}%` : '0%';
+       const value = values[key];
+       const magnitude = Number.isFinite(value) ? Math.abs(value) : 0;
+       hasData = hasData || magnitude > 0;
+       const out = id(outId);
+       const bar = id(barId);
+       if (out) out.textContent = magnitude > 0 ? `${magnitude.toFixed(1)} dB` : '-- dB';
+       if (bar) bar.style.width = `${Math.min(100, Math.max(0, magnitude / 18))}%`;
     });
 
     const note = panel.querySelector('.studio-gr-note');
@@ -424,9 +423,8 @@
     const consoleEl = id('lgMasterConsole'); if (!consoleEl) throw new Error('[Studio] #lgMasterConsole no existe');
     loadStorage();
     render();
-    LG.metrics?.subscribe?.(({ metrics }) => updateCentralGR(metrics));
-    window.addEventListener('lgmdm:metrics', e => updateCentralGR(e.detail?.metrics));
-    window.addEventListener('lgmdm:preview-telemetry', e => {
+    window.addEventListener('stfx:metrics', e => updateCentralGR(e.detail?.metrics));
+    window.addEventListener('stfx:preview-telemetry', e => {
       previewTelemetry = e.detail?.telemetry || null;
       previewAudio = e.detail?.audio || document.querySelector('#previewAudioWrap audio');
       if (!previewAudio || telemetryAudio === previewAudio) return;

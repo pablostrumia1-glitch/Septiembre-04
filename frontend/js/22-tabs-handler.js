@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
   LG.tabs = LG.tabs || {};
   const TAB_STATE = LG.tabs.state = LG.tabs.state || { activeTab: 'pane-cadena' };
   const bindOnce = LG.ui?.bindOnce || ((el, ev, fn, key, opts) => {

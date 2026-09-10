@@ -1,24 +1,24 @@
 // ============================================================
-// 00-dom-safety.js — Acceso seguro al DOM bajo LGMDM.dom
+// 00-dom-safety.js — Acceso seguro al DOM bajo STFX.dom
 //
 // Q3 (audit): este archivo ahora también expone los helpers
 // que vivían en 00-helpers.js (value/checked/text/setValue/
 // parse/stringify/isMobile/isTablet/isDesktop). El archivo
 // 00-helpers.js se va a borrar — el namespace `dom.helpers`
-// nunca se usó en el proyecto, solo el `LGMDM.dom.byId` /
+// nunca se usó en el proyecto, solo el `STFX.dom.byId` /
 // `requireById` que ya vivía acá.
 // ============================================================
 (function (global) {
   'use strict';
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const dom = LG.dom = LG.dom || {};
 
   const api = {
     byId(id) { return typeof id === 'string' && id ? document.getElementById(id) : null; },
-    requireById(id, owner = 'LGMDM') {
+    requireById(id, owner = 'STFX') {
       const el = this.byId(id);
       if (!el) {
-        const error = new Error(`[LGMDM DOM CONTRACT] ${owner}: required element #${id} is missing`);
+        const error = new Error(`[STFX DOM CONTRACT] ${owner}: required element #${id} is missing`);
         console.error(error);
         throw error;
       }
@@ -73,16 +73,4 @@
   };
   Object.assign(dom, api);
 
-  // bindOnce: registra un listener con key para evitar duplicados.
-  // Si ya existe un listener con la misma key, no agrega otro.
-  const ui = LG.ui = LG.ui || {};
-  const _bindOnceKeys = new WeakMap();
-  ui.bindOnce = function bindOnce(el, type, fn, key, opts) {
-    if (!el || typeof fn !== 'function') return false;
-    const keyMap = _bindOnceKeys.get(el) || (_bindOnceKeys.set(el, {}), _bindOnceKeys.get(el));
-    if (key && keyMap[key]) return false;
-    el.addEventListener(type, fn, opts);
-    if (key) keyMap[key] = true;
-    return true;
-  };
 })(window);

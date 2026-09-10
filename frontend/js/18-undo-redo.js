@@ -179,24 +179,24 @@
   }
 
   // ── Crear instancia global ──
-  window.LGMDM.undo = window.LGMDM.undo || {};
-  window.LGMDM.undo.manager = new UndoRedoManager();
+  window.STFX.undo = window.STFX.undo || {};
+  window.STFX.undo.manager = new UndoRedoManager();
 
   // ── Funciones auxiliares ──
-  window.LGMDM.undo.undoLastChange = function() {
-    const result = window.LGMDM.undo.manager.undo();
+  window.STFX.undo.undoLastChange = function() {
+    const result = window.STFX.undo.manager.undo();
     if (result) {
-      window.LGMDM.ui.showToast?.(`Deshacer: ${result.label}`, 'info', 2000);
-      window.LGMDM?.a11y?.announce?.(`Deshacer: ${result.label}`, 'assertive');
+      window.STFX.ui.showToast?.(`Deshacer: ${result.label}`, 'info', 2000);
+      window.STFX?.a11y?.announce?.(`Deshacer: ${result.label}`, 'assertive');
       window.applyMasteringState?.(result.state);
     }
   };
 
-  window.LGMDM.undo.redoLastChange = function() {
-    const result = window.LGMDM.undo.manager.redo();
+  window.STFX.undo.redoLastChange = function() {
+    const result = window.STFX.undo.manager.redo();
     if (result) {
-      window.LGMDM.ui.showToast?.(`Rehacer: ${result.label}`, 'info', 2000);
-      window.LGMDM?.a11y?.announce?.(`Rehacer: ${result.label}`, 'assertive');
+      window.STFX.ui.showToast?.(`Rehacer: ${result.label}`, 'info', 2000);
+      window.STFX?.a11y?.announce?.(`Rehacer: ${result.label}`, 'assertive');
       window.applyMasteringState?.(result.state);
     }
   };
@@ -204,9 +204,9 @@
   // ── Rastrear cambios en parámetros ──
   function trackParameterChange(paramName, newValue) {
     // Obtener estado actual (esto requiere que exista buildMasteringParams)
-    if (typeof window.LGMDM?.params?.build === 'function') {
-      const currentState = window.LGMDM.params.build();
-      window.LGMDM.undo.manager.saveState(currentState, `Cambiar ${paramName}`);
+    if (typeof window.STFX?.params?.build === 'function') {
+      const currentState = window.STFX.params.build();
+      window.STFX.undo.manager.saveState(currentState, `Cambiar ${paramName}`);
     }
   };
 
@@ -232,7 +232,7 @@
     });
 
     // Actualizar lista de historial
-    window.LGMDM.undo.manager.onChange(({ history }) => {
+    window.STFX.undo.manager.onChange(({ history }) => {
       const list = document.getElementById('historyList');
       if (!list) return;
 
@@ -248,7 +248,7 @@
         history.undo.slice().reverse().forEach(item => {
           const li = document.createElement('div');
           li.textContent = `• ${item.label}`;
-          li.addEventListener('click', window.LGMDM.undo.undoLastChange);
+          li.addEventListener('click', window.STFX.undo.undoLastChange);
           list.appendChild(li);
         });
       }
@@ -263,7 +263,7 @@
         history.redo.slice().reverse().forEach(item => {
           const li = document.createElement('div');
           li.textContent = `• ${item.label}`;
-          li.addEventListener('click', window.LGMDM.undo.redoLastChange);
+          li.addEventListener('click', window.STFX.undo.redoLastChange);
           list.appendChild(li);
         });
       }
@@ -280,47 +280,34 @@
   }
 
   // ── Toggle history panel ──
-  window.LGMDM.undo.toggleHistoryPanel = function() {
+  window.STFX.undo.toggleHistoryPanel = function() {
     const panel = document.getElementById('history-panel') || createHistoryPanel();
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    window.LGMDM?.a11y?.announce?.('Panel de historial ' + (panel.style.display === 'none' ? 'cerrado' : 'abierto'), 'polite');
+    window.STFX?.a11y?.announce?.('Panel de historial ' + (panel.style.display === 'none' ? 'cerrado' : 'abierto'), 'polite');
   };
 
   // ── Agregar botón al header ──
   function addHistoryToggleButton() {
-    const header = document.querySelector('header');
-    if (!header) return;
+    const actionsContainer = document.querySelector('.lg-header-actions');
+    if (!actionsContainer) return;
 
     const historyBtn = document.createElement('button');
     historyBtn.id = 'historyToggleBtn';
-    historyBtn.textContent = '⏱️ Historial';
     historyBtn.setAttribute('aria-label', 'Mostrar historial de cambios (Ctrl+H)');
-    historyBtn.style.cssText = `
-      background: none;
-      border: none;
-      color: var(--text);
-      cursor: pointer;
-      padding: 8px 12px;
-      font-size: 0.9em;
-      font-weight: 500;
-      transition: color 0.2s;
-    `;
-    historyBtn.addEventListener('click', window.LGMDM.undo.toggleHistoryPanel);
-    historyBtn.addEventListener('mouseenter', () => {
-      historyBtn.style.color = 'var(--accent)';
-    });
-    historyBtn.addEventListener('mouseleave', () => {
-      historyBtn.style.color = 'var(--text)';
-    });
+    historyBtn.className = 'lg-icon-btn';
+    historyBtn.type = 'button';
+    historyBtn.title = 'Historial (Ctrl+H)';
+    historyBtn.textContent = '⏱️';
+    historyBtn.addEventListener('click', window.STFX.undo.toggleHistoryPanel);
 
-    header.appendChild(historyBtn);
+    actionsContainer.appendChild(historyBtn);
   }
 
   // ── Agregar atajo Ctrl+H para mostrar historial ──
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
       e.preventDefault();
-      window.LGMDM.undo.toggleHistoryPanel();
+      window.STFX.undo.toggleHistoryPanel();
     }
   });
 

@@ -1,7 +1,7 @@
 // filepath: js/00-observability.js
 (function (global) {
   'use strict';
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
   const metrics = Object.create(null);
   const observers = [];
   let initialized = false;
@@ -9,19 +9,19 @@
   let sentryDsn = '';
 
   function endpoint() {
-    const node = document.querySelector('meta[name="lgmdm-observability-endpoint"]');
+    const node = document.querySelector('meta[name="stfx-observability-endpoint"]');
     return node?.content?.trim() || '';
   }
 
   function record(name, value, extra = {}) {
     metrics[name] = { value, at: Date.now(), ...extra };
-    window.dispatchEvent(new CustomEvent('lgmdm:metric', { detail: metrics[name] }));
+    window.dispatchEvent(new CustomEvent('stfx:metric', { detail: metrics[name] }));
   }
 
   function reportToBackend(name, value, extra = {}) {
     const url = endpoint();
-    if (!url || typeof LGMDM.api?.apiFetch !== 'function') return;
-    LGMDM.api.apiFetch(url, {
+    if (!url || typeof STFX.api?.apiFetch !== 'function') return;
+    STFX.api.apiFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ metric: name, value, ...extra, path: location.pathname }),
@@ -92,7 +92,7 @@
     if (initialized) return;
     initialized = true;
     sentry = config.sentry || global.Sentry || null;
-    const dsnNode = document.querySelector('meta[name="lgmdm-sentry-dsn"]');
+    const dsnNode = document.querySelector('meta[name="stfx-sentry-dsn"]');
     sentryDsn = dsnNode?.content?.trim() || '';
     if (sentry && sentryDsn && typeof sentry.init === 'function') {
       try { sentry.init({ dsn: sentryDsn, environment: location.hostname || 'frontend' }); } catch (_) {}
@@ -102,6 +102,6 @@
     global.addEventListener('unhandledrejection', (event) => captureError(event.reason || new Error('Unhandled rejection')), { once: false });
   }
 
-  LGMDM.observability = { init, record, captureError, metrics: () => ({ ...metrics }), sentryDsn: () => sentryDsn };
+  STFX.observability = { init, record, captureError, metrics: () => ({ ...metrics }), sentryDsn: () => sentryDsn };
   init();
 })(window);

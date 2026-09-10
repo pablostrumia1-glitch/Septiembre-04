@@ -26,6 +26,6 @@
   // Placeholder: si en el futuro hace falta un registry real
   // (e.g. para liberar listeners de canvas/workers al cambiar
   // de workspace), se implementa acá. Hoy no hay nada que
-  // limpiar a nivel global — `LGMDM.cleanup` (de 00-cleanup.js)
+  // limpiar a nivel global — `STFX.cleanup` (de 00-cleanup.js)
   // ya cubre los recursos de audio.
 })();

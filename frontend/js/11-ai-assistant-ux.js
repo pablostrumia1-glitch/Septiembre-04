@@ -1,6 +1,6 @@
 (function(global){
   "use strict";
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
 // ============================================================
 // ============================================================
 
@@ -13,9 +13,9 @@ aiRequired("metersToggle", "11-ai-assistant-ux:meters").addEventListener("click"
 });
 
 window.addEventListener("beforeunload", () => {
-  LGMDM.meters?.stopDashboard?.();
-  LGMDM.meters?.teardownLiveMeters?.();
-  try { window.LGMDM?.spectrum?.clear?.(); } catch (e) {}
+  STFX.meters?.stopDashboard?.();
+  STFX.meters?.teardownLiveMeters?.();
+  try { window.STFX?.spectrum?.clear?.(); } catch (e) {}
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -34,14 +34,14 @@ function aiEl(id) {
 }
 
 function aiRequired(id, owner = "11-ai-assistant-ux") {
-  return LGMDM.dom.requireById(id, owner);
+  return STFX.dom.requireById(id, owner);
 }
 
 let lastAnalysisData = null;
 
 function setContext(analysisData) {
   lastAnalysisData = analysisData || null;
-  const state = window.LGMDM?.state;
+  const state = window.STFX?.state;
   if (state) state.lastAnalysisData = lastAnalysisData;
   window.dispatchEvent(new CustomEvent("analysis-updated", { detail: lastAnalysisData }));
 
@@ -192,7 +192,7 @@ function aiRenderSuggestions() {
 
 async function aiCheckStatus() {
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/ai/status`);
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/ai/status`);
     const data = await res.json();
     aiAvailable = !!data.available;
     aiRequired("aiStatusLine", "11-ai-assistant-ux:status").textContent = aiAvailable
@@ -208,7 +208,7 @@ async function aiCheckStatus() {
     aiAvailable = false;
     aiRequired("aiStatusLine", "11-ai-assistant-ux:status").textContent = "Sin conexión al backend";
     aiRequired("aiSend", "11-ai-assistant-ux:status").disabled = true;
-    aiAppendNote("No se pudo conectar con el backend (" + LGMDM.api.apiBase() + ") para consultar el asistente.");
+    aiAppendNote("No se pudo conectar con el backend (" + STFX.api.apiBase() + ") para consultar el asistente.");
   }
 }
 
@@ -226,7 +226,7 @@ async function aiSendMessage() {
   send.disabled = true;
 
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/ai/chat`, {
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/ai/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -350,10 +350,10 @@ aiEl("aiInput")?.addEventListener("input", function () {
 })();
 
 // Se eliminó la línea que hacía referencia a window._origSetFile
-(function(){ const LG = window.LGMDM = window.LGMDM || {}; LG.ai = Object.assign(LG.ai || {}, { setContext }); })();
+(function(){ const LG = window.STFX = window.STFX || {}; LG.ai = Object.assign(LG.ai || {}, { setContext }); })();
 
 // 07-mastering-actions.js corre fuera de este IIFE y llama a estas
-// funciones directamente (sin prefijo LGMDM.ai.), asi que quedan
+// funciones directamente (sin prefijo STFX.ai.), asi que quedan
 // expuestas tambien como globales.
 Object.assign(global, {
   aiEl,
@@ -373,11 +373,11 @@ Object.assign(global, {
 (function () {
   const panel = document.getElementById('aiPanel');
   const handle = document.getElementById('aiPanelResizeHandle');
-  if (!panel || !handle || !window.LGMDM || !LGMDM.ui || !LGMDM.ui.makeResizable) return;
+  if (!panel || !handle || !window.STFX || !STFX.ui || !STFX.ui.makeResizable) return;
 
   // Ancho: arrastrar el handle hacia la izquierda agranda el panel
   // (el panel está anclado por "right", no por "left" → invert:true).
-  LGMDM.ui.makeResizable(handle, {
+  STFX.ui.makeResizable(handle, {
     axis: 'x',
     invert: true,
     min: 300,
@@ -388,7 +388,7 @@ Object.assign(global, {
 
   // Alto: arrastrar el handle hacia arriba agranda el panel
   // (el panel está anclado por "bottom" → invert:true).
-  LGMDM.ui.makeResizable(handle, {
+  STFX.ui.makeResizable(handle, {
     axis: 'y',
     invert: true,
     min: 260,

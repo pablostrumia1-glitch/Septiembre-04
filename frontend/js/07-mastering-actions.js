@@ -4,16 +4,16 @@
 
 // Q6 (audit): pollInterval vivía como `var` global y colisionaba con
 // el de 08-reference-mastering.js en hot-reload. Lo movimos a un
-// namespace por módulo bajo LGMDM.polling. Cada módulo tiene el
+// namespace por módulo bajo STFX.polling. Cada módulo tiene el
 // suyo, sin colisión.
-window.LGMDM = window.LGMDM || {};
-window.LGMDM.polling = window.LGMDM.polling || {};
-window.LGMDM.polling.master = null;
+window.STFX = window.STFX || {};
+window.STFX.polling = window.STFX.polling || {};
+window.STFX.polling.master = null;
 
 // ── MASTER ────────────────────────────────────────────────────
 async function submitMasterJob() {
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Enviando archivo…", "queued");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Enviando archivo…", "queued");
   document.getElementById("btnMaster")?.setAttribute("disabled", "");
 
   const fd = new FormData();
@@ -25,10 +25,10 @@ async function submitMasterJob() {
 
   try {
     const params = buildParams();
-    const url = `${LGMDM.api.apiBase()}/master?${params.toString()}`;
+    const url = `${STFX.api.apiBase()}/master?${params.toString()}`;
     console.log("📤 Enviando a:", url);
     console.log("📁 Archivo:", selectedFile.name, selectedFile.size, "bytes");
-    const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });
+    const res = await STFX.api.apiFetch(url, { method: "POST", body: fd });
     console.log("📥 Respuesta:", res.status, res.statusText);
     if (!res.ok) {
       const text = await res.text();
@@ -36,23 +36,23 @@ async function submitMasterJob() {
     }
     const data = await res.json();
     currentJobId = data.job_id;
-    LGMDM.ui.showStatus(null, `Job ${currentJobId.slice(0, 8)}… en cola`, "queued");
+    STFX.ui.showStatus(null, `Job ${currentJobId.slice(0, 8)}… en cola`, "queued");
     startPolling(currentJobId);
   } catch (e) {
     console.error("❌ Error al enviar:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
     document.getElementById("btnMaster")?.removeAttribute("disabled");
   }
 }
 
 document.getElementById("btnMaster")?.addEventListener("click", () => {
   if (!selectedFile) {
-    LGMDM.ui.showStatus(null, "Selecciona un archivo primero", "error");
+    STFX.ui.showStatus(null, "Selecciona un archivo primero", "error");
     return;
   }
-  LGMDM.ui.clearResults();
+  STFX.ui.clearResults();
   const paramsObj = collectMasterParamsObj();
-  window.LGMDM.params.renderPreview(paramsObj, { onConfirm: submitMasterJob });
+  window.STFX.params.renderPreview(paramsObj, { onConfirm: submitMasterJob });
 });
 
 document.getElementById("btnMasterAsync")?.addEventListener("click", () => {
@@ -61,18 +61,18 @@ document.getElementById("btnMasterAsync")?.addEventListener("click", () => {
 
 async function submitMasterSync() {
   if (!selectedFile) {
-    LGMDM.ui.showStatus(null, "Selecciona un archivo primero", "error");
+    STFX.ui.showStatus(null, "Selecciona un archivo primero", "error");
     return;
   }
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Procesando (sync)…", "processing");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Procesando (sync)…", "processing");
   const fd = new FormData();
   if (_previewLibraryId) fd.append("library_id", _previewLibraryId);
   else fd.append("file", selectedFile);
   try {
     const params = buildParams();
-    const url = `${LGMDM.api.apiBase()}/master/sync?${params.toString()}`;
-    const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });
+    const url = `${STFX.api.apiBase()}/master/sync?${params.toString()}`;
+    const res = await STFX.api.apiFetch(url, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
@@ -92,40 +92,40 @@ async function submitMasterSync() {
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(masterObjUrl), 1500);
-    LGMDM.ui.showStatus(null, "Master sync completado ✓", "done");
+    STFX.ui.showStatus(null, "Master sync completado ✓", "done");
   } catch (e) {
     console.error("Error en master sync:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   }
 }
 
 document.getElementById("btnMasterSync")?.addEventListener("click", async () => {
   if (!selectedFile) {
-    LGMDM.ui.showStatus(null, "Selecciona un archivo primero", "error");
+    STFX.ui.showStatus(null, "Selecciona un archivo primero", "error");
     return;
   }
-  LGMDM.ui.clearResults();
+  STFX.ui.clearResults();
   const paramsObj = collectMasterParamsObj();
-  window.LGMDM.params.renderPreview(paramsObj, { onConfirm: submitMasterSync, confirmLabel: "Master (descarga)" });
+  window.STFX.params.renderPreview(paramsObj, { onConfirm: submitMasterSync, confirmLabel: "Master (descarga)" });
 });
 
 // ── AUTO-MASTERING IA ────────────────────────────────────────
 document.getElementById("btnAutoMaster")?.addEventListener("click", async () => {
   if (!selectedFile) {
-    LGMDM.ui.showStatus(null, "Selecciona un archivo primero", "error");
+    STFX.ui.showStatus(null, "Selecciona un archivo primero", "error");
     return;
   }
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "🤖 La IA está analizando tu track…", "processing");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "🤖 La IA está analizando tu track…", "processing");
   const autoBtn = document.getElementById("btnAutoMaster");
   const masterBtn = document.getElementById("btnMaster");
   autoBtn.disabled = true;
   if (masterBtn) masterBtn.disabled = true;
 
-  const panel = LGMDM.dom.requireById("aiPanel", "07-mastering-actions:auto-master");
+  const panel = STFX.dom.requireById("aiPanel", "07-mastering-actions:auto-master");
   panel.classList.remove("hidden");
   panel.classList.add("open");
-  LGMDM.dom.requireById("aiSuggestions", "07-mastering-actions:auto-master").replaceChildren();
+  STFX.dom.requireById("aiSuggestions", "07-mastering-actions:auto-master").replaceChildren();
   aiShowTyping();
 
   const fd = new FormData();
@@ -133,7 +133,7 @@ document.getElementById("btnAutoMaster")?.addEventListener("click", async () => 
   try {
     const fmt = document.getElementById("s-format") ? document.getElementById("s-format").value : "wav";
     const params = new URLSearchParams({ output_format: fmt });
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/ai/auto-master?${params}`, { method: "POST", body: fd });
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/ai/auto-master?${params}`, { method: "POST", body: fd });
     aiHideTyping();
     if (!res.ok) {
       const text = await res.text();
@@ -141,7 +141,7 @@ document.getElementById("btnAutoMaster")?.addEventListener("click", async () => 
     }
     const data = await res.json();
     currentJobId = data.job_id;
-    window.LGMDM.ai.setContext(data.analysis);
+    window.STFX.ai.setContext(data.analysis);
 
     const d = data.ai_decision || {};
     const platformLabel = d.platform ? d.platform : "sin target específico";
@@ -152,19 +152,19 @@ document.getElementById("btnAutoMaster")?.addEventListener("click", async () => 
     );
     const { platform, reasoning, ...aiParams } = d;
     if (Object.keys(aiParams).length) {
-      window.LGMDM.params.renderPreview(aiParams, {
+      window.STFX.params.renderPreview(aiParams, {
         readOnly: true,
         title: "🤖 Parámetros calculados por la IA para este track",
       });
     }
 
-    LGMDM.ui.showStatus(null, `IA calculó los parámetros — procesando…`, "queued");
+    STFX.ui.showStatus(null, `IA calculó los parámetros — procesando…`, "queued");
     startPolling(currentJobId);
   } catch (e) {
     aiHideTyping();
     console.error("Error en auto-master IA:", e);
     aiAppendNote("Error en el auto-mastering: " + e.message);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   } finally {
     autoBtn.disabled = false;
     if (masterBtn) masterBtn.disabled = false;
@@ -174,11 +174,11 @@ document.getElementById("btnAutoMaster")?.addEventListener("click", async () => 
 // ── SUGERIR CON IA ───────────────────────────────────────────
 document.getElementById("btnAiSuggest")?.addEventListener("click", async () => {
   if (!selectedFile) {
-    LGMDM.ui.showStatus(null, "Selecciona un archivo primero", "error");
+    STFX.ui.showStatus(null, "Selecciona un archivo primero", "error");
     return;
   }
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "🤖 La IA está analizando tu track…", "processing");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "🤖 La IA está analizando tu track…", "processing");
   const suggestBtn = document.getElementById("btnAiSuggest");
   const autoBtn2 = document.getElementById("btnAutoMaster");
   const masterBtn2 = document.getElementById("btnMaster");
@@ -186,10 +186,10 @@ document.getElementById("btnAiSuggest")?.addEventListener("click", async () => {
   autoBtn2.disabled = true;
   if (masterBtn2) masterBtn2.disabled = true;
 
-  const panel2 = LGMDM.dom.requireById("aiPanel", "07-mastering-actions:ai-suggest");
+  const panel2 = STFX.dom.requireById("aiPanel", "07-mastering-actions:ai-suggest");
   panel2.classList.remove("hidden");
   panel2.classList.add("open");
-  LGMDM.dom.requireById("aiSuggestions", "07-mastering-actions:ai-suggest").replaceChildren();
+  STFX.dom.requireById("aiSuggestions", "07-mastering-actions:ai-suggest").replaceChildren();
   aiShowTyping();
 
   const fd2 = new FormData();
@@ -199,14 +199,14 @@ document.getElementById("btnAiSuggest")?.addEventListener("click", async () => {
     fd2.append("file", selectedFile);
   }
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/ai/suggest`, { method: "POST", body: fd2 });
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/ai/suggest`, { method: "POST", body: fd2 });
     aiHideTyping();
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const data = await res.json();
-    window.LGMDM.ai.setContext(data.analysis);
+    window.STFX.ai.setContext(data.analysis);
 
     const d = data.ai_decision || {};
     const platformLabel = d.platform ? d.platform : "sin target específico";
@@ -221,18 +221,18 @@ document.getElementById("btnAiSuggest")?.addEventListener("click", async () => {
       applyPresetToUI(aiParams);
       document.querySelectorAll(".preset-btn.active").forEach((b) => b.classList.remove("active"));
       activePreset = null;
-      window.LGMDM.params.renderPreview(aiParams, {
+      window.STFX.params.renderPreview(aiParams, {
         title: "🤖 Parámetros sugeridos por la IA — revisá y confirmá para masterizar",
         confirmLabel: "✅ Confirmar y masterizar",
         onConfirm: submitMasterJob,
       });
     }
-    LGMDM.ui.showStatus(null, "Parámetros cargados — revisá y confirmá cuando quieras", "done");
+    STFX.ui.showStatus(null, "Parámetros cargados — revisá y confirmá cuando quieras", "done");
   } catch (e) {
     aiHideTyping();
     console.error("Error en /ai/suggest:", e);
     aiAppendNote("Error al pedir la sugerencia de la IA: " + e.message);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   } finally {
     suggestBtn.disabled = false;
     autoBtn2.disabled = false;
@@ -243,12 +243,12 @@ document.getElementById("btnAiSuggest")?.addEventListener("click", async () => {
 // ── ANALYZE ──────────────────────────────────────────────────
 async function _handleAnalyzeClick() {
   try {
-    const data = await LGMDM.analysis.request();
+    const data = await STFX.analysis.request();
     if (!data) return;
-    window.LGMDM.workspace?.setWorkspace?.("analysis");
+    window.STFX.workspace?.setWorkspace?.("analysis");
   } catch (e) {
     console.error("Error en análisis server-side:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   }
 }
 ["btnAnalyze", "btnAnalyzeGrid"].forEach((id) => {
@@ -259,28 +259,28 @@ async function _handleAnalyzeClick() {
 // ── ADVICE ────────────────────────────────────────────────────
 async function _handleAdviceClick() {
   if (!selectedFile) return;
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Analizando mezcla…", "processing");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Analizando mezcla…", "processing");
   const fd = new FormData();
   fd.append("file", selectedFile);
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/mix-advice`, { method: "POST", body: fd });
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/mix-advice`, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const data = await res.json();
-    LGMDM.ui.showStatus(null, "Evaluación completada", "done");
+    STFX.ui.showStatus(null, "Evaluación completada", "done");
     if (data.analysis?.lufs != null) showLoudnessMeter(data.analysis.lufs);
-    LGMDM.reference.renderAdvicePanel(data, "Evaluación de la mezcla");
+    STFX.reference.renderAdvicePanel(data, "Evaluación de la mezcla");
     renderPerceptualStandalone(data.analysis);
     if (data.analysis?.fft_spectrum) renderFFT([{ label: "Espectro", data: data.analysis.fft_spectrum }]);
     if (data.analysis)
-      window.LGMDM.ai.setContext({ ...data.analysis, mix_advice: { issues: data.issues, tips: data.tips, score: data.score } });
-    window.LGMDM?.workspace?.setWorkspace?.("analysis");
+      window.STFX.ai.setContext({ ...data.analysis, mix_advice: { issues: data.issues, tips: data.tips, score: data.score } });
+    window.STFX?.workspace?.setWorkspace?.("analysis");
   } catch (e) {
     console.error("Error en consejos:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   }
 }
 ["btnAdvice", "btnAdviceGrid"].forEach((id) => {
@@ -291,38 +291,38 @@ async function _handleAdviceClick() {
 // ── SPECTRUM ──────────────────────────────────────────────────
 document.getElementById("btnSpectrum")?.addEventListener("click", async () => {
   if (!selectedFile) return;
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Calculando FFT…", "processing");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Calculando FFT…", "processing");
   const fd = new FormData();
   fd.append("file", selectedFile);
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/spectrum?n_fft=4096&n_bins=96`, { method: "POST", body: fd });
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/spectrum?n_fft=4096&n_bins=96`, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const data = await res.json();
-    LGMDM.ui.showStatus(null, "Spectrum listo", "done");
+    STFX.ui.showStatus(null, "Spectrum listo", "done");
     renderFFT([{ label: "Espectro", data }]);
-    window.LGMDM?.workspace?.setWorkspace?.("analysis");
+    window.STFX?.workspace?.setWorkspace?.("analysis");
   } catch (e) {
     console.error("Error en spectrum:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
   }
 });
 
 // ── STEM SEPARATION ──────────────────────────────────────────
 document.getElementById("btnStems").addEventListener("click", async () => {
   if (!selectedFile) return;
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Separando en stems…", "processing", 0, "En cola…");
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Separando en stems…", "processing", 0, "En cola…");
   document.getElementById("btnStems").disabled = true;
   const fd = new FormData();
   fd.append("file", selectedFile);
   const stemsMode = document.getElementById("s-stems-mode")?.value || "demucs_4stem";
   fd.append("mode", stemsMode);
   try {
-    const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/stems/separate`, { method: "POST", body: fd });
+    const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/stems/separate`, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
@@ -331,7 +331,7 @@ document.getElementById("btnStems").addEventListener("click", async () => {
     pollStemsJob(data.job_id);
   } catch (e) {
     console.error("Error separando stems:", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
     document.getElementById("btnStems").disabled = false;
   }
 });
@@ -339,18 +339,18 @@ document.getElementById("btnStems").addEventListener("click", async () => {
 function pollStemsJob(jobId) {
   const interval = setInterval(async () => {
     try {
-      const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/job/${jobId}`);
+      const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/job/${jobId}`);
       const data = await res.json();
       if (data.status === "queued" || data.status === "processing") {
-        LGMDM.ui.showStatus(null, "Separando stems…", "processing", data.progress, data.stage);
+        STFX.ui.showStatus(null, "Separando stems…", "processing", data.progress, data.stage);
       } else if (data.status === "done") {
         clearInterval(interval);
-        LGMDM.ui.showStatus(null, "Stems listos ✓", "done");
+        STFX.ui.showStatus(null, "Stems listos ✓", "done");
         document.getElementById("btnStems").disabled = false;
         renderStemsPanel(data.stem_analysis, jobId, data.available_stems || []);
       } else if (data.status === "error") {
         clearInterval(interval);
-        LGMDM.ui.showStatus(null, "Error: " + data.error, "error");
+        STFX.ui.showStatus(null, "Error: " + data.error, "error");
         document.getElementById("btnStems").disabled = false;
       }
     } catch (e) {
@@ -373,10 +373,10 @@ function renderStemsPanel(stemAnalysis, jobId, availableStems) {
       const stem = btn.dataset.stemName;
       try {
         btn.disabled = true;
-        await LGMDM.api.downloadAuthenticated(`${LGMDM.api.apiBase()}/stems/download/${encodeURIComponent(job)}/${encodeURIComponent(stem)}`, { filename: `${stem}.wav` });
+        await STFX.api.downloadAuthenticated(`${STFX.api.apiBase()}/stems/download/${encodeURIComponent(job)}/${encodeURIComponent(stem)}`, { filename: `${stem}.wav` });
       } catch (e) {
-        if (typeof handleClientError === "function") handleClientError(e, "No se pudo descargar el stem.", { context: "stem-download" });
-        else window.LGMDM.ui.showToast?.(e.message || "No se pudo descargar el stem.", "error");
+        if (typeof window.STFX?.errors?.handleClientError === "function") window.STFX.errors.handleClientError(e, "No se pudo descargar el stem.", { context: "stem-download" });
+        else window.STFX.ui.showToast?.(e.message || "No se pudo descargar el stem.", "error");
       } finally { btn.disabled = false; }
     });
   }
@@ -420,25 +420,26 @@ function renderStemsPanel(stemAnalysis, jobId, availableStems) {
   <h3 class="stem-recommendations-title">Recomendaciones</h3>
   ${recsHtml}
 `;
-  LGMDM.ui.getContent().prepend(wrap);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.prepend(wrap);
 }
 
 // ── Polling ──────────────────────────────────────────────────
 function startPolling(jobId) {
-  if (LGMDM.polling.master) clearInterval(LGMDM.polling.master);
-  LGMDM.polling.master = setInterval(async () => {
+  if (STFX.polling.master) clearInterval(STFX.polling.master);
+  STFX.polling.master = setInterval(async () => {
     try {
-      const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/job/${jobId}`);
+      const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/job/${jobId}`);
       const data = await res.json();
       if (data.status === "queued") {
-        LGMDM.ui.showStatus(null, "En cola…", "queued", data.progress, data.stage);
+        STFX.ui.showStatus(null, "En cola…", "queued", data.progress, data.stage);
       } else if (data.status === "processing") {
-        LGMDM.ui.showStatus(null, "Masterizando…", "processing", data.progress, data.stage);
+        STFX.ui.showStatus(null, "Masterizando…", "processing", data.progress, data.stage);
       } else if (data.status === "done") {
-        clearInterval(LGMDM.polling.master);
-        LGMDM.ui.showStatus(null, "Mastering completado ✓", "done");
+        clearInterval(STFX.polling.master);
+        STFX.ui.showStatus(null, "Mastering completado ✓", "done");
         document.getElementById("btnMaster")?.removeAttribute("disabled");
-        downloadUrl = `${LGMDM.api.apiBase()}/download/${jobId}`;
+        downloadUrl = `${STFX.api.apiBase()}/download/${jobId}`;
         const btn = document.getElementById("btnDownload");
         btn.style.display = "block";
 
@@ -447,7 +448,7 @@ function startPolling(jobId) {
           abBtn.style.display = "block";
           abBtn.disabled = true;
           abBtn.textContent = "⏳ Cargando A/B...";
-          LGMDM.api.apiFetch(downloadUrl)
+          STFX.api.apiFetch(downloadUrl)
             .then(r => r.blob())
             .then(masterBlob => setupABPlayer(masterBlob))
             .then(() => {
@@ -462,10 +463,10 @@ function startPolling(jobId) {
         btn.onclick = async () => {
           try {
             btn.disabled = true;
-            await LGMDM.api.downloadAuthenticated(downloadUrl + currentTrackNameParam(), { filename: "mastered.wav" });
+            await STFX.api.downloadAuthenticated(downloadUrl + currentTrackNameParam(), { filename: "mastered.wav" });
           } catch (e) {
-            if (typeof handleClientError === "function") handleClientError(e, "No se pudo descargar el master.", { context: "master-download" });
-            else window.LGMDM.ui.showToast?.(e.message || "No se pudo descargar el master.", "error");
+            if (typeof window.STFX?.errors?.handleClientError === "function") window.STFX.errors.handleClientError(e, "No se pudo descargar el master.", { context: "master-download" });
+            else window.STFX.ui.showToast?.(e.message || "No se pudo descargar el master.", "error");
           } finally { btn.disabled = false; }
         };
         const rBtn = document.getElementById("btnReport");
@@ -474,12 +475,12 @@ function startPolling(jobId) {
         if (data.analysis_before?.lufs != null)
           showLoudnessMeter(data.analysis_after?.lufs ?? data.analysis_before.lufs);
         renderAnalysisComparison(data.analysis_before, data.analysis_after);
-        if (data.mix_advice_before) LGMDM.reference.renderAdvicePanel(data.mix_advice_before, "Evaluación", "— Antes");
-        if (data.mix_advice_after) LGMDM.reference.renderAdvicePanel(data.mix_advice_after, "Evaluación", "— Después");
-        if (data.analysis_after) window.LGMDM.ai.setContext({ ...data.analysis_after, mix_advice: data.mix_advice_after });
+        if (data.mix_advice_before) STFX.reference.renderAdvicePanel(data.mix_advice_before, "Evaluación", "— Antes");
+        if (data.mix_advice_after) STFX.reference.renderAdvicePanel(data.mix_advice_after, "Evaluación", "— Después");
+        if (data.analysis_after) window.STFX.ai.setContext({ ...data.analysis_after, mix_advice: data.mix_advice_after });
       } else if (data.status === "error") {
-        clearInterval(LGMDM.polling.master);
-        LGMDM.ui.showStatus(null, "Error: " + data.error, "error");
+        clearInterval(STFX.polling.master);
+        STFX.ui.showStatus(null, "Error: " + data.error, "error");
         document.getElementById("btnMaster")?.removeAttribute("disabled");
       }
     } catch (e) {
@@ -487,4 +488,4 @@ function startPolling(jobId) {
     }
   }, 1500);
 }
-(function(){ const LG=window.LGMDM=window.LGMDM||{}; LG.mastering=Object.assign(LG.mastering||{}, { submitJob: submitMasterJob, submitSync: submitMasterSync }); })();
+(function(){ const LG=window.STFX=window.STFX||{}; LG.mastering=Object.assign(LG.mastering||{}, { submitJob: submitMasterJob, submitSync: submitMasterSync }); })();

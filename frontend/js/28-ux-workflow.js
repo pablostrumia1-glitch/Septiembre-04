@@ -5,14 +5,14 @@
   const qs = (sel, root=document) => root.querySelector(sel);
   const qsa = (sel, root=document) => [...root.querySelectorAll(sel)];
 
-  const showToast = (message, type='info') => LGMDM.ui.showToast(message, type, 1800);
+  const showToast = (message, type='info') => STFX.ui.showToast(message, type, 1800);
 
   // ---------------- Preset comparison ----------------
   function collectCurrentParams(){
-    const map = window.LGMDM?.sliderIdToParam || {};
+    const map = window.STFX?.sliderIdToParam || {};
     const out = {};
     Object.entries(map).forEach(([id,key])=>{
-      const el=LGMDM.dom.byId(id); if(el) out[key]=el.value;
+      const el=STFX.dom.byId(id); if(el) out[key]=el.value;
     });
     qsa('input[type="checkbox"]').forEach(el=>{ if(el.id) out[el.id]=el.checked; });
     qsa('select').forEach(el=>{ if(el.id) out[el.id]=el.value; });
@@ -46,35 +46,35 @@
     });
     return rows;
   }
-  function closePresetCompare(){ LGMDM.dom.byId('lgmdmPresetCompare')?.remove(); }
+  function closePresetCompare(){ STFX.dom.byId('stfxPresetCompare')?.remove(); }
   function openPresetCompare(name,data,sourceButton){
     closePresetCompare();
     const changes=buildPresetDiff(data.params||data.settings||data);
-    const overlay=document.createElement('div'); overlay.id='lgmdmPresetCompare'; overlay.className='lgmdm-modal-overlay';
-    const modal=document.createElement('section'); modal.className='lgmdm-preset-compare'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
+    const overlay=document.createElement('div'); overlay.id='stfxPresetCompare'; overlay.className='stfx-modal-overlay';
+    const modal=document.createElement('section'); modal.className='stfx-preset-compare'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true');
     const title=sourceButton?.textContent?.trim() || name;
-    modal.innerHTML=`<div class="lgmdm-preset-compare-head"><div><span class="lgmdm-kicker">PRESET PREVIEW</span><h3>${title.replace(/[<>&]/g,'')}</h3><p>Comparación contra los parámetros actuales.</p></div><button type="button" class="lgmdm-modal-close" aria-label="Cerrar">×</button></div>`;
-    const body=document.createElement('div'); body.className='lgmdm-preset-diff';
-    if(!changes.length){ body.innerHTML='<div class="lgmdm-empty-state">Este preset no cambia los parámetros actualmente cargados.</div>'; }
+    modal.innerHTML=`<div class="stfx-preset-compare-head"><div><span class="stfx-kicker">PRESET PREVIEW</span><h3>${title.replace(/[<>&]/g,'')}</h3><p>Comparación contra los parámetros actuales.</p></div><button type="button" class="stfx-modal-close" aria-label="Cerrar">×</button></div>`;
+    const body=document.createElement('div'); body.className='stfx-preset-diff';
+    if(!changes.length){ body.innerHTML='<div class="stfx-empty-state">Este preset no cambia los parámetros actualmente cargados.</div>'; }
     else changes.slice(0,80).forEach(r=>{
-      const row=document.createElement('div'); row.className='lgmdm-diff-row';
+      const row=document.createElement('div'); row.className='stfx-diff-row';
       const labelEl=document.createElement('span'); labelEl.textContent=r.label;
       const fromEl=document.createElement('b'); fromEl.textContent=r.from;
-      const arrowEl=document.createElement('span'); arrowEl.className='lgmdm-arrow'; arrowEl.textContent='→';
+      const arrowEl=document.createElement('span'); arrowEl.className='stfx-arrow'; arrowEl.textContent='→';
       const toEl=document.createElement('strong'); toEl.textContent=r.to;
       row.append(labelEl,fromEl,arrowEl,toEl); body.appendChild(row);
     });
     if(changes.length>80){ const more=document.createElement('small'); more.textContent=`+ ${changes.length-80} cambios adicionales`; body.appendChild(more); }
-    const actions=document.createElement('div'); actions.className='lgmdm-modal-actions';
-    const cancel=document.createElement('button'); cancel.className='lgmdm-btn-secondary'; cancel.textContent='CANCELAR';
-    const apply=document.createElement('button'); apply.className='lgmdm-btn-primary'; apply.textContent='APLICAR PRESET';
+    const actions=document.createElement('div'); actions.className='stfx-modal-actions';
+    const cancel=document.createElement('button'); cancel.className='stfx-btn-secondary'; cancel.textContent='CANCELAR';
+    const apply=document.createElement('button'); apply.className='stfx-btn-primary'; apply.textContent='APLICAR PRESET';
     actions.append(cancel,apply); modal.append(body,actions); overlay.appendChild(modal); document.body.appendChild(overlay);
     const close=()=>closePresetCompare(); overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
-    modal.querySelector('.lgmdm-modal-close').addEventListener('click',close); cancel.addEventListener('click',close);
+    modal.querySelector('.stfx-modal-close').addEventListener('click',close); cancel.addEventListener('click',close);
     apply.addEventListener('click',()=>{
       try{
         const payload=data.params||data.settings||data;
-        if(typeof window.LGMDM?.presets?.applyToUI==='function') window.LGMDM.presets.applyToUI(payload);
+        if(typeof window.STFX?.presets?.applyToUI==='function') window.STFX.presets.applyToUI(payload);
         qsa('.preset-btn').forEach(b=>b.classList.toggle('active',b===sourceButton));
         document.querySelector('.lg-workspace-workspace-tab[data-workspace="console"]')?.click();
         showToast(`Preset aplicado: ${title}`,'success');
@@ -88,7 +88,7 @@
     e.preventDefault(); e.stopImmediatePropagation();
     const name=btn.dataset.preset; if(!name) return;
     try{
-      const res=await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/preset/${name}`);
+      const res=await STFX.api.apiFetch(`${STFX.api.apiBase()}/preset/${name}`);
       if(!res.ok) throw new Error(await res.text());
       openPresetCompare(name,await res.json(),btn);
     }catch(err){ console.error('Preset compare',err); showToast('No se pudo cargar la comparación del preset','error'); }
@@ -96,14 +96,14 @@
   document.addEventListener('click',interceptPresetClick,true);
 
   // Expose mapping used by preset compare.
-  if(window.sliderIdToParam){ window.LGMDM=window.LGMDM||{}; window.LGMDM.sliderIdToParam=window.sliderIdToParam; }
+  if(window.sliderIdToParam){ window.STFX=window.STFX||{}; window.STFX.sliderIdToParam=window.sliderIdToParam; }
 
   // ---------------- Keyboard workflow ----------------
   function isTyping(){ const a=document.activeElement; return !!a && ['INPUT','TEXTAREA','SELECT'].includes(a.tagName); }
   const WORKSPACES=['console','analysis','presets'];
   function switchWorkspace(name){ document.querySelector(`.lg-workspace-workspace-tab[data-workspace="${name}"]`)?.click(); }
-  function toggleExpert(){ LGMDM.dom.byId('expertModeToggle')?.click(); }
-  function togglePlayback(){ window.LGMDM?.playback?.toggle?.(); }
+  function toggleExpert(){ STFX.dom.byId('expertModeToggle')?.click(); }
+  function togglePlayback(){ window.STFX?.playback?.toggle?.(); }
   function handleWorkflowKey(e){
     if(isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;
     const key=String(e?.key ?? e?.code ?? '').toLowerCase();
@@ -116,7 +116,7 @@
       case '4': break;
       case 'e': toggleExpert(); break;
       case 'p': togglePlayback(); break;
-      case 'a': case 'b': LGMDM.dom.byId('btnABToggle')?.click(); break;
+      case 'a': case 'b': STFX.dom.byId('btnABToggle')?.click(); break;
       case 'm': showToast('Usá BYPASS en el módulo seleccionado para aislar el procesamiento','info'); break;
       default: return;
     }
@@ -128,8 +128,8 @@
   function flash(el){
     const host=el.closest('.param,.lg-compact-param,.lg-pro-mini-param,.control-block,.process-card-body') || el.parentElement;
     if(!host) return;
-    host.classList.remove('lgmdm-param-changed'); void host.offsetWidth; host.classList.add('lgmdm-param-changed');
-    setTimeout(()=>host.classList.remove('lgmdm-param-changed'),420);
+    host.classList.remove('stfx-param-changed'); void host.offsetWidth; host.classList.add('stfx-param-changed');
+    setTimeout(()=>host.classList.remove('stfx-param-changed'),420);
   }
   document.addEventListener('input',e=>{
     const el=e.target;
@@ -139,5 +139,5 @@
   },true);
 
   // Annotate workspace shortcuts in a lightweight status hint.
-  window.LGMDM=window.LGMDM||{};
+  window.STFX=window.STFX||{};
 })();

@@ -1,9 +1,9 @@
 // ============================================================
-// 00-critical-fixes.js — Diagnóstico y contratos base LGMDM
+// 00-critical-fixes.js — Diagnóstico y contratos base STFX
 // ============================================================
 (function (global) {
   'use strict';
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const diagnostics = LG.diagnostics = LG.diagnostics || {};
   const errorLog = [];
   const MAX_ERROR_LOG = 50;

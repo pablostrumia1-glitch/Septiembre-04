@@ -1,14 +1,14 @@
 
 (function(){
   'use strict';
-  const root = document.getElementById('lgmdmWorkspaceShell');
+  const root = document.getElementById('workspaceShell');
   if(!root) return;
   const tabs = [...root.querySelectorAll('.lg-workspace-workspace-tab')];
   const panes = [...root.querySelectorAll('.lg-workspace-workspace')];
-  const storageKey = 'lgmdm.workspace';
+  const storageKey = 'stfx.workspace';
   function readWorkspacePreference(){
     try {
-      const current = LGMDM.storage.get(storageKey);
+      const current = STFX.storage.get(storageKey);
       if (current) return current;
     } catch (_) {}
     return null;
@@ -22,14 +22,14 @@
       t.tabIndex=active?0:-1;
     });
     panes.forEach(p=>p.classList.toggle('active',p.dataset.workspace===name));
-    if(persist){ try{ LGMDM.storage.set(storageKey,name); }catch(_){} }
+    if(persist){ try{ STFX.storage.set(storageKey,name); }catch(_){} }
     document.body.dataset.workspace=name;
     document.querySelectorAll('.lg-workspace-workspace').forEach(p=>{ p.hidden = p.dataset.workspace !== name; });
-    if(name==='analysis') requestAnimationFrame(()=>window.LGMDM?.analysis?.redraw?.());
+    if(name==='analysis') requestAnimationFrame(()=>window.STFX?.analysis?.redraw?.());
   }
 
   tabs.forEach((tab,i)=>{
-    const bind = window.LGMDM?.ui?.bindOnce;
+    const bind = window.STFX?.ui?.bindOnce;
     bind(tab,'click',()=>setWorkspace(tab.dataset.workspace),'workspace-click');
     bind(tab,'keydown',e=>{
       if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();tabs[(i+1)%tabs.length].focus();}
@@ -40,7 +40,7 @@
 
   // Existing chain buttons and sidebar pane links jump back to Console while opening the requested drawer/pane.
   document.querySelectorAll('.lg-chain-node[data-pane], .lg-chain-control-strip [data-stage]').forEach(el=>{
-    const bind = window.LGMDM?.ui?.bindOnce;
+    const bind = window.STFX?.ui?.bindOnce;
     bind(el,'click',()=>setWorkspace('console'),'workspace-jump');
   });
 
@@ -69,7 +69,7 @@
       note.textContent='Aplicar preset al motor y volver a consola.';
       const btn=document.createElement('button');
       btn.type='button'; btn.textContent='APLICAR PRESET';
-      const bind = window.LGMDM?.ui?.bindOnce;
+      const bind = window.STFX?.ui?.bindOnce;
       bind(btn,'click',()=>{src.click();setWorkspace('console');},'workspace-preset-apply');
       card.append(title,note,btn); presetGrid.appendChild(card);
     });
@@ -88,6 +88,6 @@
   // correspondiente después de generar resultados. El contenido se
   // insertaba bien adentro de #analysisDynamicContent pero, si el usuario
   // seguía parado en otra pestaña, no lo veía ("no aparece").
-  window.LGMDM = window.LGMDM || {};
-  window.LGMDM.workspace = { setWorkspace, current: () => document.body.dataset.workspace };
+  window.STFX = window.STFX || {};
+  window.STFX.workspace = { setWorkspace, current: () => document.body.dataset.workspace };
 })();

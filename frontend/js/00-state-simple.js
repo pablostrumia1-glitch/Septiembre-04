@@ -1,11 +1,11 @@
 // ============================================================
-// 00-state-simple.js — Capa de pub/sub sobre LGMDM.state
+// 00-state-simple.js — Capa de pub/sub sobre STFX.state
 //
 // HISTÓRICO (S11 del audit):
 //   Antes este módulo declaraba su propio objeto `state` con las
 //   mismas claves que `01-state.js` (selectedFile, cachedFileBuffer,
 //   previewSessionId, etc.). Resultado: dos fuentes de verdad para
-//   el mismo estado. Las asignaciones a `LGMDM.state.selectedFile`
+//   el mismo estado. Las asignaciones a `STFX.state.selectedFile`
 //   no disparaban el `notify('selectedFile')` del pub/sub, porque
 //   01-state.js redefinía la propiedad como getter/setter y el
 //   setter no llamaba al notifier.
@@ -13,9 +13,9 @@
 // MODELO NUEVO:
 //   - El estado canónico sigue siendo el de 01-state.js (que ya
 //     expone los getters/setters hacia `window.selectedFile` y
-//     `LGMDM.state.selectedFile`).
+//     `STFX.state.selectedFile`).
 //   - Este archivo solo provee la API de subscripción
-//     (`LGMDM.state.subscribe(key, fn)`) que cualquier módulo
+//     (`STFX.state.subscribe(key, fn)`) que cualquier módulo
 //     puede usar para reaccionar a cambios.
 //   - Para que `subscribe('selectedFile', fn)` funcione, este
 //     archivo envuelve los setters conocidos para emitir la
@@ -25,8 +25,8 @@
 // ============================================================
 (function (global) {
   'use strict';
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  const state = LGMDM.state = LGMDM.state || {};
+  const STFX = global.STFX = global.STFX || {};
+  const state = STFX.state = STFX.state || {};
 
   const subscribers = new Map();
 
@@ -94,7 +94,7 @@
 
   for (const key of NOTIFY_KEYS) wrapNotify(key);
 
-  LGMDM.state.subscribe = subscribe;
-  LGMDM.state.notify = notify;
-  LGMDM.state.keysWithNotify = NOTIFY_KEYS.slice();
+  STFX.state.subscribe = subscribe;
+  STFX.state.notify = notify;
+  STFX.state.keysWithNotify = NOTIFY_KEYS.slice();
   })(window);

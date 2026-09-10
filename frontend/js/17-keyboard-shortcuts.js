@@ -44,19 +44,19 @@
     'ctrl+z': {
       label: 'Undo',
       description: 'Deshacer último cambio',
-      handler: () => window.LGMDM?.undo?.undoLastChange?.(),
+      handler: () => window.STFX?.undo?.undoLastChange?.(),
     },
     'ctrl+shift+z': {
       label: 'Redo',
       description: 'Rehacer cambio',
-      handler: () => window.LGMDM?.undo?.redoLastChange?.(),
+      handler: () => window.STFX?.undo?.redoLastChange?.(),
     },
 
     // Reproducción
     ' ': {
       label: 'Play/Pause',
       description: 'Reproducir o pausar audio',
-      handler: () => window.LGMDM?.playback?.toggle?.() || document.getElementById('consolePlayBtn')?.click(),
+      handler: () => window.STFX?.playback?.toggle?.() || document.getElementById('consolePlayBtn')?.click(),
       preventDefault: true,
     },
 
@@ -64,7 +64,7 @@
     'ctrl+b': {
       label: 'Toggle A/B',
       description: 'Alternar comparación A/B',
-      handler: () => window.LGMDM?.ab?.toggle?.() || document.getElementById('consoleABToggle')?.click(),
+      handler: () => window.STFX?.ab?.toggle?.() || document.getElementById('consoleABToggle')?.click(),
     },
 
     // Presets
@@ -85,7 +85,7 @@
     '?': {
       label: 'Mostrar Atajos',
       description: 'Mostrar lista de atajos de teclado',
-      handler: () => window.LGMDM?.shortcuts?.show?.(),
+      handler: () => window.STFX?.shortcuts?.show?.(),
       preventDefault: true,
     },
 
@@ -160,17 +160,17 @@
 
         try {
           action.handler(e);
-          window.LGMDM?.a11y?.announce?.(`Atajo ejecutado: ${action.label}`, 'assertive');
+          window.STFX?.a11y?.announce?.(`Atajo ejecutado: ${action.label}`, 'assertive');
         } catch (err) {
           console.error(`Error executing shortcut "${shortcut}":`, err);
-          window.LGMDM.ui.showToast?.(`Error ejecutando atajo: ${err.message}`, 'error');
+          window.STFX.ui.showToast?.(`Error ejecutando atajo: ${err.message}`, 'error');
         }
       }
     });
   }
 
   // ── Mostrar lista de atajos ──
-  window.LGMDM.shortcuts = window.LGMDM.shortcuts || {}; window.LGMDM.shortcuts.show = function() {
+  window.STFX.shortcuts = window.STFX.shortcuts || {}; window.STFX.shortcuts.show = function() {
     let modal = document.getElementById('keyboard-shortcuts-modal');
     if (modal) {
       modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
@@ -328,7 +328,7 @@
     };
 
     // Anunciar a screen readers
-    window.LGMDM?.a11y?.announce?.('Atajos de teclado abiertos. Presiona Escape para cerrar.', 'polite');
+    window.STFX?.a11y?.announce?.('Atajos de teclado abiertos. Presiona Escape para cerrar.', 'polite');
   };
 
   // ── Ajustar slider enfocado ──
@@ -347,15 +347,15 @@
       focused.dispatchEvent(new Event('input', { bubbles: true }));
       focused.dispatchEvent(new Event('change', { bubbles: true }));
 
-      window.LGMDM?.a11y?.announce?.(`${focused.getAttribute('aria-label')}: ${newValue}`, 'assertive');
+      window.STFX?.a11y?.announce?.(`${focused.getAttribute('aria-label')}: ${newValue}`, 'assertive');
     }
   }
 
   // ── Help indicator ──
   function addHelpIndicator() {
-    if (document.getElementById('lgmdm-shortcut-help')) return;
+    if (document.getElementById('stfx-shortcut-help')) return;
     const indicator = document.createElement('div');
-    indicator.id = 'lgmdm-shortcut-help';
+    indicator.id = 'stfx-shortcut-help';
     indicator.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -370,7 +370,7 @@
       cursor: help;
     `;
     indicator.textContent = 'Presiona ? para ver atajos';
-    indicator.addEventListener('click', window.LGMDM?.shortcuts?.show);
+    indicator.addEventListener('click', window.STFX?.shortcuts?.show);
     indicator.addEventListener('mouseenter', () => {
       indicator.style.background = 'var(--surface2)';
       indicator.style.color = 'var(--text)';

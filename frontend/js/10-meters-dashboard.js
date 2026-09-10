@@ -1,6 +1,6 @@
 (function (global) {
   "use strict";
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
 // ============================================================
 // 10-meters-dashboard.js — Dashboard, medidores en vivo, multiband GR/VU, espectrómetro
 // ============================================================
@@ -146,8 +146,8 @@ previewTriggerIds.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
   const evt = el.tagName === "SELECT" || el.type === "checkbox" ? "change" : "input";
-  const bind = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); return true; });
-  bind(el, evt, () => window.LGMDM?.previewController?.request?.(), `preview-${evt}`);
+  const bind = window.STFX?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); return true; });
+  bind(el, evt, () => window.STFX?.previewController?.request?.(), `preview-${evt}`);
 });
 
 // ── Dashboard ─────────────────────────────────────────────────
@@ -155,7 +155,7 @@ let dashboardWS = null,
   dashboardPollTimer = null;
 
 function renderDashboard(stats) {
-  const el = (id) => LGMDM.dom.cachedEl(id);
+  const el = (id) => STFX.dom.cachedEl(id);
   el("dashCpu")?.textContent && (el("dashCpu").textContent = stats.cpu_percent.toFixed(1) + "%");
   el("dashCpuBar")?.style && (el("dashCpuBar").style.width = Math.min(100, stats.cpu_percent) + "%");
   el("dashRam")?.textContent && (el("dashRam").textContent = stats.ram_percent.toFixed(1) + "%");
@@ -177,7 +177,7 @@ function startDashboardPolling() {
   stopDashboard();
   dashboardPollTimer = setInterval(async () => {
     try {
-      const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/dashboard`);
+      const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/dashboard`);
       if (!res.ok) return;
       renderDashboard(await res.json());
     } catch (e) {}
@@ -199,52 +199,23 @@ function stopDashboard() {
 
 async function startDashboard() {
   stopDashboard();
-  if (!LGMDM.api.authToken?.()) return;
-
-  // V3: el dashboard usa polling por defecto. El endpoint WebSocket puede
-  // estar ausente o ser cerrado por instalaciones/backend que no exponen
-  // /ws/dashboard. Evitamos abrir una conexión que sabemos que terminaría
-  // en un error de consola y mantenemos el panel funcional cada 5 s.
-  const wrap = document.getElementById('dashboardWrap');
-  const wsEnabled = wrap?.dataset?.dashboardWebsocket === 'true';
-  if (!wsEnabled) {
-    startDashboardPolling();
-    return;
-  }
-
-  try {
-    const wsUrl = await LGMDM.api.wsAuthUrl('/ws/dashboard');
-    dashboardWS = new WebSocket(wsUrl);
-    dashboardWS.onmessage = (ev) => {
-      try {
-        renderDashboard(JSON.parse(ev.data));
-      } catch (e) {}
-    };
-    dashboardWS.onerror = () => {
-      stopDashboard();
-      startDashboardPolling();
-    };
-    dashboardWS.onclose = () => {
-      if (!dashboardPollTimer) startDashboardPolling();
-    };
-  } catch (e) {
-    startDashboardPolling();
-  }
+  if (!STFX.api.authToken?.()) return;
+  startDashboardPolling();
 }
 
-const dashboardBindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
-dashboardBindOnce(LGMDM.dom.cachedEl('dashToggle'), 'click', () => {
-  const body = LGMDM.dom.cachedEl("dashboardBody");
+const dashboardBindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+dashboardBindOnce(STFX.dom.cachedEl('dashToggle'), 'click', () => {
+  const body = STFX.dom.cachedEl("dashboardBody");
   const hidden = body.style.display === "none";
   body.style.display = hidden ? "block" : "none";
-  LGMDM.dom.cachedEl("dashToggle").textContent = hidden ? "ocultar" : "mostrar";
+  STFX.dom.cachedEl("dashToggle").textContent = hidden ? "ocultar" : "mostrar";
 }, 'dashboard-toggle');
-dashboardBindOnce(window, 'lgmdm:authenticated', startDashboard, 'dashboard-authenticated');
+dashboardBindOnce(window, 'stfx:authenticated', startDashboard, 'dashboard-authenticated');
 startDashboard();
 
 // ── Metrics Store → meters principales ───────────────────────
 (function () {
-  const store = window.LGMDM?.metrics;
+  const store = window.STFX?.metrics;
   if (!store?.subscribe) return;
   const clamp01 = (v) => Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0));
   const fill = (id, value, floor, ceiling = 0) => {
@@ -352,7 +323,7 @@ function teardownLiveMeters() {
 }
 
 
-  LGMDM.meters = LGMDM.meters || {};
-  LGMDM.meters.stopDashboard = stopDashboard;
-  LGMDM.meters.teardownLiveMeters = teardownLiveMeters;
+  STFX.meters = STFX.meters || {};
+  STFX.meters.stopDashboard = stopDashboard;
+  STFX.meters.teardownLiveMeters = teardownLiveMeters;
 })(window);

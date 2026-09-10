@@ -3,14 +3,14 @@
 // ============================================================
 // Q7 (audit): el archivo no estaba envuelto en IIFE — sus `const` y
 // `function` quedaban en el scope global del módulo. Ahora vive
-// dentro de un IIFE y se monta en window.LGMDM.slidersUi. La
+// dentro de un IIFE y se monta en window.STFX.slidersUi. La
 // indentación con 6 espacios se mantiene para no tocar diffs
 // gigantes; los handlers anónimos quedan en closures y no se
 // exponen (no hace falta — solo se llaman desde los listeners que
 // se registran acá).
 (function () {
   'use strict';
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
   LG.slidersUi = LG.slidersUi || {};
 
       const sliders = [
@@ -202,12 +202,12 @@
           tab.classList.add("active");
           const band = tab.dataset.band;
           if (!band) {
-            const error = new Error("[LGMDM DOM CONTRACT] 02-sliders-ui: .mb-tab is missing data-band");
+            const error = new Error("[STFX DOM CONTRACT] 02-sliders-ui: .mb-tab is missing data-band");
             console.error(error);
             throw error;
           }
           document.querySelectorAll(".mb-panel").forEach((p) => p.classList.remove("active"));
-          const panel = LGMDM.dom.requireById("mb-panel-" + band, "02-sliders-ui:multiband");
+          const panel = STFX.dom.requireById("mb-panel-" + band, "02-sliders-ui:multiband");
           panel.classList.add("active");
         });
       });

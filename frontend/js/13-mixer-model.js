@@ -1,7 +1,7 @@
 // 13-mixer-model.js — Mixer domain model and pure helpers
 (function(){
   "use strict";
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
 function defaultStemParams(name) {
   return {
     name, stem_type: detectStemType(name),

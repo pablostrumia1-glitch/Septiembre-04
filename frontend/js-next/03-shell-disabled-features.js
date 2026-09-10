@@ -14,7 +14,10 @@
 (function () {
   'use strict';
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
+  // Solo ejecutar si la shell nueva está activa
+  if (!window.NEXT_SHELL_ENABLED) return;
+
+  const STFX = window.STFX = window.STFX || {};
 
   // Lista de módulos que deben permanecer desactivados en esta fase
   const DISABLED_MODULES = [
@@ -33,7 +36,6 @@
     '13-mixer-ui.js',
     '08-reference-mastering.js',
     'reference-library-picker.js',
-    '07-mastering-actions.js', // solo la parte de stems
   ];
 
   // Función para ocultar cualquier elemento inyectado por módulos desactivados
@@ -92,10 +94,10 @@
   }
 
   // Función para proporcionar un mecanismo de guard para módulos DSP
-  LGMDM.slots = LGMDM.slots || {};
-  LGMDM.slots.hasActiveSlot = function (slotName) {
+  STFX.slots = STFX.slots || {};
+  STFX.slots.hasActiveSlot = function (slotName) {
     // Un slot está activo si existe en el DOM y no está oculto
-    const slot = LGMDM.slots[slotName];
+    const slot = STFX.slots[slotName];
     if (!slot) return false;
     if (slot.nodeType === 1) { // Element
       return !slot.hidden && slot.style.display !== 'none';
@@ -104,7 +106,7 @@
   };
 
   // Función para que los módulos DSP verifiquen antes de cargar
-  LGMDM.slots.checkBeforeLoad = function (moduleName) {
+  STFX.slots.checkBeforeLoad = function (moduleName) {
     if (DISABLED_MODULES.includes(moduleName)) {
       console.log(`03-shell-disabled-features: módulo ${moduleName} desactivado en esta fase`);
       return false;

@@ -130,17 +130,17 @@ function getEQParams() {
   if (!hpEl) return null;
   const hp = parseFloat(hpEl.value);
   const lpBypass = document.getElementById("s-lp-bypass")?.checked ?? true;
-  const lp = lpBypass ? null : parseFloat(LGMDM.dom.requireById("s-lp-cutoff", "05-eq-waveform:getEQParams").value);
-  const air = parseFloat(LGMDM.dom.requireById("s-air", "05-eq-waveform:getEQParams").value);
-  const shelfFreq = parseFloat(LGMDM.dom.requireById("s-shelf-freq", "05-eq-waveform:getEQParams").value);
-  const lowShelfGain = parseFloat(LGMDM.dom.requireById("s-lowshelf", "05-eq-waveform:getEQParams").value);
-  const lowShelfFreq = parseFloat(LGMDM.dom.requireById("s-lowshelf-freq", "05-eq-waveform:getEQParams").value);
+  const lp = lpBypass ? null : parseFloat(STFX.dom.requireById("s-lp-cutoff", "05-eq-waveform:getEQParams").value);
+  const air = parseFloat(STFX.dom.requireById("s-air", "05-eq-waveform:getEQParams").value);
+  const shelfFreq = parseFloat(STFX.dom.requireById("s-shelf-freq", "05-eq-waveform:getEQParams").value);
+  const lowShelfGain = parseFloat(STFX.dom.requireById("s-lowshelf", "05-eq-waveform:getEQParams").value);
+  const lowShelfFreq = parseFloat(STFX.dom.requireById("s-lowshelf-freq", "05-eq-waveform:getEQParams").value);
   const bands = [];
   for (let i = 1; i <= 6; i++) {
     bands.push({
-      freq: parseFloat(LGMDM.dom.requireById(`s-eq${i}freq`, "05-eq-waveform:getEQParams").value),
-      gain: parseFloat(LGMDM.dom.requireById(`s-eq${i}gain`, "05-eq-waveform:getEQParams").value),
-      q: parseFloat(LGMDM.dom.requireById(`s-eq${i}q`, "05-eq-waveform:getEQParams").value),
+      freq: parseFloat(STFX.dom.requireById(`s-eq${i}freq`, "05-eq-waveform:getEQParams").value),
+      gain: parseFloat(STFX.dom.requireById(`s-eq${i}gain`, "05-eq-waveform:getEQParams").value),
+      q: parseFloat(STFX.dom.requireById(`s-eq${i}q`, "05-eq-waveform:getEQParams").value),
     });
   }
   return { hp, lp, air, shelfFreq, lowShelfGain, lowShelfFreq, bands };
@@ -403,7 +403,7 @@ function drawWaveform(audioBuffer) {
   // BUGFIX: antes esto apuntaba directo a #content (el shell fuera de las
   // pestañas) — usaba getContent() para que quede dentro de la pestaña
   // Analysis (ver 00-ui-core.js).
-  const container = window.LGMDM?.ui?.getContent?.() || document.getElementById("content");
+  const container = window.STFX?.ui?.getContent?.() || document.getElementById("content");
   let wrap = document.getElementById("waveformWrap");
   if (!wrap) {
     wrap = document.createElement("div");
@@ -420,8 +420,8 @@ function drawWaveform(audioBuffer) {
   // se hace visible (enganchado en 29-analysis-view.js → redraw()).
   renderWaveformToCanvas(canvas, buf, "var(--muted)");
 }
-window.LGMDM = window.LGMDM || {};
-window.LGMDM.waveform = { redraw: () => drawWaveform() };
+window.STFX = window.STFX || {};
+window.STFX.waveform = { redraw: () => drawWaveform() };
 
 function renderWaveformToCanvas(canvas, audioBuffer, color = "var(--accent)", alpha = 1) {
   const dpr = window.devicePixelRatio || 1;
@@ -462,7 +462,7 @@ function renderWaveformToCanvas(canvas, audioBuffer, color = "var(--accent)", al
 // ── Loudness meter ──────────────────────────────────────────────────────────
 function showLoudnessMeter(lufsValue) {
   let wrap = document.getElementById("loudnessMeterWrap");
-  const container = window.LGMDM?.ui?.getContent?.() || document.getElementById("content");
+  const container = window.STFX?.ui?.getContent?.() || document.getElementById("content");
   if (!wrap) {
     wrap = document.createElement("div");
     wrap.id = "loudnessMeterWrap";
@@ -472,7 +472,7 @@ function showLoudnessMeter(lufsValue) {
   } else if (wrap.parentElement !== container) {
     container.prepend(wrap);
   }
-  LGMDM.dom.requireById("lufsNumber", "05-eq-waveform:renderLoudnessMeter").textContent = lufsValue.toFixed(1);
+  STFX.dom.requireById("lufsNumber", "05-eq-waveform:renderLoudnessMeter").textContent = lufsValue.toFixed(1);
   const pct = Math.max(0, Math.min(100, ((lufsValue + 40) / 40) * 100));
   const fill = document.getElementById("lufsBarFill");
   fill.style.width = pct + "%";

@@ -2,29 +2,29 @@
 (function(){
   'use strict';
   const $=(id)=>document.getElementById(id);
-  const health=LGMDM.dom.byId('lgHealthPanel');
+  const health=STFX.dom.byId('lgHealthPanel');
   const state={};
   const setHealth=(name,status,text)=>{
     const item=health?.querySelector(`[data-health="${name}"]`);
-    const label=LGMDM.dom.byId(`health${name.charAt(0).toUpperCase()+name.slice(1)}`);
+    const label=STFX.dom.byId(`health${name.charAt(0).toUpperCase()+name.slice(1)}`);
     if(item) item.classList.remove('ok','warn','error'), item.classList.add(status);
     if(label) label.textContent=text;
     state[name]=status;
   };
   async function checkHealth(){
     if(!health) return;
-    const summary=LGMDM.dom.byId('lgHealthSummary');
+    const summary=STFX.dom.byId('lgHealthSummary');
     setHealth('storage','ok','Disponible');
     const hasAudio=!!(window.AudioContext||window.webkitAudioContext);
     setHealth('browser',hasAudio?'ok':'warn',hasAudio?'Audio API disponible':'Audio API limitada');
-    const token=(LGMDM.api.authToken?.()||'').trim();
+    const token=(STFX.api.authToken?.()||'').trim();
     setHealth('auth',token?'ok':'warn',token?'Token presente':'Sin sesión');
     const previewAudio=document.querySelector('#previewAudioWrap audio, #mxrServerPreviewAudio');
     setHealth('preview', previewAudio ? 'ok' : 'warn', previewAudio ? 'HQ 24-bit listo' : 'Esperando render HQ 24-bit / stream en vivo');
     setHealth('engine','ok','Frontend listo');
     let apiOk=false;
     try{
-      const fetcher=LGMDM.api.apiFetch;
+      const fetcher=STFX.api.apiFetch;
       if(fetcher){
         const res=await fetcher('/health',{method:'GET'});
         apiOk=res.ok;
@@ -47,10 +47,11 @@
     const warn=Object.values(state).filter(v=>v==='warn').length;
     if(summary) summary.textContent=bad?`${bad} componente${bad>1?'s':''} con error`:warn?`${warn} aviso${warn>1?'s':''}`:'Todos los controles principales OK';
   }
-  LGMDM.dom.byId('lgHealthRefresh')?.addEventListener('click', checkHealth);
-  window.addEventListener('lgmdm:auth-required', () => {
+  STFX.dom.byId('lgHealthRefresh')?.addEventListener('click', checkHealth);
+  window.addEventListener('stfx:auth-required', () => {
     setHealth('auth', 'error', 'Autenticación requerida');
-    LGMDM.dom.byId('lgHealthSummary').textContent = 'La sesión requiere autenticación';
+    const el = STFX.dom.byId('lgHealthSummary');
+    if (el) el.textContent = 'La sesión requiere autenticación';
   });
 
   // P1 (audit): antes hacía setInterval(checkHealth, 30000) sin
@@ -151,7 +152,7 @@
   function position(){if(!target||!tip.classList.contains('show'))return; const r=target.getBoundingClientRect(), w=320; let x=r.left, y=r.top-tip.offsetHeight-8; if(y<8)y=r.bottom+8; x=Math.max(8,Math.min(window.innerWidth-w-8,x)); tip.style.left=x+'px'; tip.style.top=y+'px';}
   document.addEventListener('mouseover',e=>{const el=e.target.closest('input[type="range"],select,button[data-engineer-tip]'); if(el)show(el);});
   document.addEventListener('mouseout',e=>{const el=e.target.closest('input[type="range"],select,button[data-engineer-tip]'); if(el&&(!e.relatedTarget||!el.contains(e.relatedTarget)))hide();});
-  const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+  const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
   bindOnce(window,'scroll',position,'health-tip-scroll',{capture:true});
   bindOnce(window,'resize',position,'health-tip-resize');
   document.addEventListener('focusin',e=>{const el=e.target.closest('input[type="range"],select'); if(el)show(el);});

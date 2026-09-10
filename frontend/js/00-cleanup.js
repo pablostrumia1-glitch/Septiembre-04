@@ -13,8 +13,8 @@
  *   - Helpers para que un módulo que registre audio resources
  *     pueda liberarlos explícitamente. La idea es: en vez de
  *     auto-cleanup global, cada componente llama
- *     `LGMDM.cleanup.disconnectAudioNode(node)` cuando destruye
- *     un stem, o `LGMDM.cleanup.revokeObjectURLs(urls)` al
+ *     `STFX.cleanup.disconnectAudioNode(node)` cuando destruye
+ *     un stem, o `STFX.cleanup.revokeObjectURLs(urls)` al
  *     terminar un preview.
  *   - Sin auto-registro de listeners en window.
  *   - Sin registry global (los registries globales son el
@@ -23,8 +23,8 @@
 (function (global) {
   'use strict';
 
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  const cleanup = LGMDM.cleanup = LGMDM.cleanup || {};
+  const STFX = global.STFX = global.STFX || {};
+  const cleanup = STFX.cleanup = STFX.cleanup || {};
 
   /**
    * Disconnect a Web Audio node safely. Returns true if it

@@ -103,7 +103,7 @@
         "s-mscomp-side-makeup": "ms_comp_side_makeup_db",
       };
 
-      window.LGMDM = window.LGMDM || {}; window.LGMDM.sliderIdToParam = sliderIdToParam;
+      window.STFX = window.STFX || {}; window.STFX.sliderIdToParam = sliderIdToParam;
 
       function applyPresetToUI(presetData) {
         Object.entries(sliderIdToParam).forEach(([sliderId, paramKey]) => {
@@ -114,64 +114,64 @@
           el.dispatchEvent(new Event("input"));
         });
         if (presetData.use_lufs_normalize != null)
-          LGMDM.dom.requireById("s-uselufs", "03-presets.js").checked = !!presetData.use_lufs_normalize;
+          STFX.dom.requireById("s-uselufs", "03-presets.js").checked = !!presetData.use_lufs_normalize;
         if (presetData.adaptive_loudness_weighting != null)
-          LGMDM.dom.requireById("s-uselufs-adaptive", "03-presets.js").checked = !!presetData.adaptive_loudness_weighting;
+          STFX.dom.requireById("s-uselufs-adaptive", "03-presets.js").checked = !!presetData.adaptive_loudness_weighting;
         if (presetData.loudness_sensitivity_amount != null) {
           const pct = Math.round(parseFloat(presetData.loudness_sensitivity_amount) * 100);
-          const el = LGMDM.dom.requireById("s-uselufs-sensitivity", "03-presets.js");
-          if (el) { el.value = pct; LGMDM.dom.requireById("v-uselufs-sensitivity", "03-presets.js").textContent = pct + "%"; }
+          const el = STFX.dom.requireById("s-uselufs-sensitivity", "03-presets.js");
+          if (el) { el.value = pct; STFX.dom.requireById("v-uselufs-sensitivity", "03-presets.js").textContent = pct + "%"; }
         }
         if (presetData.use_stereo_enhancer != null)
-          LGMDM.dom.requireById("s-enhancer", "03-presets.js").checked = !!presetData.use_stereo_enhancer;
+          STFX.dom.requireById("s-enhancer", "03-presets.js").checked = !!presetData.use_stereo_enhancer;
         if (presetData.comp_stereo_link != null)
-          LGMDM.dom.requireById("s-comp-link", "03-presets.js").checked = !!presetData.comp_stereo_link;
-        if (presetData.nr_bypass != null) LGMDM.dom.requireById("s-nr-bypass", "03-presets.js").checked = !!presetData.nr_bypass;
+          STFX.dom.requireById("s-comp-link", "03-presets.js").checked = !!presetData.comp_stereo_link;
+        if (presetData.nr_bypass != null) STFX.dom.requireById("s-nr-bypass", "03-presets.js").checked = !!presetData.nr_bypass;
         if (presetData.nr_strength != null) {
-          LGMDM.dom.requireById("s-nr-strength", "03-presets.js").value = presetData.nr_strength;
-          LGMDM.dom.requireById("v-nr-strength", "03-presets.js").textContent = parseFloat(presetData.nr_strength).toFixed(2);
+          STFX.dom.requireById("s-nr-strength", "03-presets.js").value = presetData.nr_strength;
+          STFX.dom.requireById("v-nr-strength", "03-presets.js").textContent = parseFloat(presetData.nr_strength).toFixed(2);
         }
         if (presetData.nr_noise_sample_sec != null) {
-          LGMDM.dom.requireById("s-nr-noise-sample-sec", "03-presets.js").value = presetData.nr_noise_sample_sec;
-          LGMDM.dom.requireById("v-nr-noise-sample-sec", "03-presets.js").textContent =
+          STFX.dom.requireById("s-nr-noise-sample-sec", "03-presets.js").value = presetData.nr_noise_sample_sec;
+          STFX.dom.requireById("v-nr-noise-sample-sec", "03-presets.js").textContent =
             parseFloat(presetData.nr_noise_sample_sec).toFixed(1) + "s";
         }
         if (presetData.parallel_bypass != null) {
-          const cb = LGMDM.dom.requireById("parallelBypass", "03-presets.js");
+          const cb = STFX.dom.requireById("parallelBypass", "03-presets.js");
           cb.checked = !!presetData.parallel_bypass;
           cb.dispatchEvent(new Event("change"));  // trigger visual dim
         }
         if (presetData.parallel_mix != null) {
-          const el = LGMDM.dom.requireById("parallelMix", "03-presets.js");
+          const el = STFX.dom.requireById("parallelMix", "03-presets.js");
           if (el) { el.value = presetData.parallel_mix; el.dispatchEvent(new Event("input")); }
         }
         if (presetData.parallel_threshold_db != null) {
-          const el = LGMDM.dom.requireById("parallelThresh", "03-presets.js");
+          const el = STFX.dom.requireById("parallelThresh", "03-presets.js");
           if (el) { el.value = presetData.parallel_threshold_db; el.dispatchEvent(new Event("input")); }
         }
-        if (presetData.glue_bypass != null) LGMDM.dom.requireById("s-glue-bypass", "03-presets.js").checked = !!presetData.glue_bypass;
-        if (presetData.saturation_mode) LGMDM.dom.requireById("s-satmode", "03-presets.js").value = presetData.saturation_mode;
-        if (presetData.oversample_mode) LGMDM.dom.requireById("s-oversample", "03-presets.js").value = presetData.oversample_mode;
-        if (presetData.mb_bypass != null) LGMDM.dom.requireById("mb-bypass", "03-presets.js").checked = !!presetData.mb_bypass;
+        if (presetData.glue_bypass != null) STFX.dom.requireById("s-glue-bypass", "03-presets.js").checked = !!presetData.glue_bypass;
+        if (presetData.saturation_mode) STFX.dom.requireById("s-satmode", "03-presets.js").value = presetData.saturation_mode;
+        if (presetData.oversample_mode) STFX.dom.requireById("s-oversample", "03-presets.js").value = presetData.oversample_mode;
+        if (presetData.mb_bypass != null) STFX.dom.requireById("mb-bypass", "03-presets.js").checked = !!presetData.mb_bypass;
         if (presetData.dyneq_bypass != null)
-          LGMDM.dom.requireById("s-dyneq-bypass", "03-presets.js").checked = !!presetData.dyneq_bypass;
+          STFX.dom.requireById("s-dyneq-bypass", "03-presets.js").checked = !!presetData.dyneq_bypass;
         if (presetData.reso_bypass != null)
-          LGMDM.dom.requireById("s-reso-bypass", "03-presets.js").checked = !!presetData.reso_bypass;
+          STFX.dom.requireById("s-reso-bypass", "03-presets.js").checked = !!presetData.reso_bypass;
         // bandeada nunca se actualizaba al cargar un preset (mismo patrón
         // de bug que parallel_bypass/parallel_mix/parallel_threshold_db,
         // arreglado antes).
         if (presetData.ms_eq_bypass != null)
-          LGMDM.dom.requireById("s-mseq-bypass", "03-presets.js").checked = !!presetData.ms_eq_bypass;
+          STFX.dom.requireById("s-mseq-bypass", "03-presets.js").checked = !!presetData.ms_eq_bypass;
         if (presetData.ms_comp_bypass != null)
-          LGMDM.dom.requireById("s-mscomp-bypass", "03-presets.js").checked = !!presetData.ms_comp_bypass;
-        if (presetData.eq_mode) LGMDM.dom.requireById("s-eq-mode", "03-presets.js").value = presetData.eq_mode;
+          STFX.dom.requireById("s-mscomp-bypass", "03-presets.js").checked = !!presetData.ms_comp_bypass;
+        if (presetData.eq_mode) STFX.dom.requireById("s-eq-mode", "03-presets.js").value = presetData.eq_mode;
         if (typeof drawEQCurve === 'function') drawEQCurve();
-        window.LGMDM?.previewController?.request?.();
+        window.STFX?.previewController?.request?.();
       }
 
       async function loadAndApplyPreset(name) {
         try {
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/preset/${name}`);
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/preset/${name}`);
           if (!res.ok) throw new Error(await res.text());
           const data = await res.json();
           applyPresetToUI(data);
@@ -188,12 +188,12 @@
       });
 
       // ── Cargar preset desde archivo JSON ────────────────────────────────────────
-      LGMDM.dom.requireById("btnLoadPresetJson", "03-presets.js")?.addEventListener("click", () => {
-        LGMDM.dom.requireById("presetJsonInput", "03-presets.js").click();
+      STFX.dom.requireById("btnLoadPresetJson", "03-presets.js")?.addEventListener("click", () => {
+        STFX.dom.requireById("presetJsonInput", "03-presets.js").click();
       });
-      LGMDM.dom.requireById("presetJsonInput", "03-presets.js")?.addEventListener("change", async (e) => {
+      STFX.dom.requireById("presetJsonInput", "03-presets.js")?.addEventListener("change", async (e) => {
         const file = e.target.files[0];
-        const statusEl = LGMDM.dom.requireById("presetLoadStatus", "03-presets.js");
+        const statusEl = STFX.dom.requireById("presetLoadStatus", "03-presets.js");
         if (!file) return;
         statusEl.style.color = "var(--muted)";
         statusEl.textContent = "Leyendo " + file.name + "…";
@@ -242,19 +242,19 @@
         club: -9.0,
         cd: -9.0,
       };
-      LGMDM.dom.requireById("s-platform", "03-presets.js")?.addEventListener("change", (e) => {
+      STFX.dom.requireById("s-platform", "03-presets.js")?.addEventListener("change", (e) => {
         const lufsTarget = PLATFORM_LUFS_TARGETS[e.target.value];
         if (lufsTarget == null) return; // "— Manual —": no tocar la config existente
-        const lufsSlider = LGMDM.dom.requireById("s-lufstarget", "03-presets.js");
+        const lufsSlider = STFX.dom.requireById("s-lufstarget", "03-presets.js");
         lufsSlider.value = lufsTarget;
         lufsSlider.dispatchEvent(new Event("input", { bubbles: true }));
-        const useLufsChk = LGMDM.dom.requireById("s-uselufs", "03-presets.js");
+        const useLufsChk = STFX.dom.requireById("s-uselufs", "03-presets.js");
         if (!useLufsChk.checked) {
           useLufsChk.checked = true;
           useLufsChk.dispatchEvent(new Event("change", { bubbles: true }));
         }
       });
 
-      LGMDM.dom.requireById("s-platform", "03-presets.js")?.addEventListener("change", () => window.LGMDM?.previewController?.request?.());
+      STFX.dom.requireById("s-platform", "03-presets.js")?.addEventListener("change", () => window.STFX?.previewController?.request?.());
 
       // ── File handling ────────────────────────────────────────────────────────────

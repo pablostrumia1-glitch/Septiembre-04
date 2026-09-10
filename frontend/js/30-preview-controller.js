@@ -1,4 +1,4 @@
-/* LGMDM — Server Preview Controller
+/* STFX — Server Preview Controller
  * Contract:
  *   1) Preview is enabled only by #s-livepreview.
  *   2) The server creates one immutable 25 s snapshot from the original track.
@@ -9,7 +9,7 @@
 (function (global) {
   'use strict';
 
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const DEBOUNCE_MS = 1500;
   const DEFAULT_PREVIEW_DURATION_SEC = 25;
 
@@ -35,7 +35,7 @@
   const outputPane = () => document.getElementById('pasoSalida');
 
   function setState(state, text, progress = null) {
-    global.dispatchEvent(new CustomEvent('lgmdm:preview-state', {
+    global.dispatchEvent(new CustomEvent('stfx:preview-state', {
       detail: { state, text, progress }
     }));
   }
@@ -71,7 +71,7 @@
     ready = false;
     if (playButton()) playButton().disabled = true;
     if (stopButton()) stopButton().disabled = true;
-    global.dispatchEvent(new CustomEvent('lgmdm:preview-ready', {
+    global.dispatchEvent(new CustomEvent('stfx:preview-ready', {
       detail: { ready: false }
     }));
   }
@@ -99,7 +99,7 @@
     ready = true;
     if (playButton()) playButton().disabled = false;
     if (stopButton()) stopButton().disabled = false;
-    global.dispatchEvent(new CustomEvent('lgmdm:preview-ready', {
+    global.dispatchEvent(new CustomEvent('stfx:preview-ready', {
       detail: { ready: true, audio }
     }));
   }
@@ -111,7 +111,7 @@
   function clearSourceSnapshot() {
     previewSourceId = null;
     previewSourceMeta = null;
-    global.dispatchEvent(new CustomEvent('lgmdm:preview-source-state', {
+    global.dispatchEvent(new CustomEvent('stfx:preview-source-state', {
       detail: { state: 'empty', sourceId: null, meta: null },
     }));
   }
@@ -153,7 +153,7 @@
         }
         previewSourceId = data.source_id;
         previewSourceMeta = { duration_sec: duration, source_sha256: data.source_sha256 || null };
-        global.dispatchEvent(new CustomEvent('lgmdm:preview-source-state', {
+        global.dispatchEvent(new CustomEvent('stfx:preview-source-state', {
           detail: { state: 'ready', sourceId: previewSourceId, meta: previewSourceMeta },
         }));
         return true;
@@ -280,7 +280,7 @@
     liveRafId = requestAnimationFrame(() => liveGRTick(audio));
   }
 
-  global.addEventListener('lgmdm:preview-ready', (e) => {
+  global.addEventListener('stfx:preview-ready', (e) => {
     const audio = e.detail?.audio;
     if (!audio) return;
     audio.addEventListener('play', () => {
@@ -430,7 +430,7 @@
     wired = true;
     const toggle = checkbox();
     const bind = LG.ui?.bindOnce;
-    if (typeof bind !== 'function') throw new Error('Preview Controller requiere LGMDM.ui.bindOnce');
+    if (typeof bind !== 'function') throw new Error('Preview Controller requiere STFX.ui.bindOnce');
     if (!toggle) throw new Error('Contrato DOM roto: #s-livepreview no existe');
     if (!audioWrap()) throw new Error('Contrato DOM roto: #previewAudioWrap no existe');
 
@@ -446,7 +446,7 @@
     });
 
     bind(toggle, 'change', handleToggle, 'server-preview-toggle');
-    bind(global, 'lgmdm:file-selected', handleFileSelected, 'server-preview-file-selected');
+    bind(global, 'stfx:file-selected', handleFileSelected, 'server-preview-file-selected');
 
     const chain = chainPane();
     const output = outputPane();

@@ -8,7 +8,7 @@
 // BUGFIX: Este script usa document.createElement y no hace innerHTML masivo
 // para evitar inyección de estructura fuera del grid principal.
 //
-// Dependencias: LGMDM.ui.makeResizable (de 00-resize-utility.js ya cargado)
+// Dependencias: STFX.ui.makeResizable (de 00-resize-utility.js ya cargado)
 (function () {
   'use strict';
 
@@ -19,11 +19,11 @@
     return;
   }
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
+  const STFX = window.STFX = window.STFX || {};
 
-  // ── Verificar que LGMDM.ui.makeResizable esté disponible ────────
-  if (!LGMDM.ui || typeof LGMDM.ui.makeResizable !== 'function') {
-    console.warn('00-shell-bootstrap: LGMDM.ui.makeResizable no disponible');
+  // ── Verificar que STFX.ui.makeResizable esté disponible ────────
+  if (!STFX.ui || typeof STFX.ui.makeResizable !== 'function') {
+    console.warn('00-shell-bootstrap: STFX.ui.makeResizable no disponible');
     return;
   }
 
@@ -147,23 +147,8 @@
   leftScroll.style.msOverflowStyle = 'none';
   leftScroll.style.scrollbarWidth = 'none';
 
-  // Scrollbar WebKit
-  const leftStyle = document.createElement('style');
-  leftStyle.textContent = `
-    .app-left__scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-      background: transparent;
-    }
-    .app-left__scroll::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.28);
-      border-radius: 2px;
-    }
-  `;
-
   left.appendChild(leftHeader);
   left.appendChild(leftScroll);
-  left.appendChild(leftStyle);
 
   // Center console — creado antes de los slots que lo referencian
   const center = document.createElement('section');
@@ -183,7 +168,25 @@
   centerHeader.style.color = 'var(--muted, #a8b2c0)';
   centerHeader.style.fontSize = '12px';
   centerHeader.style.whiteSpace = 'nowrap';
-  centerHeader.textContent = 'Consola Central';
+  centerHeader.style.alignItems = 'center';
+
+  const centerTitle = document.createElement('span');
+  centerTitle.textContent = 'Consola Central';
+
+  // Status bar — receives showStatus() messages via [data-stfx-status]
+  const statusBar = document.createElement('span');
+  statusBar.setAttribute('data-stfx-status', '');
+  statusBar.style.marginLeft = '12px';
+  statusBar.style.fontSize = '11px';
+  statusBar.style.color = 'var(--v4-accent, #ef9b42)';
+  statusBar.style.flex = '1';
+  statusBar.style.textAlign = 'right';
+  statusBar.style.overflow = 'hidden';
+  statusBar.style.textOverflow = 'ellipsis';
+  statusBar.style.whiteSpace = 'nowrap';
+
+  centerHeader.appendChild(centerTitle);
+  centerHeader.appendChild(statusBar);
 
   const centerScroll = document.createElement('div');
   centerScroll.className = 'app-center__scroll';
@@ -193,23 +196,8 @@
   centerScroll.style.msOverflowStyle = 'none';
   centerScroll.style.scrollbarWidth = 'none';
 
-  // Scrollbar WebKit
-  const centerStyle = document.createElement('style');
-  centerStyle.textContent = `
-    .app-center__scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-      background: transparent;
-    }
-    .app-center__scroll::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.28);
-      border-radius: 2px;
-    }
-  `;
-
   center.appendChild(centerHeader);
   center.appendChild(centerScroll);
-  center.appendChild(centerStyle);
 
   // ── Slot: Upload / Biblioteca de tracks (panel izquierdo) ────────
   const uploadSlot = document.createElement('div');
@@ -245,12 +233,57 @@
   masterSlot.innerHTML = `
     <h3 style="font-size: 13px; color: var(--text, #edf2ff); margin: 0 0 8px;">Mastering & Análisis</h3>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button onclick="console.log('Master iniciado')" style="padding: 6px 12px; background: var(--v4-accent, #ef9b42); border: none; border-radius: var(--app-border-radius, 4px); color: #070812; font-size: 11px; cursor: pointer;">Masterizar</button>
-      <button onclick="console.log('Análisis iniciado')" style="padding: 6px 12px; background: var(--v4-panel-2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); color: var(--text, #edf2ff); font-size: 11px; cursor: pointer;">Analizar</button>
-      <button onclick="console.log('Preview iniciado')" style="padding: 6px 12px; background: var(--v4-panel-2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); color: var(--text, #edf2ff); font-size: 11px; cursor: pointer;">Preview 25s</button>
+      <button id="newBtnMaster" style="padding: 6px 12px; background: var(--v4-accent, #ef9b42); border: none; border-radius: var(--app-border-radius, 4px); color: #070812; font-size: 11px; cursor: pointer;">Masterizar</button>
+      <button id="newBtnAnalyze" style="padding: 6px 12px; background: var(--v4-panel-2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); color: var(--text, #edf2ff); font-size: 11px; cursor: pointer;">Analizar</button>
+      <button id="newBtnPreview" style="padding: 6px 12px; background: var(--v4-panel-2, #12182a); border: 1px solid var(--line, rgba(148, 163, 184, 0.18)); border-radius: var(--app-border-radius, 4px); color: var(--text, #edf2ff); font-size: 11px; cursor: pointer;">Preview 25s</button>
     </div>
   `;
   centerScroll.appendChild(masterSlot);
+
+  // ── Results area (receives mastering/analysis results) ────────
+  const resultsArea = document.createElement('div');
+  resultsArea.className = 'new-shell-results';
+  resultsArea.id = 'newShellResults';
+  resultsArea.style.padding = '12px';
+  resultsArea.style.display = 'none';
+  resultsArea.style.borderBottom = '1px solid var(--line, rgba(148, 163, 184, 0.18))';
+  resultsArea.style.fontSize = '11px';
+  resultsArea.style.color = 'var(--muted, #a8b2c0)';
+  centerScroll.appendChild(resultsArea);
+
+  // ── Conectar botones reales de mastering ──────────────────────
+  const newBtnMaster = document.getElementById('newBtnMaster');
+  const newBtnAnalyze = document.getElementById('newBtnAnalyze');
+  const newBtnPreview = document.getElementById('newBtnPreview');
+
+  if (newBtnMaster) {
+    newBtnMaster.addEventListener('click', () => {
+      if (!window.selectedFile) {
+        window.alert('Selecciona un archivo primero');
+        return;
+      }
+      // Trigger the real master button in legacy shell
+      document.getElementById('btnMaster')?.click();
+    });
+  }
+  if (newBtnAnalyze) {
+    newBtnAnalyze.addEventListener('click', () => {
+      if (!window.selectedFile) {
+        window.alert('Selecciona un archivo primero');
+        return;
+      }
+      document.getElementById('btnAnalyze')?.click();
+    });
+  }
+  if (newBtnPreview) {
+    newBtnPreview.addEventListener('click', () => {
+      if (!window.selectedFile) {
+        window.alert('Selecciona un archivo primero');
+        return;
+      }
+      document.getElementById('btnAB')?.click();
+    });
+  }
 
   // ── Slot: Meters / GR (consola central) ───────────────────────────
   const metersSlot = document.createElement('div');
@@ -359,23 +392,8 @@
   rightScroll.style.msOverflowStyle = 'none';
   rightScroll.style.scrollbarWidth = 'none';
 
-  // Scrollbar WebKit
-  const rightStyle = document.createElement('style');
-  rightStyle.textContent = `
-    .app-right__scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-      background: transparent;
-    }
-    .app-right__scroll::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.28);
-      border-radius: 2px;
-    }
-  `;
-
   right.appendChild(rightHeader);
   right.appendChild(rightScroll);
-  right.appendChild(rightStyle);
 
   // Resize handles
   const leftHandle = document.createElement('div');
@@ -413,6 +431,13 @@
   main.appendChild(rightHandle);
   main.appendChild(right);
 
+  // ── Ocultar shell legacy ──────────────────────────────────────
+  const oldShell = document.getElementById('app-container') || document.querySelector('.lg-app');
+  if (oldShell) {
+    oldShell.style.display = 'none';
+    oldShell.setAttribute('aria-hidden', 'true');
+  }
+
   // Insertar al principio de body (antes de cualquier otro contenido legacy)
   const body = document.querySelector('body');
   if (body && body.firstChild) {
@@ -426,8 +451,8 @@
   if (logout) {
     logout.addEventListener('click', (e) => {
       e.stopImmediatePropagation();
-      if (typeof LGMDM?.auth?.logout === 'function') {
-        LGMDM.auth.logout();
+      if (typeof STFX?.auth?.logout === 'function') {
+        STFX.auth.logout();
       } else {
         // Fallback: limpiar sessionStorage y redirect
         try {
@@ -442,22 +467,31 @@
   }
 
   // ── Conectar upload/file handling slot ──────────────────────────
-  // Slot para: carga de archivo y biblioteca de tracks
-  // Se conecta al input hidden o button que ya existe en el HTML legacy
-  const fileInput = document.querySelector('input[type="file"][accept*="audio"]');
-  if (fileInput) {
-    fileInput.style.display = 'none'; // Oculto, se usa el botón del UI
-    console.log('00-shell-bootstrap: slot de upload conectado');
+  const hiddenFileInput = document.getElementById('fileInputHidden');
+  if (hiddenFileInput) {
+    hiddenFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      // Trigger the real file handling via STFX
+      window.dispatchEvent(new CustomEvent('stfx:file-selected', { detail: { name: file.name } }));
+      // Update track info
+      const trackName = document.getElementById('trackName');
+      const trackFormat = document.getElementById('trackFormat');
+      if (trackName) trackName.textContent = file.name;
+      if (trackFormat) trackFormat.textContent = file.type || 'audio/*';
+      // Store globally for mastering
+      window.selectedFile = file;
+    });
   }
 
   // ── Conectar meter/GR slot ──────────────────────────────────────
   // Los meters y GR se insertarán dinámicamente en .app-center__scroll
   // cuando los módulos correspondientes estén activos
-  window.LGMDM = window.LGMDM || {};
-  window.LGMDM.slots = window.LGMDM.slots || {};
-  window.LGMDM.slots.console = centerScroll;
-  window.LGMDM.slots.leftPanel = leftScroll;
-  window.LGMDM.slots.rightPanel = rightScroll;
+  window.STFX = window.STFX || {};
+  window.STFX.slots = window.STFX.slots || {};
+  window.STFX.slots.console = centerScroll;
+  window.STFX.slots.leftPanel = leftScroll;
+  window.STFX.slots.rightPanel = rightScroll;
 
   // ── Slot: Rack DSP con pestañas colapsables (panel derecho) ───────
   const rackSlot = document.createElement('div');
@@ -563,9 +597,53 @@
   downloadSlot.style.borderTop = '1px solid var(--line, rgba(148, 163, 184, 0.18))';
   downloadSlot.innerHTML = `
     <h3 style="font-size: 13px; color: var(--text, #edf2ff); margin: 0 0 8px;">Descarga</h3>
-    <button onclick="console.log('Descargando master...')" style="width: 100%; padding: 8px; background: var(--v4-accent, #ef9b42); border: none; border-radius: var(--app-border-radius, 4px); color: #070812; font-size: 12px; cursor: pointer;">Descargar Master</button>
+    <button id="newBtnDownload" style="width: 100%; padding: 8px; background: var(--v4-accent, #ef9b42); border: none; border-radius: var(--app-border-radius, 4px); color: #070812; font-size: 12px; cursor: pointer;">Descargar Master</button>
   `;
   rightScroll.appendChild(downloadSlot);
+
+  // ── Conectar botón de descarga real ──────────────────────────
+  const newBtnDownload = document.getElementById('newBtnDownload');
+  if (newBtnDownload) {
+    newBtnDownload.addEventListener('click', () => {
+      document.getElementById('btnDownload')?.click();
+    });
+
+    // Mirror old btnDownload visibility to new shell
+    const oldDownloadBtn = document.getElementById('btnDownload');
+    if (oldDownloadBtn) {
+      const mirrorDownload = () => {
+        const isVisible = oldDownloadBtn.style.display !== 'none' && !oldDownloadBtn.hidden;
+        newBtnDownload.style.display = isVisible ? 'block' : 'none';
+      };
+      mirrorDownload();
+      new MutationObserver(mirrorDownload).observe(oldDownloadBtn, {
+        attributes: true, attributeFilter: ['style', 'hidden']
+      });
+    }
+  }
+
+  // ── Mirror results to new shell ──────────────────────────────
+  // Watch for analysis results appearing in old shell and mirror summary
+  const mirrorArea = document.getElementById('newShellResults');
+  if (mirrorArea) {
+    const analysisContent = document.getElementById('analysisDynamicContent')
+      || document.getElementById('analysisResults')
+      || document.getElementById('results');
+    if (analysisContent) {
+      const mirrorResults = () => {
+        const hasContent = analysisContent.children.length > 0
+          && analysisContent.textContent.trim().length > 0;
+        if (hasContent) {
+          mirrorArea.style.display = 'block';
+          // Show a summary (first 500 chars)
+          mirrorArea.textContent = analysisContent.textContent.trim().substring(0, 500) + '…';
+        }
+      };
+      new MutationObserver(mirrorResults).observe(analysisContent, {
+        childList: true, subtree: true, characterData: true
+      });
+    }
+  }
 
   // ── Botones LAIA: ocultar/ver panel del chat ─────────────────────
   const laiaToggleSlot = document.createElement('div');
@@ -597,8 +675,8 @@
     pluginListScript.onload = () => {
       console.log('00-shell-bootstrap: plugin list cargado');
       // Inicializar la lista de plugins en el panel izquierdo
-      if (typeof window.LGMDM?.plugins?.init === 'function') {
-        window.LGMDM.plugins.init();
+      if (typeof window.STFX?.plugins?.init === 'function') {
+        window.STFX.plugins.init();
       }
     };
     document.body.appendChild(pluginListScript);

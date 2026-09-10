@@ -1,7 +1,7 @@
 
 (function(global){
   "use strict";
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const bound = new WeakMap();
   function bindOnce(el, type, handler, key = type, options){
     if (!el || typeof el.addEventListener !== "function") return false;
@@ -85,13 +85,11 @@
       });
     });
     const statusNodes = [
-      '#consoleStatus', '#previewPanelStatus', '#previewStatus', '#previewActionStatus'
+      '#consoleStatus', '#previewStatus'
     ];
     statusNodes.forEach((selector) => {
       document.querySelectorAll(selector).forEach((node) => {
         if (node.id === 'consoleStatus') node.textContent = 'Listo para recibir audio';
-        else if (node.id === 'previewPanelStatus') node.textContent = 'Listo para procesar';
-        else if (node.id === 'previewActionStatus') node.textContent = 'Esperando archivo';
         else node.textContent = '';
       });
     });
@@ -109,12 +107,8 @@
       else delete targeted.dataset.stage;
     }
     const status = document.getElementById('consoleStatus');
-    const previewStatus = document.getElementById('previewPanelStatus');
-    const compactStatus = document.getElementById('previewActionStatus');
     if (status) status.textContent = text;
-    if (previewStatus) previewStatus.textContent = text;
-    if (compactStatus) compactStatus.textContent = text;
-    document.querySelectorAll('[data-lgmdm-status]').forEach((node) => {
+    document.querySelectorAll('[data-stfx-status]').forEach((node) => {
       node.textContent = text;
       node.dataset.statusType = String(type || 'info');
       if (progress != null) node.dataset.progress = String(progress);
@@ -125,12 +119,12 @@
   }
 
   function getContent() {
-    // BUGFIX: antes devolvía #content (el shell exterior que envuelve TODO
-    // el workspace de pestañas), así que cualquier cosa insertada acá
-    // (waveform, resultados de análisis, panel perceptual) quedaba fuera de
-    // las pestañas, siempre visible, y desacomodaba el layout entero.
-    // Ahora prioriza el contenedor que vive DENTRO de la pestaña "Analysis".
-    return document.getElementById('analysisDynamicContent')
+    // El contenido general vive en la consola (#cnsBody / .cns-body) o
+    // en el stack principal (#mainStack). analysisDynamicContent es
+    // EXCLUSIVO del workspace Analysis y debe ser usado solo por
+    // 29-analysis-view.js (que lo referencia explícitamente).
+    return document.getElementById('cnsBody')
+      || document.getElementById('mainStack')
       || document.getElementById('content')
       || document.querySelector('.content')
       || document.body;

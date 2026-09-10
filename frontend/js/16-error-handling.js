@@ -14,8 +14,8 @@
     loading: { icon: '⏳', color: 'var(--amber)' },
   };
 
-  const escapeHtml = window.LGMDM?.ui?.escapeHtml;
-  if (typeof escapeHtml !== 'function') throw new Error('LGMDM.ui.escapeHtml debe estar disponible antes de 16-error-handling.js');
+  const escapeHtml = window.STFX?.ui?.escapeHtml;
+  if (typeof escapeHtml !== 'function') throw new Error('STFX.ui.escapeHtml debe estar disponible antes de 16-error-handling.js');
 
   function createToastContainer() {
     let container = document.getElementById('toast-container');
@@ -31,8 +31,8 @@
     return container;
   }
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
-  LGMDM.errors = LGMDM.errors || {};
+  const STFX = window.STFX = window.STFX || {};
+  STFX.errors = STFX.errors || {};
 
   function normalizeError(err, fallback = 'Ocurrió un error inesperado.') {
     if (!err) return fallback;
@@ -54,7 +54,7 @@
   function userMessage(err, fallback = 'Ocurrió un error inesperado.') {
     const kind = classifyError(err);
     if (kind === 'timeout') return 'La operación tardó demasiado. Intentá nuevamente.';
-    if (kind === 'network') return 'No se pudo conectar con LGMDM. Verificá la conexión y el servidor.';
+    if (kind === 'network') return 'No se pudo conectar con STFX. Verificá la conexión y el servidor.';
     if (kind === 'auth') return 'La sesión ya no es válida. Iniciá sesión nuevamente.';
     if (kind === 'validation') return normalizeError(err, 'Los datos enviados no son válidos.');
     if (kind === 'backend') return 'El servidor no pudo completar la operación. Intentá nuevamente.';
@@ -63,8 +63,8 @@
 
   function handleError(err, fallback = 'Ocurrió un error inesperado.', options = {}) {
     const message = userMessage(err, fallback);
-    if (options.log !== false) console.error(options.context || 'LGMDM error:', err);
-    if (options.notify !== false) LGMDM.ui.showToast(message, options.type || 'error', options.duration ?? 4500);
+    if (options.log !== false) console.error(options.context || 'STFX error:', err);
+    if (options.notify !== false) STFX.ui.showToast(message, options.type || 'error', options.duration ?? 4500);
     return message;
   }
 
@@ -74,25 +74,26 @@
     return el;
   }
 
-  LGMDM.ui.showToast = function(message, type = 'info', duration = 4000) {
+  STFX.ui.showToast = function(message, type = 'info', duration = 4000) {
     const container = createToastContainer();
-    const toast = document.createElement('lgmdm-toast');
+    const toast = document.createElement('stfx-toast');
     toast.setAttribute('type', type);
     toast.setAttribute('message', String(message));
     container.appendChild(toast);
     toast.scheduleRemove?.(duration);
-    window.LGMDM?.a11y?.announce?.(message, type === 'error' ? 'assertive' : 'polite');
+    window.STFX?.a11y?.announce?.(message, type === 'error' ? 'assertive' : 'polite');
     return toast;
   };
 
-  LGMDM.errors.handle = handleError;
-  LGMDM.errors.normalize = normalizeError;
-  LGMDM.errors.classify = classifyError;
-  LGMDM.errors.userMessage = userMessage;
+  STFX.errors.handle = handleError;
+  STFX.errors.normalize = normalizeError;
+  STFX.errors.classify = classifyError;
+  STFX.errors.userMessage = userMessage;
+  STFX.errors.handleClientError = handleError;  // Alias for backward compat
 
-  LGMDM.html = LGMDM.html || {};
-  LGMDM.html.escape = escapeHtml;
-  LGMDM.html.setText = setText;
+  STFX.html = STFX.html || {};
+  STFX.html.escape = escapeHtml;
+  STFX.html.setText = setText;
   
   // ── Input Validation ──
   const VALIDATORS = {
@@ -157,17 +158,17 @@
     return validateInput(value, label, validators);
   };
 
-  // ── HTTP: política única en LGMDM.api ──
+  // ── HTTP: política única en STFX.api ──
   async function fetchWithRetry(url, options = {}) {
     const { handleError: _handleError, ...apiOptions } = options || {};
-    return LGMDM.api.apiFetch(url, apiOptions);
+    return STFX.api.apiFetch(url, apiOptions);
   }
 
-  LGMDM.errors.fetchWithRetry = fetchWithRetry;
+  STFX.errors.fetchWithRetry = fetchWithRetry;
 
-  // Los errores globales pertenecen a LGMDM.observability.
-  if (typeof window.LGMDM?.observability?.captureError === 'function') {
-    window.LGMDM.observability.lastErrorHandler = true;
+  // Los errores globales pertenecen a STFX.observability.
+  if (typeof window.STFX?.observability?.captureError === 'function') {
+    window.STFX.observability.lastErrorHandler = true;
   }
 
   // ── Wrap existing API calls ──
@@ -176,7 +177,7 @@
     const { handleError: _ignored, ...requestOptions } = opts || {};
 
     try {
-      const response = await LGMDM.api.apiFetch(url, requestOptions);
+      const response = await STFX.api.apiFetch(url, requestOptions);
       if (!response.ok) {
         const error = new Error(`HTTP ${response.status}`);
         error.status = response.status;
@@ -191,17 +192,17 @@
         } else if (message.includes('Failed to fetch')) {
           message = 'Error de conexión. Verifica tu conexión a internet.';
         }
-        LGMDM.ui.showToast(message, 'error');
+        STFX.ui.showToast(message, 'error');
       }
       throw err;
     }
   };
 
-  LGMDM.errors.fetchWithErrorHandling = fetchWithErrorHandling;
+  STFX.errors.fetchWithErrorHandling = fetchWithErrorHandling;
 
   // ── Progress indicator ──
   function showProgress(message, total = null) {
-    const toast = LGMDM.ui.showToast(message, 'loading', 0);
+    const toast = STFX.ui.showToast(message, 'loading', 0);
     const progressBar = document.createElement('div');
     progressBar.className = total ? 'progress-bar' : 'progress-bar progress-bar-indeterminate';
     toast.appendChild(progressBar);
@@ -219,19 +220,19 @@
       },
       complete(successMessage = 'Completado') {
         toast.remove();
-        LGMDM.ui.showToast(successMessage, 'success', 3000);
+        STFX.ui.showToast(successMessage, 'success', 3000);
       },
       error(errorMessage = 'Error') {
         toast.remove();
-        LGMDM.ui.showToast(errorMessage, 'error');
+        STFX.ui.showToast(errorMessage, 'error');
       },
       toast,
     };
   };
 
   // ── Inicializar ──
-  LGMDM.errors.validateInput = validateInput;
-  LGMDM.errors.fetchWithRetry = fetchWithRetry;
-  LGMDM.errors.showProgress = showProgress;
+  STFX.errors.validateInput = validateInput;
+  STFX.errors.fetchWithRetry = fetchWithRetry;
+  STFX.errors.showProgress = showProgress;
 
 })();

@@ -4,7 +4,7 @@
 
 (function (global) {
   "use strict";
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
   // ── Estado ────────────────────────────────────────────────────────────────
   let _entries = [];       // lista de referencias indexadas
   let _filtered = [];      // resultado del filtro de búsqueda
@@ -16,13 +16,13 @@
   // ── Cargar índice desde el servidor ──────────────────────────────────────
   async function loadLibrary({retryOnAuth=false} = {}) {
     // Nunca disparamos una llamada protegida sin sesión disponible.
-    const token = LGMDM.api.authToken();
+    const token = STFX.api.authToken();
     if (!token) {
       if (_statusEl) _statusEl.textContent = "Iniciá sesión para cargar la biblioteca.";
       return;
     }
     try {
-      const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/reference-library`);
+      const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/reference-library`);
       if (res.status === 401 && retryOnAuth) {
         await new Promise(r => setTimeout(r, 100));
         return loadLibrary({retryOnAuth:false});
@@ -77,7 +77,7 @@
         metaEl.appendChild(span);
       }
       row.append(nameEl, metaEl);
-      const bindOnce = LGMDM.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+      const bindOnce = STFX.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
       bindOnce(row, "click", () => _selectEntry(entry), `ref-row-${entry.id}`);
       _listEl.appendChild(row);
     });
@@ -88,22 +88,22 @@
     _selected = entry;
 
     // Actualizar variable global que usa 08-reference-mastering.js
-    LGMDM.state = LGMDM.state || {}; LGMDM.state.reference = LGMDM.state.reference || { file: null, libraryId: null };
-    LGMDM.state.reference.libraryId = entry.id;
-    LGMDM.state.reference.file = null;       // anular el File subido a mano
+    STFX.state = STFX.state || {}; STFX.state.reference = STFX.state.reference || { file: null, libraryId: null };
+    STFX.state.reference.libraryId = entry.id;
+    STFX.state.reference.file = null;       // anular el File subido a mano
 
     // Mostrar nombre seleccionado en el label del input de referencia
     const label = document.getElementById("refFileLabel") || document.getElementById("ref-file-label");
     if (label) label.textContent = "📌 " + entry.filename;
 
     // Invalidar caché de sesión del WS de ref-preview
-    if (typeof LGMDM.reference?.onRefFileSelected === "function") LGMDM.reference?.onRefFileSelected();
+    if (typeof STFX.reference?.onRefFileSelected === "function") STFX.reference?.onRefFileSelected();
 
     // Cerrar modal
     _closeModal();
 
     // Actualizar botón de preview/submit
-    if (typeof LGMDM.reference?.updateRefPreviewBtn === "function") LGMDM.reference.updateRefPreviewBtn();
+    if (typeof STFX.reference?.updateRefPreviewBtn === "function") STFX.reference.updateRefPreviewBtn();
   }
 
   // ── Modal ─────────────────────────────────────────────────────────────────
@@ -138,14 +138,14 @@
     _listEl      = _modal.querySelector("#refLibList");
     _statusEl    = _modal.querySelector("#refLibStatus");
 
-    const bindOnce = LGMDM.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+    const bindOnce = STFX.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
     bindOnce(_modal.querySelector("#refLibClose"), "click", _closeModal, "ref-lib-close");
     bindOnce(_modal.querySelector(".ref-lib-backdrop"), "click", _closeModal, "ref-lib-backdrop-close");
     bindOnce(_searchInput, "input", (e) => _applySearch(e.target.value), "ref-lib-search");
     bindOnce(_modal.querySelector("#refLibRescan"), "click", async () => {
       _statusEl.textContent = "Re-escaneando…";
       try {
-        await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/reference-library/rescan`, { method: "POST" });
+        await STFX.api.apiFetch(`${STFX.api.apiBase()}/reference-library/rescan`, { method: "POST" });
         await loadLibrary();
       } catch (e) {
         _statusEl.textContent = "Error: " + e.message;
@@ -174,7 +174,7 @@
     // Nunca crear otro elemento con el mismo id: además de duplicar el DOM,
     // eso rompe el quick action y deja dos owners del mismo flujo.
     const existing = document.getElementById("btnOpenRefLib");
-    const bindOnce = LGMDM.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+    const bindOnce = STFX.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
     if (existing) {
       bindOnce(existing, "click", (e) => { e.preventDefault(); _openModal(); }, "ref-lib-open");
       return;
@@ -186,7 +186,7 @@
     const btn = document.createElement("button");
     btn.className = "btn btn-secondary btn-sm ref-lib-open-button";
     btn.type = "button";
-    btn.dataset.lgmdmReferenceLibraryTrigger = "true";
+    btn.dataset.stfxReferenceLibraryTrigger = "true";
     btn.textContent = "📚 Elegir desde biblioteca de referencias";
     bindOnce(btn, "click", (e) => { e.preventDefault(); _openModal(); }, "ref-lib-open-injected");
 
@@ -197,15 +197,15 @@
   // ── Init ──────────────────────────────────────────────────────────────────
   function init() {
     _injectButton();
-    const bindOnce = LGMDM.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+    const bindOnce = STFX.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
     // Solo pre-cargamos cuando hay sesión. Si el login ocurre después,
     // el evento de autenticación dispara la carga una sola vez.
     const maybeLoad = () => {
-      const token = LGMDM.api.authToken();
+      const token = STFX.api.authToken();
       if (token) loadLibrary({retryOnAuth:true}).catch(() => {});
     };
     maybeLoad();
-    bindOnce(window, "lgmdm:authenticated", maybeLoad, "reference-library-authenticated");
+    bindOnce(window, "stfx:authenticated", maybeLoad, "reference-library-authenticated");
   }
 
   // Esperar a que el DOM esté listo
@@ -216,6 +216,6 @@
   }
 
   // API pública (por si se necesita desde afuera)
-  LGMDM.reference = LGMDM.reference || {};
-  LGMDM.reference.libraryPicker = { open: _openModal, reload: loadLibrary };
+  STFX.reference = STFX.reference || {};
+  STFX.reference.libraryPicker = { open: _openModal, reload: loadLibrary };
 })(window);

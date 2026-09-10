@@ -1,5 +1,5 @@
 /*
- * LGMDM Layout Controller — owner único del shell/sidebar/resizer.
+ * STFX Layout Controller — owner único del shell/sidebar/resizer.
  *
  * Contrato DOM real:
  *   .lg-app-body > .lg-sidebar | #sidebarResizeHandle | .lg-main-stack
@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
+  const STFX = window.STFX = window.STFX || {};
   const root = document.documentElement;
   const layoutRoot = document.getElementById('appBody') || document.querySelector('.lg-app-body');
   const sidebar = layoutRoot?.querySelector(':scope > .lg-sidebar');
@@ -20,12 +20,12 @@
 
   if (!layoutRoot || !sidebar || !content || !handle) return;
 
-  const bindOnce = LGMDM.ui?.bindOnce || ((el, ev, fn, key, opts) => {
+  const bindOnce = STFX.ui?.bindOnce || ((el, ev, fn, key, opts) => {
     if (el) el.addEventListener(ev, fn, opts);
   });
 
-  const KEY_W = 'lgmdm:flex-sidebar-w';
-  const KEY_C = 'lgmdm:flex-sidebar-collapsed';
+  const KEY_W = 'stfx:flex-sidebar-w';
+  const KEY_C = 'stfx:flex-sidebar-collapsed';
   const MIN = 250;
   const isDesktop = () => window.innerWidth >= 960;
   const sidebarEnabled = () => !sidebar.hidden && !sidebar.hasAttribute('hidden');
@@ -49,7 +49,7 @@
   }
 
   function save(width) {
-    try { LGMDM.storage?.set(KEY_W, String(Math.round(width))); } catch (_) {}
+    try { STFX.storage?.set(KEY_W, String(Math.round(width))); } catch (_) {}
   }
 
   function setCollapsed(collapsed, persist = true) {
@@ -67,7 +67,7 @@
         );
       } else {
         let saved = NaN;
-        try { saved = parseFloat(LGMDM.storage?.get(KEY_W) || ''); } catch (_) {}
+        try { saved = parseFloat(STFX.storage?.get(KEY_W) || ''); } catch (_) {}
         apply(Number.isFinite(saved) ? saved : Math.round(window.innerWidth * 0.22));
       }
     } else {
@@ -81,7 +81,7 @@
     }
 
     if (persist) {
-      try { LGMDM.storage?.set(KEY_C, String(collapsed)); } catch (_) {}
+      try { STFX.storage?.set(KEY_C, String(collapsed)); } catch (_) {}
     }
   }
 
@@ -96,7 +96,7 @@
     startW = sidebar.getBoundingClientRect().width;
     handle.setPointerCapture?.(event.pointerId);
     handle.classList.add('dragging');
-    document.body.classList.add('lgmdm-layout-dragging');
+    document.body.classList.add('stfx-layout-dragging');
     event.preventDefault();
   }, 'flex-pointerdown');
 
@@ -108,7 +108,7 @@
     if (!dragging) return;
     dragging = false;
     handle.classList.remove('dragging');
-    document.body.classList.remove('lgmdm-layout-dragging');
+    document.body.classList.remove('stfx-layout-dragging');
     save(sidebar.getBoundingClientRect().width);
   };
 
@@ -153,7 +153,7 @@
     if (sidebar.classList.contains('collapsed')) return;
 
     let saved = NaN;
-    try { saved = parseFloat(LGMDM.storage?.get(KEY_W) || ''); } catch (_) {}
+    try { saved = parseFloat(STFX.storage?.get(KEY_W) || ''); } catch (_) {}
     const fallback = window.innerWidth < 1100
       ? window.innerWidth * 0.28
       : window.innerWidth * 0.22;
@@ -163,7 +163,7 @@
   bindOnce(window, 'resize', fit, 'flex-window-resize', { passive: true });
 
   let collapsed = false;
-  try { collapsed = LGMDM.storage?.get(KEY_C) === 'true'; } catch (_) {}
+  try { collapsed = STFX.storage?.get(KEY_C) === 'true'; } catch (_) {}
   setCollapsed(collapsed, false);
   fit();
 })();

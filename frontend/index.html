@@ -76,22 +76,37 @@
   <link href="css-next/13-hologram-spectrum.css" rel="stylesheet"/>
   <link href="css-next/14-dark-orbit.css" rel="stylesheet"/>
 
+  <!-- Shell nueva: CSS structural -->
+  <link href="css-next/01-reset.css" rel="stylesheet"/>
+  <link href="css-next/02-grid.css" rel="stylesheet"/>
+  <link href="css-next/03-header.css" rel="stylesheet"/>
+  <link href="css-next/04-left-panel.css" rel="stylesheet"/>
+  <link href="css-next/05-center-console.css" rel="stylesheet"/>
+  <link href="css-next/06-right-rack.css" rel="stylesheet"/>
+  <link href="css-next/07-responsive.css" rel="stylesheet"/>
+  <link href="css-next/08-resize.css" rel="stylesheet"/>
+  <link href="css-next/09-disabled-features.css" rel="stylesheet"/>
+  <link href="css-next/15-new-shell-theme.css" rel="stylesheet"/>
+
   <!-- Favicon -->
   <link href="favicon.svg" rel="icon" type="image/svg+xml"/>
 </head>
 
 <body>
+<script src="js/00-stfx-init.js"></script>
 <div aria-live="polite" class="sr-only" id="a11y-announcements" role="status"></div>
 <div id="auth-overlay"></div>
 <div class="lg-app" id="app-container">
 
   <!-- HEADER -->
   <header class="lg-header" id="appHeader">
-    <div class="lg-brand-lockup">
-      <div aria-hidden="true" class="lg-brand-mark">M</div>
-      <div>
-        <div class="lg-brand">MASTER</div>
-        <div class="lg-subbrand">INTELLIGENT MASTERING CONSOLE</div>
+    <div class="lg-header-left">
+      <div class="lg-brand-lockup">
+        <div aria-hidden="true" class="lg-brand-mark">M</div>
+        <div>
+          <div class="lg-brand">MASTER</div>
+          <div class="lg-subbrand">INTELLIGENT MASTERING CONSOLE</div>
+        </div>
       </div>
       <div class="lg-health-dropdown" id="lgHealthDropdown">
         <button class="lg-health-trigger" id="lgHealthTrigger" type="button" aria-expanded="false" aria-haspopup="true">
@@ -116,6 +131,19 @@
     </div>
     <div class="lg-header-center">
       <div class="lg-session-chip"><span aria-hidden="true" class="status-dot"></span><span class="lg-header-service-label">ESTADO DEL SERVICIO</span><span id="statusBar">Listo</span></div>
+      <!-- Dashboard -->
+      <div class="dashboard-wrap" id="dashboardWrap">
+        <h3><span class="dash-live-dot"></span> Dashboard <span class="meters-toggle" id="dashToggle">ocultar</span></h3>
+        <div id="dashboardBody">
+          <div class="dash-grid">
+            <div class="dash-card"><div class="dash-label">CPU</div><div class="dash-value" id="dashCpu">--%</div><div class="dash-bar-track"><div class="dash-bar-fill" id="dashCpuBar"></div></div></div>
+            <div class="dash-card"><div class="dash-label">RAM</div><div class="dash-value" id="dashRam">--%</div><div class="dash-bar-track"><div class="dash-bar-fill" id="dashRamBar"></div></div></div>
+            <div class="dash-card"><div class="dash-label">Cola</div><div class="dash-value" id="dashQueueTotal">0</div><div class="dash-queue-row"><span id="dashQueued">en cola: 0</span><span id="dashProcessing">procesando: 0</span></div></div>
+            <div class="dash-card"><div class="dash-label">Estado / ETA</div><div class="dash-value dash-value--eta" id="dashEta">Inactivo</div><div class="dash-queue-row" id="dashActiveFile"></div></div>
+          </div>
+        </div>
+        <div aria-hidden="true" aria-label="Redimensionar dashboard" class="panel-resize-handle-bottom" data-resize-target="dashboardWrap" role="separator" tabindex="0"></div>
+      </div>
     </div>
     <div class="lg-header-actions">
       <button aria-label="Abrir asistente de IA" class="lg-icon-btn lg-chat-btn" id="aiFab" type="button" title="Chat con Laia (IA)">🤖</button>
@@ -136,7 +164,7 @@
           <div class="eyebrow">WORKFLOW</div>
           <strong>Mastering Workspace</strong>
         </div>
-        <button aria-label="Contraer panel" aria-expanded="true" aria-controls="workflowSidebar" class="lg-collapse-btn" id="sidebarCollapseBtn" type="button">‹</button>
+        <button aria-label="Contraer panel" aria-expanded="false" aria-controls="workflowSidebar" class="lg-collapse-btn" id="sidebarCollapseBtn" type="button">‹</button>
       </div>
       <div class="sidebar-tabs" id="sidebarTabs">
         <button class="sidebar-tab active" data-pane="pane-cadena" type="button">⛓ Cadena</button>
@@ -1784,6 +1812,7 @@
                         <button class="lg-stage-card" data-stage="comp" type="button"><b>COMP</b><span id="consoleCompGr">GR 0.0 dB</span><em id="consoleCompBypass">ACTIVE</em></button>
                         <button class="lg-stage-card" data-stage="stereo" type="button"><b>STEREO</b><span id="consoleStereoGr">WIDTH 100%</span><em id="consoleStereoBypass">ACTIVE</em></button>
                         <button class="lg-stage-card" data-stage="limiter" type="button"><b>LIMITER</b><span id="consoleLimiterGr">GR 0.0 dB</span><em id="consoleLimiterBypass">ACTIVE</em></button>
+                        <button class="lg-stage-card" data-stage="glue" type="button"><b>GLUE</b><span id="consoleGlueGr">GR 0.0 dB</span><em id="consoleGlueBypass">ACTIVE</em></button>
                       </div>
 
                       <!-- Spectrum & Chain -->
@@ -1836,19 +1865,6 @@
                     <div id="analysisDynamicContent"></div>
                     <!-- Estado del análisis -->
                     <div id="analysisStatus" class="analysis-status"></div>
-                    <!-- Dashboard -->
-                    <div class="dashboard-wrap" id="dashboardWrap">
-                      <h3><span class="dash-live-dot"></span> Dashboard <span class="meters-toggle" id="dashToggle">ocultar</span></h3>
-                      <div id="dashboardBody">
-                        <div class="dash-grid">
-                          <div class="dash-card"><div class="dash-label">CPU</div><div class="dash-value" id="dashCpu">--%</div><div class="dash-bar-track"><div class="dash-bar-fill" id="dashCpuBar"></div></div></div>
-                          <div class="dash-card"><div class="dash-label">RAM</div><div class="dash-value" id="dashRam">--%</div><div class="dash-bar-track"><div class="dash-bar-fill" id="dashRamBar"></div></div></div>
-                          <div class="dash-card"><div class="dash-label">Cola</div><div class="dash-value" id="dashQueueTotal">0</div><div class="dash-queue-row"><span id="dashQueued">en cola: 0</span><span id="dashProcessing">procesando: 0</span></div></div>
-                          <div class="dash-card"><div class="dash-label">Estado / ETA</div><div class="dash-value dash-value--eta" id="dashEta">Inactivo</div><div class="dash-queue-row" id="dashActiveFile"></div></div>
-                        </div>
-                      </div>
-                      <div aria-hidden="true" aria-label="Redimensionar dashboard" class="panel-resize-handle-bottom" data-resize-target="dashboardWrap" role="separator" tabindex="0"></div>
-                    </div>
                     <!-- Meters -->
                     <div class="meters-wrap hidden-panel" id="metersWrap">
                       <h3>Peak · RMS · LUFS · Stereo <span class="meters-toggle" id="metersToggle">ocultar</span></h3>
@@ -2017,21 +2033,6 @@
 <script src="js/05-eq-waveform.js"></script>
 <script src="js/06-params-builder.js"></script>
 <script src="js/07-mastering-actions.js"></script>
-<!-- DESACTIVADO: reference mastering
-<script src="js/08-reference-mastering.js"></script>
--->
-<script src="js/12-lufs-normalize.js"></script>
-<script src="js/09-visualizers.js"></script>
-<script src="js/10-meters-dashboard.js"></script>
-<script src="js/30-metrics-store.js"></script>
-<script src="js/30-preview-controller.js"></script>
-<script src="js/31-spectrum-controller.js"></script>
-<!-- DESACTIVADO: mixer
-<script src="js/13-mixer-model.js"></script>
-<script src="js/13-mixer-engine.js"></script>
-<script src="js/13-mixer-library.js"></script>
-<script src="js/13-mixer-ui.js"></script>
--->
 <script src="js/15-master-console.js"></script>
 <script src="js/25-workspace-tabs.js"></script>
 <script src="js/32-chain-family-tabs.js"></script>
@@ -2048,6 +2049,7 @@
 <script src="js/36-header-resize.js"></script>
 <script src="js/11-ai-assistant-ux.js"></script>
 <script src="js/16-error-handling.js"></script>
+<script src="js/20-ai-actions.js"></script>
 <!-- NOTA: 17-keyboard-shortcuts.js, 18-undo-redo.js, 20-pro-upgrades.js,
      23-pro-console.js y 27-health-tooltips.js se cargan perezosamente
      desde 00-module-loader.js; no enlazarlos aquí para evitar duplicados. -->
@@ -2057,6 +2059,13 @@
 -->
 <script src="js/00-cleanup.js"></script>
 <script src="js-next/00-disabled-features.js"></script>
+
+<!-- Shell nueva: flag + bootstrap -->
+<script src="js-next/00-enable-flag.js"></script>
+<script src="js-next/00-shell-bootstrap.js"></script>
+<script src="js-next/01-shell-resize.js"></script>
+<script src="js-next/02-shell-responsive.js"></script>
+<script src="js-next/03-shell-disabled-features.js"></script>
 
 </body>
 </html>

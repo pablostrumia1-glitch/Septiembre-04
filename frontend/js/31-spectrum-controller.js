@@ -1,8 +1,8 @@
 
 (function(global){
   "use strict";
-  const LG = global.LGMDM = global.LGMDM || {};
-  const state = { last: null, consoleCanvasId: "lgmdmConsoleSpectrum", analysisCanvasId: "lgmdmSpectrum", dirty: false, raf: 0 };
+  const LG = global.STFX = global.STFX || {};
+  const state = { last: null, consoleCanvasId: "consoleSpectrum", analysisCanvasId: "spectrumCanvas", dirty: false, raf: 0 };
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
   function drawCanvas(canvas, bands, minDb=-80, maxDb=0){
     if(!canvas || !Array.isArray(bands) || !bands.length) return;

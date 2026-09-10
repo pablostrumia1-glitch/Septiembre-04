@@ -1,6 +1,6 @@
 (function(global){
   'use strict';
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const storage = LG.storage = LG.storage || {};
   const area = global.localStorage;
 

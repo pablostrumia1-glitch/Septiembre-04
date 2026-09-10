@@ -1,8 +1,8 @@
 (function (global) {
   "use strict";
 
-  const LGMDM = (global.LGMDM = global.LGMDM || {});
-  const STORAGE_KEY = "lgmdm-theme";
+  const STFX = (global.STFX = global.STFX || {});
+  const STORAGE_KEY = "stfx-theme";
   const LEGACY_STORAGE_KEY = "base10-theme";
 
   const THEMES = Object.freeze({
@@ -17,7 +17,7 @@
 
   function storageGet(key) {
     try {
-      return LGMDM.storage?.get?.(key) ?? localStorage.getItem(key);
+      return STFX.storage?.get?.(key) ?? localStorage.getItem(key);
     } catch (_) {
       return null;
     }
@@ -25,7 +25,7 @@
 
   function storageSet(key, value) {
     try {
-      if (LGMDM.storage?.set) LGMDM.storage.set(key, value);
+      if (STFX.storage?.set) STFX.storage.set(key, value);
       else localStorage.setItem(key, value);
     } catch (_) {
       /* visual preference must never break the application */
@@ -46,7 +46,7 @@
 
   function applyTheme(theme, { persist = true, announce = true } = {}) {
     if (!Object.values(THEMES).includes(theme)) {
-      throw new Error(`LGMDM Theme Contract: unknown theme "${theme}"`);
+      throw new Error(`STFX Theme Contract: unknown theme "${theme}"`);
     }
 
     currentTheme = theme;
@@ -105,11 +105,11 @@
       btn.setAttribute("aria-label", "Alternar modo oscuro / claro");
     }
 
-    console.log(`🎨 LGMDM theme initialized: ${currentTheme}`);
+    console.log(`🎨 STFX theme initialized: ${currentTheme}`);
   }
 
   const publicApi = { init, applyTheme, toggleDarkMode, currentTheme: () => currentTheme, themes: THEMES };
-  LGMDM.themeManager = publicApi;
+  STFX.themeManager = publicApi;
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();

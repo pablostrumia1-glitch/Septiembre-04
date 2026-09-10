@@ -12,7 +12,10 @@
 (function () {
   'use strict';
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
+  // Solo ejecutar si la shell nueva está activa
+  if (!window.NEXT_SHELL_ENABLED) return;
+
+  const STFX = window.STFX = window.STFX || {};
   const body = document.body;
   const appRoot = document.getElementById('app-root');
 
@@ -63,10 +66,9 @@
   window.addEventListener('resize', applyModeClass, { passive: true });
 
   // Exponer para que otros módulos puedan escuchar
-  LGMDM = LGMDM || {};
-  LGMDM.resize = LGMDM.resize || {};
-  LGMDM.resize.currentMode = getCurrentMode;
-  LGMDM.resize.breakpoints = {
+  STFX.resize = STFX.resize || {};
+  STFX.resize.currentMode = getCurrentMode;
+  STFX.resize.breakpoints = {
     large: 1200,
     medium: 768,
     small: 0,

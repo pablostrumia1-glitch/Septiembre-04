@@ -25,8 +25,8 @@
 //     arranca de nuevo.
 (function (global) {
   'use strict';
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  const DB_NAME = 'lgmdm-ui';
+  const STFX = global.STFX = global.STFX || {};
+  const DB_NAME = 'stfx-ui';
   const DB_VERSION = 1;
   const STORE = 'snapshots';
   const SNAPSHOT_KEY = 'current';
@@ -93,15 +93,15 @@
   }
 
   function collectSnapshot() {
-    const state = LGMDM.state || {};
+    const state = STFX.state || {};
     return {
       version: CURRENT_VERSION,
       createdAt: Date.now(),
-      workspace: LGMDM.storage.get('lgmdm.workspace') || null,
-      activeTab: LGMDM.storage.get('active-tab') || null,
-      theme: LGMDM.storage.get('lgmdm-theme') || null,
-      expertMode: LGMDM.storage.get('lgmdm-expert-mode') || null,
-      drawerWidth: LGMDM.storage.get('lgmdm.drawer-width') || null,
+      workspace: STFX.storage.get('stfx.workspace') || null,
+      activeTab: STFX.storage.get('active-tab') || null,
+      theme: STFX.storage.get('stfx-theme') || null,
+      expertMode: STFX.storage.get('stfx-expert-mode') || null,
+      drawerWidth: STFX.storage.get('stfx.drawer-width') || null,
       state: {
         selectedFileName: state.selectedFile?.name || null,
       },
@@ -110,11 +110,11 @@
   }
 
   async function syncToBackend(snapshot) {
-    const node = document.querySelector('meta[name="lgmdm-persistence-sync-endpoint"]');
+    const node = document.querySelector('meta[name="stfx-persistence-sync-endpoint"]');
     const target = node?.content?.trim() || '';
-    if (!target || typeof LGMDM.api?.client?.post !== 'function') return false;
+    if (!target || typeof STFX.api?.client?.post !== 'function') return false;
     try {
-      const response = await LGMDM.api.client.post(target, {
+      const response = await STFX.api.client.post(target, {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(snapshot),
       });
@@ -220,7 +220,7 @@
     global.addEventListener('beforeunload', () => save('beforeunload'), { once: true });
   }
 
-  LGMDM.persistence = {
+  STFX.persistence = {
     start, save, restore, scheduleSave, collectSnapshot, shouldPersist, DB_NAME,
     CURRENT_VERSION, SUPPORTED_VERSIONS,
   };

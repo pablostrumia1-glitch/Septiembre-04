@@ -1,10 +1,10 @@
-/* LGMDM — Resize utility (compartida)
+/* STFX — Resize utility (compartida)
  * ------------------------------------------------------------
  * Reemplaza la lógica repetida a mano en 36-header-resize.js,
  * 32-flex-layout.js y 35-console-shell.js (mousedown/mousemove/
  * mouseup + clamp + tocar una var CSS, copiado 3 veces con
  * pequeñas diferencias). Nuevos handles solo necesitan llamar a
- * LGMDM.ui.makeResizable(...) con sus opciones — no reescribir
+ * STFX.ui.makeResizable(...) con sus opciones — no reescribir
  * el drag desde cero.
  *
  * No toca los 3 handles existentes (header/sidebar/consola):
@@ -13,13 +13,13 @@
  */
 (function (global) {
   'use strict';
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  LGMDM.ui = LGMDM.ui || {};
+  const STFX = global.STFX = global.STFX || {};
+  STFX.ui = STFX.ui || {};
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
   /**
-   * LGMDM.ui.makeResizable(handleEl, options)
+   * STFX.ui.makeResizable(handleEl, options)
    *
    * options:
    *   axis        'x' | 'y'                 — eje que se arrastra (obligatorio)
@@ -32,7 +32,7 @@
    *
    * Devuelve una función destroy() para sacar los listeners si hiciera falta.
    */
-  LGMDM.ui.makeResizable = function makeResizable(handleEl, options) {
+  STFX.ui.makeResizable = function makeResizable(handleEl, options) {
     if (!handleEl || !options || typeof options.getSize !== 'function' ||
         typeof options.setSize !== 'function' || !options.axis) {
       return function destroy() {};

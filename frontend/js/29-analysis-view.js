@@ -1,10 +1,10 @@
-/* LGMDM — Server Analysis View
+/* STFX — Server Analysis View
  * The Analysis workspace is a pure renderer of backend results.
  * No client-side audio metrics, FFT or preview streaming are produced here.
  */
 (function () {
   'use strict';
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
   const qs = (id) => document.getElementById(id);
 
   function setStatus(state, text, progress = null) {
@@ -49,7 +49,7 @@
     redraw: () => { if (lastData) renderServerAnalysis(lastData); },
   });
 
-  window.addEventListener('lgmdm:analysis-state', (event) => {
+  window.addEventListener('stfx:analysis-state', (event) => {
     const detail = event.detail || {};
     setStatus(detail.state || 'idle', detail.text || '', detail.progress ?? null);
   });
@@ -83,21 +83,21 @@
     lastData = data;
     renderServerAnalysis(data);
     setStatus('ready', 'Análisis completo del servidor disponible');
-    window.dispatchEvent(new CustomEvent('lgmdm:analysis-state', { detail: { state: 'ready', text: 'Análisis completo del servidor disponible', progress: 100 } }));
+    window.dispatchEvent(new CustomEvent('stfx:analysis-state', { detail: { state: 'ready', text: 'Análisis completo del servidor disponible', progress: 100 } }));
     window.dispatchEvent(new CustomEvent('analysis-updated', { detail: data }));
     return data;
   }
 
-  window.addEventListener('lgmdm:file-selected', () => { requestSeq += 1; lastData = null; requestedFile = null; clear(); });
+  window.addEventListener('stfx:file-selected', () => { requestSeq += 1; lastData = null; requestedFile = null; clear(); });
 })();
 
 // ── Resize vertical de dashboard/meters/health (helper compartido) ──
 (function () {
-  if (!window.LGMDM || !LGMDM.ui || !LGMDM.ui.makeResizable) return;
+  if (!window.STFX || !STFX.ui || !STFX.ui.makeResizable) return;
   document.querySelectorAll('.panel-resize-handle-bottom[data-resize-target]').forEach((handle) => {
     const panel = document.getElementById(handle.dataset.resizeTarget);
     if (!panel) return;
-    LGMDM.ui.makeResizable(handle, {
+    STFX.ui.makeResizable(handle, {
       axis: 'y',
       min: 80,
       max: () => window.innerHeight - 120,

@@ -2,17 +2,17 @@
   'use strict';
 
   // Safety shims and non-destructive auto-fixes to make the app more resilient
-  // - Ensures window.LGMDM exists
-  // - Provides basic LGMDM.storage wrapper (falls back to localStorage)
-  // - Provides safe no-op LGMDM.ui.showToast and helpers used across modules
-  // - Adds a small helper LGMDM.dom.requireById that returns element or logs
+  // - Ensures window.STFX exists
+  // - Provides basic STFX.storage wrapper (falls back to localStorage)
+  // - Provides safe no-op STFX.ui.showToast and helpers used across modules
+  // - Adds a small helper STFX.dom.requireById that returns element or logs
   // This file is intentionally conservative and should not alter app logic.
 
-  window.LGMDM = window.LGMDM || {};
+  window.STFX = window.STFX || {};
 
-  // Storage shim: prefer existing LGMDM.storage, otherwise fallback to localStorage API
-  if (!window.LGMDM.storage) {
-    window.LGMDM.storage = (function () {
+  // Storage shim: prefer existing STFX.storage, otherwise fallback to localStorage API
+  if (!window.STFX.storage) {
+    window.STFX.storage = (function () {
       function safeGet(key) {
         try { return localStorage.getItem(key); } catch (_) { return null; }
       }
@@ -27,9 +27,9 @@
   }
 
   // UI shim: provide minimal toast/status functions if absent so modules can call safely
-  window.LGMDM.ui = window.LGMDM.ui || {};
-  if (typeof window.LGMDM.ui.showToast !== 'function') {
-    window.LGMDM.ui.showToast = function (message, type = 'info', duration = 4000) {
+  window.STFX.ui = window.STFX.ui || {};
+  if (typeof window.STFX.ui.showToast !== 'function') {
+    window.STFX.ui.showToast = function (message, type = 'info', duration = 4000) {
       try {
         // Create a lightweight toast only if not already present
         let container = document.getElementById('toast-container');
@@ -44,7 +44,7 @@
           document.body.appendChild(container);
         }
         const item = document.createElement('div');
-        item.className = 'lgmdm-toast';
+        item.className = 'stfx-toast';
         item.textContent = String(message || '');
         item.style.marginTop = '8px';
         item.style.padding = '8px 12px';
@@ -57,8 +57,8 @@
   };
   }
 
-  if (typeof window.LGMDM.ui.showStatus !== 'function') {
-    window.LGMDM.ui.showStatus = function (idOrEl, message, type) {
+  if (typeof window.STFX.ui.showStatus !== 'function') {
+    window.STFX.ui.showStatus = function (idOrEl, message, type) {
       try {
         const el = (typeof idOrEl === 'string') ? document.getElementById(idOrEl) : idOrEl;
         if (!el) return null;
@@ -68,8 +68,8 @@
     };
   }
 
-  if (typeof window.LGMDM.ui.escapeHtml !== 'function') {
-    window.LGMDM.ui.escapeHtml = function (s) {
+  if (typeof window.STFX.ui.escapeHtml !== 'function') {
+    window.STFX.ui.escapeHtml = function (s) {
       if (s == null) return '';
       return String(s)
         .replace(/&/g, '&amp;')
@@ -81,22 +81,22 @@
   }
 
   // DOM helpers
-  window.LGMDM.dom = window.LGMDM.dom || {};
-  if (typeof window.LGMDM.dom.requireById !== 'function') {
-    window.LGMDM.dom.requireById = function (id, context) {
+  window.STFX.dom = window.STFX.dom || {};
+  if (typeof window.STFX.dom.requireById !== 'function') {
+    window.STFX.dom.requireById = function (id, context) {
       const el = document.getElementById(id);
       if (!el) {
-        console.warn(`LGMDM.dom.requireById: elemento "${id}" no encontrado` + (context ? ` (${context})` : ''));
+        console.warn(`STFX.dom.requireById: elemento "${id}" no encontrado` + (context ? ` (${context})` : ''));
       }
       return el;
     };
   }
 
   // Graceful global fallback for missing APIs used by multiple modules
-  window.LGMDM.api = window.LGMDM.api || {};
-  if (typeof window.LGMDM.api.apiFetch !== 'function') {
-    window.LGMDM.api.apiFetch = function () {
-      return Promise.reject(new Error('LGMDM.api.apiFetch no está implementado en este entorno'));
+  window.STFX.api = window.STFX.api || {};
+  if (typeof window.STFX.api.apiFetch !== 'function') {
+    window.STFX.api.apiFetch = function () {
+      return Promise.reject(new Error('STFX.api.apiFetch no está implementado en este entorno'));
     };
   }
 
@@ -105,10 +105,23 @@
     window.applyMasteringState = function () { /* noop until real implementation loads */ };
   }
 
+  // a11y shim: screen reader announcements
+  if (!window.STFX.a11y) {
+    window.STFX.a11y = {
+      announce: function (message, priority) {
+        try {
+          const el = document.getElementById('a11y-announcements');
+          if (el) el.textContent = message;
+          if (priority === 'assertive') console.info('[a11y assertive]', message);
+        } catch (_) {}
+      }
+    };
+  }
+
   // Small lint-like checks (non-fix): detect obvious unterminated strings in inline scripts
   try {
     // no-op: placeholder for future static checks
   } catch (_) {}
 
-  console.log('✅ LGMDM safety shims loaded');
+  console.log('✅ STFX safety shims loaded');
 })();

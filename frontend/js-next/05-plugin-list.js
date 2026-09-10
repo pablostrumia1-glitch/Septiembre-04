@@ -2,7 +2,7 @@
 // 05-plugin-list.js — Panel izquierdo: lista de plugins DSP
 // ============================================================
 // Monta en .app-left__scroll (nuevo shell).
-// Consume LGMDM.plugins (04-plugin-registry.js).
+// Consume STFX.plugins (04-plugin-registry.js).
 // No toca inputs legacy — emite eventos para que el rack
 // y el sistema de params los manejen.
 //
@@ -25,7 +25,7 @@
 
   // ── Esperar al registry ──────────────────────────────────────────────────
   function init() {
-    const { PLUGINS, FAMILY_ORDER, FAMILY_COLOR, getByFamily } = window.LGMDM.plugins;
+    const { PLUGINS, FAMILY_ORDER, FAMILY_COLOR, getByFamily } = window.STFX.plugins;
 
     // ── Estado ─────────────────────────────────────────────────────────────
     const state = {
@@ -244,8 +244,8 @@
     }
 
     // ── API pública ──────────────────────────────────────────────────────────
-    const LGMDM = window.LGMDM = window.LGMDM || {};
-    LGMDM.pluginList = {
+    const STFX = window.STFX = window.STFX || {};
+    STFX.pluginList = {
       enable,
       disable,
       toggleBypass,
@@ -284,7 +284,7 @@
   }
 
   // ── Esperar al registry ──────────────────────────────────────────────────
-  if (window.LGMDM?.plugins) {
+  if (window.STFX?.plugins) {
     init();
   } else {
     window.addEventListener('lgmdm:plugin-registry-ready', init, { once: true });

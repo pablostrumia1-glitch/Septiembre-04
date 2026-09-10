@@ -87,7 +87,7 @@
   asyncApi.fetchJSON = async function(url, options = {}) {
     const { timeout = 30000, ...requestOptions } = options || {};
     try {
-      const response = await window.LGMDM.api.apiFetch(url, {
+      const response = await window.STFX.api.apiFetch(url, {
         ...requestOptions,
         timeout,
       });

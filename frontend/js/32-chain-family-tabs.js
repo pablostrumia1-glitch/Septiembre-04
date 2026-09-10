@@ -1,4 +1,4 @@
-/* LGMDM — Chain family navigation
+/* STFX — Chain family navigation
  * Keeps the left sidebar as the parameter workspace and groups the chain
  * into families so the operator never sees the entire chain at once.
  */
@@ -84,7 +84,7 @@
         btn.classList.toggle('active', active);
         btn.setAttribute('aria-selected', String(active));
       });
-      try { LGMDM.storage.set('lgmdm-chain-family', family); } catch (_) {}
+      try { STFX.storage.set('stfx-chain-family', family); } catch (_) {}
     };
 
     nav.addEventListener('click', (ev) => {
@@ -95,7 +95,7 @@
 
     let initial = 'input';
     try {
-      const saved = LGMDM.storage.get('lgmdm-chain-family');
+      const saved = STFX.storage.get('stfx-chain-family');
       if (FAMILY_ORDER.includes(saved)) initial = saved;
     } catch (_) {}
     showFamily(initial);

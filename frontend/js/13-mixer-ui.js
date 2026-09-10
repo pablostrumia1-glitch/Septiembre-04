@@ -15,14 +15,14 @@
   // (incluso antes de leer mixerEngine). Antes el módulo se ejecutaba
   // hasta el throw de "mixer engine no inicializado", dejando la app
   // inconsistente si 13-mixer-engine.js fallaba en cargar.
-  if (window.LGMDM?.config?.mixerEnabled !== true) {
+  if (window.STFX?.config?.mixerEnabled !== true) {
     return;
   }
 
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
   const bindOnce = LG?.ui?.bindOnce;
-  const runtime = window.LGMDM?.mixerEngine;
-  if (!runtime) throw new Error('LGMDM mixer engine no inicializado');
+  const runtime = window.STFX?.mixerEngine;
+  if (!runtime) throw new Error('STFX mixer engine no inicializado');
   const { cachedEl, invalidateCachedEl, mixerState, previewEngine, serverPreview, getGenUUID,
     formatDbValue, formatLinearThresholdToDb, dbToLin, decodeStemForPreview, applyStemParamsToChain,
     updateAllMuteSolo, startStemSource, playPreview, stopPreview, togglePreview, seekPreview,
@@ -30,8 +30,8 @@
     scheduleServerPreview, runServerPreview } = runtime;
 
   // ── Params & helpers ──────────────────────────────────────────────────────
-  const model = window.LGMDM?.mixerUiModel;
-  if (!model) throw new Error('LGMDM mixer UI model no inicializado');
+  const model = window.STFX?.mixerUiModel;
+  if (!model) throw new Error('STFX mixer UI model no inicializado');
   const { defaultStemParams, detectStemType, stemEmoji } = model;
 
   // ── CSS fader ───────────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@
   }
 
   runtime.buildStemLibraryIdMap = buildStemLibraryIdMap;
-  const mixerLibrary = window.LGMDM.createMixerLibraryService({
+  const mixerLibrary = window.STFX.createMixerLibraryService({
     mixerState,
     apiFetch: LG.api.apiFetch,
     cachedEl,
@@ -198,7 +198,7 @@
     renderMixerSidePanel: (...args) => renderMixerSidePanel(...args),
     decodeStemForPreview,
     scheduleServerPreview,
-    handleClientError: window.LGMDM?.errors?.handleClientError
+    handleClientError: window.STFX?.errors?.handleClientError
   });
   const { refreshStemLibrary, addStemFromLibrary, deleteStemFromLibrary } = mixerLibrary;
 
@@ -473,9 +473,9 @@
 
     
 function requireChannelChild(parent, selector, owner) {
-  const node = LGMDM.dom.query(selector, parent);
+  const node = STFX.dom.query(selector, parent);
   if (!node) {
-    throw new Error(`[LGMDM DOM CONTRACT] ${owner}: template missing ${selector}`);
+    throw new Error(`[STFX DOM CONTRACT] ${owner}: template missing ${selector}`);
   }
   return node;
 }
@@ -1250,7 +1250,7 @@ function requireChannelChild(parent, selector, owner) {
       const fd = new FormData();
       fd.append('session_id', mixerState.sessionId);
       fd.append('stem_names', JSON.stringify(names));
-      const res = await LGMDM.api.apiFetch('/mix/ai-suggest', { method: 'POST', body: fd });
+      const res = await STFX.api.apiFetch('/mix/ai-suggest', { method: 'POST', body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.detail || `Error ${res.status}`);
@@ -1375,7 +1375,7 @@ function requireChannelChild(parent, selector, owner) {
     try {
       const fd = new FormData();
       fd.append('file', file); fd.append('session_id', mixerState.sessionId); fd.append('stem_name', stemName); fd.append('save_to_library', 'true');
-      const res = await LGMDM.api.apiFetch('/mix/upload-stem', { method:'POST', body:fd });
+      const res = await STFX.api.apiFetch('/mix/upload-stem', { method:'POST', body:fd });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       mixerState.stems[stemName].uploaded = true;
@@ -1428,7 +1428,7 @@ function requireChannelChild(parent, selector, owner) {
       fd.append('mix_params',  JSON.stringify(mixParams));
       fd.append('stem_library_ids', JSON.stringify(buildStemLibraryIdMap(stemNames)));
 
-      const res = await LGMDM.api.apiFetch('/mix/submit', { method: 'POST', body: fd });
+      const res = await STFX.api.apiFetch('/mix/submit', { method: 'POST', body: fd });
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(errorText || `Error del servidor (${res.status})`);
@@ -1457,7 +1457,7 @@ function requireChannelChild(parent, selector, owner) {
 
     const pollOnce = async () => {
       try {
-        const res = await LGMDM.api.apiFetch(`/job/${jobId}`);
+        const res = await STFX.api.apiFetch(`/job/${jobId}`);
         if (!res.ok) throw new Error(`Error en el servidor al consultar trabajo (${res.status})`);
         const data = await res.json();
         const stageText = data.stage || data.status || 'Procesando';
@@ -1495,7 +1495,7 @@ function requireChannelChild(parent, selector, owner) {
       <button type="button" id="mixerDownloadBtn" class="lgjs-s-88d001b8">⬇ Descargar mix</button>`;
     bindOnce(cachedEl('mixerDownloadBtn'), 'click', async (ev) => {
       const btn = ev.currentTarget;
-      try { btn.disabled = true; await LGMDM.api.downloadAuthenticated(`${LGMDM.api.apiBase()}/download/${encodeURIComponent(jobId)}`, { filename: 'mix.wav' }); }
+      try { btn.disabled = true; await STFX.api.downloadAuthenticated(`${STFX.api.apiBase()}/download/${encodeURIComponent(jobId)}`, { filename: 'mix.wav' }); }
       catch (e) { handleClientError?.(e, 'No se pudo descargar el mix.', { context: 'mix-download' }); }
       finally { btn.disabled = false; }
     });
@@ -1516,7 +1516,7 @@ function requireChannelChild(parent, selector, owner) {
   // ── Init ──────────────────────────────────────────────────────────────────
   let initialized = false;
   function init() {
-    if (window.LGMDM?.config?.mixerEnabled !== true) return;
+    if (window.STFX?.config?.mixerEnabled !== true) return;
     if (initialized) return;
     initialized = true;
     initTemplates();

@@ -12,8 +12,8 @@
 
 // API URL — delega siempre en el cliente API canónico.
 const API = () => {
-  if (typeof window.LGMDM?.api?.apiBase === 'function') {
-    return window.LGMDM.api.apiBase();
+  if (typeof window.STFX?.api?.apiBase === 'function') {
+    return window.STFX.api.apiBase();
   }
   return 'https://masteringstudio-api.duckdns.org';
 };

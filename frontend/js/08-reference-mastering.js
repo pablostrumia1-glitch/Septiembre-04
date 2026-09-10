@@ -1,15 +1,15 @@
 (function (global) {
   "use strict";
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  LGMDM.state = LGMDM.state || {};
-  const referenceState = LGMDM.state.reference || (LGMDM.state.reference = { file: null, libraryId: null });
-  LGMDM.reference = LGMDM.reference || {};
+  const STFX = global.STFX = global.STFX || {};
+  STFX.state = STFX.state || {};
+  const referenceState = STFX.state.reference || (STFX.state.reference = { file: null, libraryId: null });
+  STFX.reference = STFX.reference || {};
 
   // Q6 (audit): pollInterval era `let` local del módulo pero colisionaba
   // con el de 07-mastering-actions.js en hot-reload. Lo movimos a un
-  // namespace separado en LGMDM.polling.reference.
-  LGMDM.polling = LGMDM.polling || {};
-  LGMDM.polling.reference = null;
+  // namespace separado en STFX.polling.reference.
+  STFX.polling = STFX.polling || {};
+  STFX.polling.reference = null;
 
 // ============================================================
 // 08-reference-mastering.js — Master con referencia, bandas EQ dinámicas, preview en vivo, análisis
@@ -21,55 +21,55 @@
 // ── MASTER CON REFERENCIA ────────────────────────────────────
 function collectReferenceParamsObj() {
   return {
-    eq_max_boost_db: LGMDM.dom.requireById("s-ref-eq", "08-reference-mastering").checked
-      ? LGMDM.dom.requireById("s-ref-boost", "08-reference-mastering").value
+    eq_max_boost_db: STFX.dom.requireById("s-ref-eq", "08-reference-mastering").checked
+      ? STFX.dom.requireById("s-ref-boost", "08-reference-mastering").value
       : "0",
-    eq_max_cut_db: LGMDM.dom.requireById("s-ref-eq", "08-reference-mastering").checked ? LGMDM.dom.requireById("s-ref-cut", "08-reference-mastering").value : "0",
-    eq_fit_method: LGMDM.dom.requireById("s-ref-eqmethod", "08-reference-mastering").value,
-    match_loudness: LGMDM.dom.requireById("s-ref-loudness", "08-reference-mastering").checked,
-    match_dynamics: LGMDM.dom.requireById("s-ref-dynamics", "08-reference-mastering").checked,
-    match_stereo_width: LGMDM.dom.requireById("s-ref-stereo", "08-reference-mastering").checked,
-    match_transient: LGMDM.dom.requireById("s-ref-transient", "08-reference-mastering").checked,
-    match_sub_bass: LGMDM.dom.requireById("s-ref-subbass", "08-reference-mastering").checked,
-    match_desser: LGMDM.dom.requireById("s-ref-desser", "08-reference-mastering").checked,
-    match_saturation: LGMDM.dom.requireById("s-ref-saturation", "08-reference-mastering").checked,
-    output_format: LGMDM.dom.requireById("s-format", "08-reference-mastering").value,
-    output_bit_depth: LGMDM.dom.requireById("s-bitdepth", "08-reference-mastering").value,
-    dither_mode: LGMDM.dom.requireById("s-dither-mode", "08-reference-mastering").value,
-    dynamics_margin_db: LGMDM.dom.requireById("s-ref-dynmargin", "08-reference-mastering").value,
-    stereo_blend: (parseFloat(LGMDM.dom.requireById("s-ref-stereoblend", "08-reference-mastering").value) / 100).toFixed(2),
-    band_gains_array: LGMDM.reference?.bandEQ ? LGMDM.reference.bandEQ.getGainsArray() : [],
-    ms_eq_matching: LGMDM.dom.byId("s-ref-ms-eq")?.checked ?? true,
-    adaptive_loudness_weighting: LGMDM.dom.requireById("s-ref-adaptive-loudness", "08-reference-mastering")?.checked ?? true,
-    loudness_sensitivity_amount: ((parseFloat(LGMDM.dom.requireById("s-ref-loudness-sensitivity", "08-reference-mastering")?.value || "65") / 100)).toFixed(2),
-    premium_match_profile: LGMDM.dom.requireById("s-ref-premium-profile", "08-reference-mastering")?.value || "balanced",
-    premium_vocal_protect: LGMDM.dom.requireById("s-ref-vocal-protect", "08-reference-mastering")?.checked ?? true,
-    premium_translation_check: LGMDM.dom.requireById("s-ref-translation-check", "08-reference-mastering")?.checked ?? true,
-    premium_alt_versions: LGMDM.dom.requireById("s-ref-alt-versions", "08-reference-mastering")?.checked ?? false,
-    iterative_eq_passes: parseInt(LGMDM.dom.requireById("s-ref-eq-passes", "08-reference-mastering")?.value || "3"),
-    match_crest: LGMDM.dom.requireById("s-ref-match-crest", "08-reference-mastering")?.checked ?? true,
-    crest_amount: (parseFloat(LGMDM.dom.requireById("s-ref-crest-amount", "08-reference-mastering")?.value || "75") / 100).toFixed(2),
-    match_spectral_dynamics: LGMDM.dom.requireById("s-ref-spectral-dynamics", "08-reference-mastering")?.checked ?? true,
-    spectral_dynamics_amount: (parseFloat(LGMDM.dom.requireById("s-ref-spectral-dyn-amount", "08-reference-mastering")?.value || "60") / 100).toFixed(2),
-    spectral_dynamics_bins: parseInt(LGMDM.dom.requireById("s-ref-spectral-dyn-bins", "08-reference-mastering")?.value || "4"),
-    ...(LGMDM.dom.requireById("s-ref-fixed-lufs", "08-reference-mastering")?.checked
-      ? { loudness_target_lufs: parseFloat(LGMDM.dom.requireById("s-ref-fixed-lufs-value", "08-reference-mastering")?.value || "-14") }
+    eq_max_cut_db: STFX.dom.requireById("s-ref-eq", "08-reference-mastering").checked ? STFX.dom.requireById("s-ref-cut", "08-reference-mastering").value : "0",
+    eq_fit_method: STFX.dom.requireById("s-ref-eqmethod", "08-reference-mastering").value,
+    match_loudness: STFX.dom.requireById("s-ref-loudness", "08-reference-mastering").checked,
+    match_dynamics: STFX.dom.requireById("s-ref-dynamics", "08-reference-mastering").checked,
+    match_stereo_width: STFX.dom.requireById("s-ref-stereo", "08-reference-mastering").checked,
+    match_transient: STFX.dom.requireById("s-ref-transient", "08-reference-mastering").checked,
+    match_sub_bass: STFX.dom.requireById("s-ref-subbass", "08-reference-mastering").checked,
+    match_desser: STFX.dom.requireById("s-ref-desser", "08-reference-mastering").checked,
+    match_saturation: STFX.dom.requireById("s-ref-saturation", "08-reference-mastering").checked,
+    output_format: STFX.dom.requireById("s-format", "08-reference-mastering").value,
+    output_bit_depth: STFX.dom.requireById("s-bitdepth", "08-reference-mastering").value,
+    dither_mode: STFX.dom.requireById("s-dither-mode", "08-reference-mastering").value,
+    dynamics_margin_db: STFX.dom.requireById("s-ref-dynmargin", "08-reference-mastering").value,
+    stereo_blend: (parseFloat(STFX.dom.requireById("s-ref-stereoblend", "08-reference-mastering").value) / 100).toFixed(2),
+    band_gains_array: STFX.reference?.bandEQ ? STFX.reference.bandEQ.getGainsArray() : [],
+    ms_eq_matching: STFX.dom.byId("s-ref-ms-eq")?.checked ?? true,
+    adaptive_loudness_weighting: STFX.dom.requireById("s-ref-adaptive-loudness", "08-reference-mastering")?.checked ?? true,
+    loudness_sensitivity_amount: ((parseFloat(STFX.dom.requireById("s-ref-loudness-sensitivity", "08-reference-mastering")?.value || "65") / 100)).toFixed(2),
+    premium_match_profile: STFX.dom.requireById("s-ref-premium-profile", "08-reference-mastering")?.value || "balanced",
+    premium_vocal_protect: STFX.dom.requireById("s-ref-vocal-protect", "08-reference-mastering")?.checked ?? true,
+    premium_translation_check: STFX.dom.requireById("s-ref-translation-check", "08-reference-mastering")?.checked ?? true,
+    premium_alt_versions: STFX.dom.requireById("s-ref-alt-versions", "08-reference-mastering")?.checked ?? false,
+    iterative_eq_passes: parseInt(STFX.dom.requireById("s-ref-eq-passes", "08-reference-mastering")?.value || "3"),
+    match_crest: STFX.dom.requireById("s-ref-match-crest", "08-reference-mastering")?.checked ?? true,
+    crest_amount: (parseFloat(STFX.dom.requireById("s-ref-crest-amount", "08-reference-mastering")?.value || "75") / 100).toFixed(2),
+    match_spectral_dynamics: STFX.dom.requireById("s-ref-spectral-dynamics", "08-reference-mastering")?.checked ?? true,
+    spectral_dynamics_amount: (parseFloat(STFX.dom.requireById("s-ref-spectral-dyn-amount", "08-reference-mastering")?.value || "60") / 100).toFixed(2),
+    spectral_dynamics_bins: parseInt(STFX.dom.requireById("s-ref-spectral-dyn-bins", "08-reference-mastering")?.value || "4"),
+    ...(STFX.dom.requireById("s-ref-fixed-lufs", "08-reference-mastering")?.checked
+      ? { loudness_target_lufs: parseFloat(STFX.dom.requireById("s-ref-fixed-lufs-value", "08-reference-mastering")?.value || "-14") }
       : {}),
-    use_parallel_compression: LGMDM.dom.requireById("s-ref-parallel-comp", "08-reference-mastering")?.checked ?? true,
-    parallel_mix: (parseFloat(LGMDM.dom.requireById("s-ref-parallel-mix", "08-reference-mastering")?.value || "28") / 100).toFixed(2),
-    parallel_threshold_db: parseFloat(LGMDM.dom.requireById("s-ref-parallel-thr", "08-reference-mastering")?.value || "-20"),
-    parallel_ratio: parseFloat(LGMDM.dom.requireById("s-ref-parallel-ratio", "08-reference-mastering")?.value || "4"),
-    parallel_makeup_db: parseFloat(LGMDM.dom.requireById("s-ref-parallel-makeup", "08-reference-mastering")?.value || "6"),
-    use_multiband_saturation: LGMDM.dom.requireById("s-ref-mb-sat", "08-reference-mastering")?.checked ?? true,
-    mb_sat_mix: (parseFloat(LGMDM.dom.requireById("s-ref-mb-sat-mix", "08-reference-mastering")?.value || "45") / 100).toFixed(2),
-    mb_sat_low_drive: (parseFloat(LGMDM.dom.requireById("s-ref-mb-sat-low", "08-reference-mastering")?.value || "7") / 100).toFixed(3),
-    mb_sat_mid_drive: (parseFloat(LGMDM.dom.requireById("s-ref-mb-sat-mid", "08-reference-mastering")?.value || "4") / 100).toFixed(3),
-    mb_sat_high_drive: (parseFloat(LGMDM.dom.requireById("s-ref-mb-sat-high", "08-reference-mastering")?.value || "2") / 100).toFixed(3),
-    mb_sat_mode: LGMDM.dom.requireById("s-ref-mb-sat-mode", "08-reference-mastering")?.value || "tape",
-    use_two_stage_limiter: LGMDM.dom.requireById("s-ref-two-stage-lim", "08-reference-mastering")?.checked ?? true,
-    gentle_ceiling_db: parseFloat(LGMDM.dom.requireById("s-ref-gentle-ceil", "08-reference-mastering")?.value || "-2.5"),
-    gentle_release_ms: parseFloat(LGMDM.dom.requireById("s-ref-gentle-rel", "08-reference-mastering")?.value || "120"),
-    max_target_lufs: parseFloat(LGMDM.dom.requireById("s-ref-max-lufs", "08-reference-mastering")?.value || "-12"),
+    use_parallel_compression: STFX.dom.requireById("s-ref-parallel-comp", "08-reference-mastering")?.checked ?? true,
+    parallel_mix: (parseFloat(STFX.dom.requireById("s-ref-parallel-mix", "08-reference-mastering")?.value || "28") / 100).toFixed(2),
+    parallel_threshold_db: parseFloat(STFX.dom.requireById("s-ref-parallel-thr", "08-reference-mastering")?.value || "-20"),
+    parallel_ratio: parseFloat(STFX.dom.requireById("s-ref-parallel-ratio", "08-reference-mastering")?.value || "4"),
+    parallel_makeup_db: parseFloat(STFX.dom.requireById("s-ref-parallel-makeup", "08-reference-mastering")?.value || "6"),
+    use_multiband_saturation: STFX.dom.requireById("s-ref-mb-sat", "08-reference-mastering")?.checked ?? true,
+    mb_sat_mix: (parseFloat(STFX.dom.requireById("s-ref-mb-sat-mix", "08-reference-mastering")?.value || "45") / 100).toFixed(2),
+    mb_sat_low_drive: (parseFloat(STFX.dom.requireById("s-ref-mb-sat-low", "08-reference-mastering")?.value || "7") / 100).toFixed(3),
+    mb_sat_mid_drive: (parseFloat(STFX.dom.requireById("s-ref-mb-sat-mid", "08-reference-mastering")?.value || "4") / 100).toFixed(3),
+    mb_sat_high_drive: (parseFloat(STFX.dom.requireById("s-ref-mb-sat-high", "08-reference-mastering")?.value || "2") / 100).toFixed(3),
+    mb_sat_mode: STFX.dom.requireById("s-ref-mb-sat-mode", "08-reference-mastering")?.value || "tape",
+    use_two_stage_limiter: STFX.dom.requireById("s-ref-two-stage-lim", "08-reference-mastering")?.checked ?? true,
+    gentle_ceiling_db: parseFloat(STFX.dom.requireById("s-ref-gentle-ceil", "08-reference-mastering")?.value || "-2.5"),
+    gentle_release_ms: parseFloat(STFX.dom.requireById("s-ref-gentle-rel", "08-reference-mastering")?.value || "120"),
+    max_target_lufs: parseFloat(STFX.dom.requireById("s-ref-max-lufs", "08-reference-mastering")?.value || "-12"),
   };
 }
 const REF_PARAM_LABELS = {
@@ -121,9 +121,9 @@ const REF_PARAM_LABELS = {
 };
 
 async function submitReferenceMasterJob() {
-  LGMDM.ui.clearResults();
-  LGMDM.ui.showStatus(null, "Enviando archivos…", "queued");
-  LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = true;
+  STFX.ui.clearResults();
+  STFX.ui.showStatus(null, "Enviando archivos…", "queued");
+  STFX.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = true;
 
   const fd = new FormData();
   if (_previewLibraryId) {
@@ -144,29 +144,29 @@ async function submitReferenceMasterJob() {
   const params = new URLSearchParams(_refParamsObj);
 
   try {
-    const url = `${LGMDM.api.apiBase()}/master/reference?${params.toString()}`;
-    const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });
+    const url = `${STFX.api.apiBase()}/master/reference?${params.toString()}`;
+    const res = await STFX.api.apiFetch(url, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const data = await res.json();
     currentJobId = data.job_id;
-    LGMDM.ui.showStatus(null, `Job ${currentJobId.slice(0, 8)}… en cola (matching por referencia)`, "queued");
+    STFX.ui.showStatus(null, `Job ${currentJobId.slice(0, 8)}… en cola (matching por referencia)`, "queued");
     startReferencePolling(currentJobId);
   } catch (e) {
     console.error("❌ Error al enviar (referencia):", e);
-    LGMDM.ui.showStatus(null, "Error: " + e.message, "error");
-    LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
+    STFX.ui.showStatus(null, "Error: " + e.message, "error");
+    STFX.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
   }
 }
 
 // ── refBandEQ (sin cambios) ──────────────────────────────────
-LGMDM.reference.bandEQ = (function() {
-  const CONTAINER   = LGMDM.dom.requireById("ref-band-controls", "08-reference-mastering");
-  const COUNT_SLIDER = LGMDM.dom.requireById("s-band-count", "08-reference-mastering");
-  const COUNT_VAL    = LGMDM.dom.requireById("v-band-count", "08-reference-mastering");
-  const RESET_BTN    = LGMDM.dom.requireById("btn-band-reset", "08-reference-mastering");
+STFX.reference.bandEQ = (function() {
+  const CONTAINER   = STFX.dom.requireById("ref-band-controls", "08-reference-mastering");
+  const COUNT_SLIDER = STFX.dom.requireById("s-band-count", "08-reference-mastering");
+  const COUNT_VAL    = STFX.dom.requireById("v-band-count", "08-reference-mastering");
+  const RESET_BTN    = STFX.dom.requireById("btn-band-reset", "08-reference-mastering");
   if (!CONTAINER || !COUNT_SLIDER || !COUNT_VAL || !RESET_BTN) {
     return { getGainsArray: () => [], getBandCount: () => 0 };
   }
@@ -273,7 +273,7 @@ LGMDM.reference.bandEQ = (function() {
 // ── Preview en tiempo real con referencia (con spinners en estado) ──
 (function() {
   let refWs = null;
-  const referenceAudioState = LGMDM.state.audio.reference || (LGMDM.state.audio.reference = { active: false, playTime: 0 });
+  const referenceAudioState = STFX.state.audio.reference || (STFX.state.audio.reference = { active: false, playTime: 0 });
   let refSessionId = null;
   let refRefSessionId = null;
   let refSrcUploaded = false;
@@ -282,17 +282,17 @@ LGMDM.reference.bandEQ = (function() {
 
   function updateRefPreviewBtn() {
     const ok = !!(selectedFile && (referenceState.file || referenceState.libraryId));
-    const btn = LGMDM.dom.requireById("btnRefPreview", "08-reference-mastering");
+    const btn = STFX.dom.requireById("btnRefPreview", "08-reference-mastering");
     if (btn) btn.disabled = !ok;
   }
   // Expuesta aca mismo: esta funcion vive dentro de este IIFE interno
   // (linea 218-472), no en el scope del archivo. La linea al final del
-  // archivo que intentaba exponerla (`LGMDM.reference.updateRefPreviewBtn
+  // archivo que intentaba exponerla (`STFX.reference.updateRefPreviewBtn
   // = updateRefPreviewBtn`) apuntaba a un nombre que no existe ahi afuera
   // y tiraba ReferenceError apenas cargaba el script.
-  window.LGMDM.reference.updateRefPreviewBtn = updateRefPreviewBtn;
+  window.STFX.reference.updateRefPreviewBtn = updateRefPreviewBtn;
 
-  const referenceApi = window.LGMDM.reference = window.LGMDM.reference || {};
+  const referenceApi = window.STFX.reference = window.STFX.reference || {};
   const _baseUpdateRefButtonState = referenceApi.updateButtonState;
   referenceApi.updateButtonState = function() {
     _baseUpdateRefButtonState?.();
@@ -300,8 +300,8 @@ LGMDM.reference.bandEQ = (function() {
   };
 
   function drawEqCurve(curve) {
-    const wrap = LGMDM.dom.requireById("refEqCurveWrap", "08-reference-mastering");
-    const canvas = LGMDM.dom.requireById("refEqCurveCanvas", "08-reference-mastering");
+    const wrap = STFX.dom.requireById("refEqCurveWrap", "08-reference-mastering");
+    const canvas = STFX.dom.requireById("refEqCurveCanvas", "08-reference-mastering");
     if (!wrap || !canvas || !curve || !curve.length) return;
     wrap.hidden = false;
     wrap.style.display = "block";
@@ -333,7 +333,7 @@ LGMDM.reference.bandEQ = (function() {
   }
 
   function initAudioCtx() {
-    return LGMDM.audio.getContext();
+    return STFX.audio.getContext();
   }
 
   let _refPreviewActive = false;
@@ -375,13 +375,13 @@ LGMDM.reference.bandEQ = (function() {
     const curve = document.getElementById("refEqCurveWrap");
     if (panel) panel.hidden = true;
     if (curve) curve.hidden = true;
-    const status = LGMDM.dom.requireById("rp-status", "08-reference-mastering");
+    const status = STFX.dom.requireById("rp-status", "08-reference-mastering");
     if (status) status.textContent = "";
   }
 
   async function launchRefPreview() {
     stopRefPreview();
-    const panel = LGMDM.dom.requireById("refPreviewPanel", "08-reference-mastering");
+    const panel = STFX.dom.requireById("refPreviewPanel", "08-reference-mastering");
     if (panel) {
       panel.hidden = false;
       panel.style.display = "block";
@@ -390,13 +390,13 @@ LGMDM.reference.bandEQ = (function() {
     if (!refSessionId) refSessionId = genUUID();
     if (!refRefSessionId) refRefSessionId = genUUID();
 
-    const status = LGMDM.dom.requireById("rp-status", "08-reference-mastering");
+    const status = STFX.dom.requireById("rp-status", "08-reference-mastering");
     if (status) status.textContent = "Conectando…";
 
     const params = collectReferenceParamsObj();
-    const band_gains_array = LGMDM.reference?.bandEQ ? LGMDM.reference.bandEQ.getGainsArray() : [];
+    const band_gains_array = STFX.reference?.bandEQ ? STFX.reference.bandEQ.getGainsArray() : [];
 
-    const wsUrl = await LGMDM.api.wsAuthUrl("/ws/ref-stream");
+    const wsUrl = await STFX.api.wsAuthUrl("/ws/ref-stream");
     refWs = new WebSocket(wsUrl);
     refWs.binaryType = "arraybuffer";
 
@@ -503,27 +503,27 @@ LGMDM.reference.bandEQ = (function() {
     debounceTimer = setTimeout(() => launchRefPreview(), 120);
   }
 
-  LGMDM.dom.requireById("ref-band-controls", "08-reference-mastering")?.addEventListener("bandchange", debouncedPreview);
+  STFX.dom.requireById("ref-band-controls", "08-reference-mastering")?.addEventListener("bandchange", debouncedPreview);
 
-  LGMDM.dom.requireById("btnRefPreview", "08-reference-mastering")?.addEventListener("click", () => {
+  STFX.dom.requireById("btnRefPreview", "08-reference-mastering")?.addEventListener("click", () => {
     if (!refSrcUploaded)  refSessionId    = genUUID();
     if (!refRefUploaded)  refRefSessionId = genUUID();
     refSrcUploaded = refRefUploaded = true;
     launchRefPreview();
   });
 
-  LGMDM.dom.requireById("btnRefPreviewStop", "08-reference-mastering")?.addEventListener("click", () => {
+  STFX.dom.requireById("btnRefPreviewStop", "08-reference-mastering")?.addEventListener("click", () => {
     stopRefPreview();
-    const panel = LGMDM.dom.requireById("refPreviewPanel", "08-reference-mastering");
+    const panel = STFX.dom.requireById("refPreviewPanel", "08-reference-mastering");
     if (panel) panel.style.display = "none";
   });
 
-  LGMDM.reference.onFileSelected = () => {
+  STFX.reference.onFileSelected = () => {
     refSessionId = null;
     refSrcUploaded = false;
     updateRefPreviewBtn();
   };
-  LGMDM.reference.onRefFileSelected = () => {
+  STFX.reference.onRefFileSelected = () => {
     refRefSessionId = null;
     refRefUploaded = false;
     updateRefPreviewBtn();
@@ -531,12 +531,12 @@ LGMDM.reference.bandEQ = (function() {
 })();
 
 // ── Botón master con referencia ──────────────────────────────
-LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering")?.addEventListener("click", () => {
+STFX.dom.requireById("btnMasterRef", "08-reference-mastering")?.addEventListener("click", () => {
   if (!selectedFile || !referenceState.file) {
-    LGMDM.ui.showStatus(null, "Seleccioná tu track y un track de referencia", "error");
+    STFX.ui.showStatus(null, "Seleccioná tu track y un track de referencia", "error");
     return;
   }
-  LGMDM.ui.clearResults();
+  STFX.ui.clearResults();
   const paramsObj = collectReferenceParamsObj();
   const panel = document.createElement("div");
   panel.className = "params-preview";
@@ -549,7 +549,8 @@ LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering")?.addEventListene
   <button class="btn btn-primary" id="ppRefConfirmBtn">✅ Confirmar y masterizar</button>
 </div>`;
   panel.innerHTML = html;
-  LGMDM.ui.getContent().prepend(panel);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.prepend(panel);
   panel.querySelector("#ppRefConfirmBtn").addEventListener("click", () => {
     panel.remove();
     submitReferenceMasterJob();
@@ -558,32 +559,32 @@ LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering")?.addEventListene
 });
 
 function startReferencePolling(jobId) {
-  if (LGMDM.polling.reference) clearInterval(LGMDM.polling.reference);
-  LGMDM.polling.reference = setInterval(async () => {
+  if (STFX.polling.reference) clearInterval(STFX.polling.reference);
+  STFX.polling.reference = setInterval(async () => {
     try {
-      const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/job/${jobId}`);
+      const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/job/${jobId}`);
       const data = await res.json();
       if (data.status === "queued") {
-        LGMDM.ui.showStatus(null, "En cola…", "queued", data.progress, data.stage);
+        STFX.ui.showStatus(null, "En cola…", "queued", data.progress, data.stage);
       } else if (data.status === "processing") {
-        LGMDM.ui.showStatus(null, "Masterizando por referencia…", "processing", data.progress, data.stage);
+        STFX.ui.showStatus(null, "Masterizando por referencia…", "processing", data.progress, data.stage);
       } else if (data.status === "done") {
-        clearInterval(LGMDM.polling.reference);
-        LGMDM.ui.showStatus(null, "Masterizado por referencia ✓", "done");
-        LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
-        downloadUrl = `${LGMDM.api.apiBase()}/download/${jobId}`;
-        const btn = LGMDM.dom.requireById("btnDownload", "08-reference-mastering");
+        clearInterval(STFX.polling.reference);
+        STFX.ui.showStatus(null, "Masterizado por referencia ✓", "done");
+        STFX.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
+        downloadUrl = `${STFX.api.apiBase()}/download/${jobId}`;
+        const btn = STFX.dom.requireById("btnDownload", "08-reference-mastering");
         btn.style.display = "block";
-        const nameInput = LGMDM.dom.requireById("trackNameInput", "08-reference-mastering");
+        const nameInput = STFX.dom.requireById("trackNameInput", "08-reference-mastering");
         nameInput.style.display = "block";
         prefillTrackNameFromFile();
         btn.onclick = async () => {
           try {
             btn.disabled = true;
-            await LGMDM.api.downloadAuthenticated(downloadUrl + currentTrackNameParam(), { filename: "reference-master.wav" });
+            await STFX.api.downloadAuthenticated(downloadUrl + currentTrackNameParam(), { filename: "reference-master.wav" });
           } catch (e) {
-            if (typeof window.LGMDM?.errors?.handleClientError === "function") window.LGMDM.errors.handleClientError(e, "No se pudo descargar el master de referencia.", { context: "reference-download" });
-            else window.LGMDM.ui.showToast?.(e.message || "No se pudo descargar el master de referencia.", "error");
+            if (typeof window.STFX?.errors?.handleClientError === "function") window.STFX.errors.handleClientError(e, "No se pudo descargar el master de referencia.", { context: "reference-download" });
+            else window.STFX.ui.showToast?.(e.message || "No se pudo descargar el master de referencia.", "error");
           } finally { btn.disabled = false; }
         };
 
@@ -601,12 +602,12 @@ function startReferencePolling(jobId) {
           _refAbBtn.disabled = true;
           _refAbBtn.textContent = "Cargando master…";
           try {
-            const resp = await LGMDM.api.apiFetch(downloadUrl);
+            const resp = await STFX.api.apiFetch(downloadUrl);
             if (!resp.ok) throw new Error("Error descargando master");
             const masterBlob = await resp.blob();
             if (typeof setupABPlayer === "function") {
               setupABPlayer(masterBlob);
-              const wrap = LGMDM.dom.requireById("previewAudioWrap", "08-reference-mastering");
+              const wrap = STFX.dom.requireById("previewAudioWrap", "08-reference-mastering");
               if (wrap) {
                 wrap.scrollIntoView({ behavior: "smooth", block: "center" });
               }
@@ -622,7 +623,7 @@ function startReferencePolling(jobId) {
           }
         };
 
-        const rBtn = LGMDM.dom.requireById("btnReport", "08-reference-mastering");
+        const rBtn = STFX.dom.requireById("btnReport", "08-reference-mastering");
         rBtn.style.display = "block";
         rBtn.onclick = () => downloadReport(jobId);
         // showLoudnessMeter eliminado: función no existía en ningún módulo
@@ -635,11 +636,11 @@ function startReferencePolling(jobId) {
           ]);
         }
         if (data.mix_advice_after) renderAdvicePanel(data.mix_advice_after, "Evaluación", "— Resultado");
-        if (data.analysis_after) window.LGMDM.ai.setContext({ ...data.analysis_after, mix_advice: data.mix_advice_after });
+        if (data.analysis_after) window.STFX.ai.setContext({ ...data.analysis_after, mix_advice: data.mix_advice_after });
       } else if (data.status === "error") {
-        clearInterval(LGMDM.polling.reference);
-        LGMDM.ui.showStatus(null, "Error: " + data.error, "error");
-        LGMDM.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
+        clearInterval(STFX.polling.reference);
+        STFX.ui.showStatus(null, "Error: " + data.error, "error");
+        STFX.dom.requireById("btnMasterRef", "08-reference-mastering").disabled = false;
       }
     } catch (e) {
       console.error("Poll error (referencia):", e);
@@ -872,8 +873,8 @@ function renderReferenceMatch(rm, refAnalysis, ownAnalysis) {
     ? `<div class="lgjs-s-3717df59">👂 LUFS perceptual: propio <b>${loudnessMatch.source?.perceived_lufs ?? "--"}</b> · ref <b>${loudnessMatch.reference?.perceived_lufs ?? "--"}</b> · corrección 3–6 kHz <b>${loudnessMatch.source?.presence_correction_db ?? "--"} / ${loudnessMatch.reference?.presence_correction_db ?? "--"} dB</b></div>`
     : "";
 
-  const tipsHtml = (report.tips || []).map((t) => `<li>${LGMDM.ui.escapeHtml(t)}</li>`).join("");
-  const issuesHtml = (report.issues || []).map((t) => `<li class="lgjs-s-6898f371">${LGMDM.ui.escapeHtml(t)}</li>`).join("");
+  const tipsHtml = (report.tips || []).map((t) => `<li>${STFX.ui.escapeHtml(t)}</li>`).join("");
+  const issuesHtml = (report.issues || []).map((t) => `<li class="lgjs-s-6898f371">${STFX.ui.escapeHtml(t)}</li>`).join("");
 
   panel.innerHTML = `
   <h3>🎯 Match con referencia</h3>
@@ -936,18 +937,19 @@ function renderReferenceMatch(rm, refAnalysis, ownAnalysis) {
     </details>`);
   }
 
-  LGMDM.ui.getContent().appendChild(panel);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(panel);
 }
 
 // ── AB Panel (sin cambios) ──────────────────────────────────
-LGMDM.dom.requireById("btnAB", "08-reference-mastering")?.addEventListener("click", () => {
+STFX.dom.requireById("btnAB", "08-reference-mastering")?.addEventListener("click", () => {
   if (!selectedFile) return;
   showABPanel();
 });
 function showABPanel() {
   let wrap = document.getElementById("abPanelWrap");
   if (wrap) return;
-  LGMDM.ui.clearResults();
+  STFX.ui.clearResults();
   wrap = document.createElement("div");
   wrap.id = "abPanelWrap";
   wrap.className = "ab-wrap";
@@ -963,43 +965,43 @@ function showABPanel() {
   <div id="abStatus" class="lgjs-s-7760b3fd">Capturá A y B.</div>
   <div id="abAudioWrap" class="lgjs-s-2239d6d5"></div>
 `;
-  LGMDM.dom.requireById("content", "08-reference-mastering").appendChild(wrap);
-  LGMDM.dom.requireById("abCaptureA", "08-reference-mastering:showABPanel").onclick = () => captureAB("A");
-  LGMDM.dom.requireById("abCaptureB", "08-reference-mastering:showABPanel").onclick = () => captureAB("B");
-  LGMDM.dom.requireById("abPlayA", "08-reference-mastering:showABPanel").onclick = () => playAB("A");
-  LGMDM.dom.requireById("abPlayB", "08-reference-mastering:showABPanel").onclick = () => playAB("B");
+  STFX.dom.requireById("content", "08-reference-mastering").appendChild(wrap);
+  STFX.dom.requireById("abCaptureA", "08-reference-mastering:showABPanel").onclick = () => captureAB("A");
+  STFX.dom.requireById("abCaptureB", "08-reference-mastering:showABPanel").onclick = () => captureAB("B");
+  STFX.dom.requireById("abPlayA", "08-reference-mastering:showABPanel").onclick = () => playAB("A");
+  STFX.dom.requireById("abPlayB", "08-reference-mastering:showABPanel").onclick = () => playAB("B");
 }
 
 async function captureAB(slot) {
   if (!selectedFile) {
-    LGMDM.dom.requireById("abStatus", "08-reference-mastering:captureAB").textContent = "Selecciona un archivo primero.";
+    STFX.dom.requireById("abStatus", "08-reference-mastering:captureAB").textContent = "Selecciona un archivo primero.";
     return;
   }
-  const status = LGMDM.dom.requireById("abStatus", "08-reference-mastering:captureAB");
+  const status = STFX.dom.requireById("abStatus", "08-reference-mastering:captureAB");
   status.textContent = `Capturando ${slot}…`;
   const fd = new FormData();
   fd.append("file", selectedFile);
   try {
-    const buildFn = (window.LGMDM?.params?.build) || window.buildParams;
+    const buildFn = (window.STFX?.params?.build) || window.buildParams;
     const params = buildFn ? buildFn() : new URLSearchParams();
     params.set("preview_seconds", "10");
-    const url = `${LGMDM.api.apiBase()}/preview?${params.toString()}`;
-    const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });
+    const url = `${STFX.api.apiBase()}/preview?${params.toString()}`;
+    const res = await STFX.api.apiFetch(url, { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const blob = await res.blob();
     if (slot === "A") {
-      window.LGMDM.state.abSnapshotA = { blob, label: "A" };
-      LGMDM.dom.requireById("abPlayA", "08-reference-mastering:captureAB").disabled = false;
-      LGMDM.dom.requireById("abPlayA", "08-reference-mastering:captureAB").classList.add("active-a");
+      window.STFX.state.abSnapshotA = { blob, label: "A" };
+      STFX.dom.requireById("abPlayA", "08-reference-mastering:captureAB").disabled = false;
+      STFX.dom.requireById("abPlayA", "08-reference-mastering:captureAB").classList.add("active-a");
     } else {
-      window.LGMDM.state.abSnapshotB = { blob, label: "B" };
-      LGMDM.dom.requireById("abPlayB", "08-reference-mastering:captureAB").disabled = false;
-      LGMDM.dom.requireById("abPlayB", "08-reference-mastering:captureAB").classList.add("active-b");
+      window.STFX.state.abSnapshotB = { blob, label: "B" };
+      STFX.dom.requireById("abPlayB", "08-reference-mastering:captureAB").disabled = false;
+      STFX.dom.requireById("abPlayB", "08-reference-mastering:captureAB").classList.add("active-b");
     }
-    status.textContent = `${slot} capturado ✓. ${window.LGMDM.state.abSnapshotA && window.LGMDM.state.abSnapshotB ? "Ambos listos." : ""}`;
+    status.textContent = `${slot} capturado ✓. ${window.STFX.state.abSnapshotA && window.STFX.state.abSnapshotB ? "Ambos listos." : ""}`;
   } catch (e) {
     console.error("Error capturando:", e);
     status.textContent = "Error: " + e.message;
@@ -1008,12 +1010,12 @@ async function captureAB(slot) {
 
 let _abCurrentUrl = null;
 function playAB(slot) {
-  const snap = slot === "A" ? window.LGMDM.state.abSnapshotA : window.LGMDM.state.abSnapshotB;
+  const snap = slot === "A" ? window.STFX.state.abSnapshotA : window.STFX.state.abSnapshotB;
   if (!snap) return;
-  const wrap = LGMDM.dom.requireById("abAudioWrap", "08-reference-mastering:playAB");
+  const wrap = STFX.dom.requireById("abAudioWrap", "08-reference-mastering:playAB");
   if (_abCurrentUrl) URL.revokeObjectURL(_abCurrentUrl);
   _abCurrentUrl = URL.createObjectURL(snap.blob);
-  wrap.innerHTML = `<div style="font-family:var(--mono);font-size:.75rem;color:${slot === "A" ? "var(--accent)" : "var(--yellow)"};margin-bottom:.3rem">▶ ${slot}</div><audio controls src="${LGMDM.ui.safeAudioSrc(_abCurrentUrl)}" class="lgjs-s-0466783d"></audio>`;
+  wrap.innerHTML = `<div style="font-family:var(--mono);font-size:.75rem;color:${slot === "A" ? "var(--accent)" : "var(--yellow)"};margin-bottom:.3rem">▶ ${slot}</div><audio controls src="${STFX.ui.safeAudioSrc(_abCurrentUrl)}" class="lgjs-s-0466783d"></audio>`;
 }
 
 // ── Advice ────────────────────────────────────────────────────
@@ -1033,13 +1035,14 @@ function renderAdvicePanel(adviceData, title, subtitle) {
           ? "grade-ok"
           : "grade-bad";
   const issuesHtml = issues.length
-    ? `<ul class="advice-issues">${issues.map((i) => `<li>${LGMDM.ui.escapeHtml(i)}</li>`).join("")}</ul>`
+    ? `<ul class="advice-issues">${issues.map((i) => `<li>${STFX.ui.escapeHtml(i)}</li>`).join("")}</ul>`
     : "";
-  const tipsHtml = tips.length ? `<ul class="advice-tips">${tips.map((t) => `<li>${LGMDM.ui.escapeHtml(t)}</li>`).join("")}</ul>` : "";
-  panel.innerHTML = `<h3>${LGMDM.ui.escapeHtml(title)}${subtitle ? ` <span class="lgjs-s-21bab4f3">${LGMDM.ui.escapeHtml(subtitle)}</span>` : ""}</h3><div class="advice-score-row"><div class="advice-score-circle"><span class="score-num">${score}</span><span class="score-label">/ 100</span></div><div><div class="advice-grade ${gradeClass}">${grade}</div><div class="lgjs-s-14ef2f38">${issues.length} problema${issues.length !== 1 ? "s" : ""}</div></div></div>${issuesHtml}${tipsHtml}`;
-  LGMDM.ui.getContent().appendChild(panel);
+  const tipsHtml = tips.length ? `<ul class="advice-tips">${tips.map((t) => `<li>${STFX.ui.escapeHtml(t)}</li>`).join("")}</ul>` : "";
+  panel.innerHTML = `<h3>${STFX.ui.escapeHtml(title)}${subtitle ? ` <span class="lgjs-s-21bab4f3">${STFX.ui.escapeHtml(subtitle)}</span>` : ""}</h3><div class="advice-score-row"><div class="advice-score-circle"><span class="score-num">${score}</span><span class="score-label">/ 100</span></div><div><div class="advice-grade ${gradeClass}">${grade}</div><div class="lgjs-s-14ef2f38">${issues.length} problema${issues.length !== 1 ? "s" : ""}</div></div></div>${issuesHtml}${tipsHtml}`;
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(panel);
 }
 
   // Public contracts consumed by other modules.
-  LGMDM.reference.renderAdvicePanel = renderAdvicePanel;
+  STFX.reference.renderAdvicePanel = renderAdvicePanel;
 })(window);

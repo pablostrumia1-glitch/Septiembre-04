@@ -1,10 +1,10 @@
 // filepath: js/00-components.js
 (function (global) {
   'use strict';
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  LGMDM.components = LGMDM.components || {};
+  const STFX = global.STFX = global.STFX || {};
+  STFX.components = STFX.components || {};
 
-  class LgmdmToast extends HTMLElement {
+  class StfxToast extends HTMLElement {
     constructor() {
       super();
       this.classList.add('toast');
@@ -64,6 +64,6 @@
     }
   }
 
-  if (!customElements.get('lgmdm-toast')) customElements.define('lgmdm-toast', LgmdmToast);
-  LGMDM.components.Toast = LgmdmToast;
+  if (!customElements.get('stfx-toast')) customElements.define('stfx-toast', StfxToast);
+  STFX.components.Toast = StfxToast;
 })(window);

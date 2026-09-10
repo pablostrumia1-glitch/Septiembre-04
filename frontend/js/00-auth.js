@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const LG = window.LGMDM = window.LGMDM || {};
+  const LG = window.STFX = window.STFX || {};
   const TOKEN_KEY = 'master_auth_token';
   const USER_KEY  = 'master_auth_user';
 
@@ -14,8 +14,8 @@
 
   function clearRetiredSessionKeys() {
     try {
-      LGMDM.storage.remove(TOKEN_KEY);
-      LGMDM.storage.remove(USER_KEY);
+      STFX.storage.remove(TOKEN_KEY);
+      STFX.storage.remove(USER_KEY);
     } catch (_) {}
   }
 
@@ -89,7 +89,7 @@
     }
 
     if (headerLogout) {
-      const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
+      const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
       bindOnce(headerLogout, 'click', () => {
         clearSession();
         location.reload();
@@ -109,8 +109,10 @@
     logoutBtn.type = 'button';
     logoutBtn.textContent = 'Cerrar sesión';
     bar.append(nameSpan, logoutBtn);
-    (document.querySelector('header') || document.body).appendChild(bar);
-    const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
+    const actionsContainer = document.querySelector('.lg-header-actions');
+    if (!actionsContainer) return;
+    actionsContainer.appendChild(bar);
+    const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key) => { el?.addEventListener(type, fn); });
     bindOnce(logoutBtn, 'click', () => {
       clearSession();
       location.reload();
@@ -121,7 +123,11 @@
     const btn = document.createElement('button');
     btn.id = 'admin-panel-btn';
     btn.textContent = '⚙ Admin';
-    document.body.appendChild(btn);
+    const actionsContainer = document.querySelector('.lg-header-actions');
+    if (!actionsContainer) return;
+    btn.className = 'lg-icon-btn';
+    btn.style.fontSize = '12px';
+    actionsContainer.appendChild(btn);
     btn.addEventListener('click', openAdminPanel);
   }
 
@@ -151,7 +157,7 @@
     if (!list) return;
     list.textContent = 'Cargando…';
     try {
-      const res = await LGMDM.api.apiFetch(`/auth/admin/users`);
+      const res = await STFX.api.apiFetch(`/auth/admin/users`);
       if (!res.ok) throw new Error(await res.text());
       const users = await res.json();
       if (!users.length) {
@@ -191,11 +197,11 @@
           btn.disabled = true;
           try {
             let res;
-            if (action === 'approve') res = await LGMDM.api.apiFetch(`/auth/admin/approve/${encodeURIComponent(id)}`, { method: 'POST' });
-            else if (action === 'reject') res = await LGMDM.api.apiFetch(`/auth/admin/reject/${encodeURIComponent(id)}`, { method: 'POST' });
+            if (action === 'approve') res = await STFX.api.apiFetch(`/auth/admin/approve/${encodeURIComponent(id)}`, { method: 'POST' });
+            else if (action === 'reject') res = await STFX.api.apiFetch(`/auth/admin/reject/${encodeURIComponent(id)}`, { method: 'POST' });
             else if (action === 'delete') {
               if (!confirm('¿Eliminar este usuario?')) { btn.disabled = false; return; }
-              res = await LGMDM.api.apiFetch(`/auth/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
+              res = await STFX.api.apiFetch(`/auth/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
             }
             if (!res?.ok) throw new Error(await res?.text());
             await loadAdminUsers();
@@ -243,7 +249,7 @@
       if (!email || !pwd) { showMsg('login-msg', 'Completá todos los campos', 'error'); return; }
       loginBtn.disabled = true;
       try {
-        const res = await LGMDM.api.apiFetch('/auth/login', {
+        const res = await STFX.api.apiFetch('/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: pwd }),
@@ -269,7 +275,7 @@
       if (!email || !pwd) { showMsg('reg-msg', 'Completá todos los campos', 'error'); return; }
       regBtn.disabled = true;
       try {
-        const res = await LGMDM.api.apiFetch('/auth/register', {
+        const res = await STFX.api.apiFetch('/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: pwd, name }),
@@ -289,7 +295,7 @@
   function onAuthenticated(user) {
     renderUserBar(user);
     if (user.role === 'admin') renderAdminButton();
-    window.dispatchEvent(new CustomEvent('lgmdm:authenticated', { detail: { user } }));
+    window.dispatchEvent(new CustomEvent('stfx:authenticated', { detail: { user } }));
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -299,13 +305,22 @@
     const token = getToken();
     const user  = getUser();
 
+    // BYPASS: skip auth for testing
+    const bypassAuth = false;
+    if (bypassAuth) {
+      const fakeUser = user || { email: 'admin@master.local', role: 'admin', name: 'Admin' };
+      document.getElementById('auth-overlay')?.classList.add('hidden');
+      onAuthenticated(fakeUser);
+      return;
+    }
+
     if (!token || !user) return;
 
     // Validar una sesión previa sin bloquear visualmente el arranque.
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 4000);
 
-    LGMDM.api.apiFetch('/auth/me', { signal: controller.signal })
+    STFX.api.apiFetch('/auth/me', { signal: controller.signal })
       .then(async res => {
         if (res.ok) {
           onAuthenticated(user);

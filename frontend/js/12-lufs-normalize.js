@@ -38,8 +38,8 @@
 
     try {
       const params = new URLSearchParams({ target_lufs: targetLufs });
-      const url = `${LGMDM.api.apiBase()}/master/normalize/sync?${params.toString()}`;
-      const res = await LGMDM.api.apiFetch(url, { method: "POST", body: fd });
+      const url = `${STFX.api.apiBase()}/master/normalize/sync?${params.toString()}`;
+      const res = await STFX.api.apiFetch(url, { method: "POST", body: fd });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`HTTP ${res.status}: ${text}`);

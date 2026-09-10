@@ -5,7 +5,7 @@
 // ============================================================
 (function (global) {
   "use strict";
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   LG.state = LG.state || {};
   LG.state.audio = LG.state.audio || { context: null };
 

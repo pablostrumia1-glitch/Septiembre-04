@@ -1,4 +1,4 @@
-/* LGMDM — Console Shell
+/* STFX — Console Shell
  * Layout controller para el grid de la consola: paneles laterales
  * (plugins disponibles / rack activo), franja de VU, alto de
  * waveform/analizador — todos redimensionables a mano.

@@ -38,7 +38,7 @@ function renderDynEqRecommendation(rec) {
   const resonances = rec.resonances || [];
   const sib = rec.sibilance || {};
 
-  let html = `<div class="lgjs-s-e9520ddd">${LGMDM.ui.escapeHtml(rec.summary || "")}</div>`;
+  let html = `<div class="lgjs-s-e9520ddd">${STFX.ui.escapeHtml(rec.summary || "")}</div>`;
 
   if (resonances.length) {
     html += `<div class="lgjs-s-a4f22f28"><b>Resonancias detectadas:</b><ul class="lgjs-s-5acdf251">`;
@@ -173,7 +173,8 @@ function renderFFT(series) {
     )
     .join("");
   wrap.innerHTML = `<h3>Spectrum Analyzer (FFT)</h3><canvas></canvas><div class="lgjs-s-acef0958">${legendHtml}</div>`;
-  LGMDM.ui.getContent().appendChild(wrap);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(wrap);
   drawFFTOnCanvas(wrap.querySelector("canvas"), series);
 }
 
@@ -209,7 +210,8 @@ function renderSpectrum(datasets, labels) {
       ? `<div class="legend"><span class="l-before">Antes</span><span class="l-after">Después</span></div>`
       : `<div class="legend"><span class="l-before">Espectro</span></div>`;
   wrap.innerHTML = `<h3>Espectro por bandas</h3><div class="spectrum-bars">${barsHtml}</div>${legendHtml}`;
-  LGMDM.ui.getContent().appendChild(wrap);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(wrap);
 }
 
 function metricsHtml(a, b) {
@@ -315,15 +317,16 @@ function renderPerceptualStandalone(a) {
   const grid = document.createElement("div");
   grid.className = "analysis-grid";
   grid.innerHTML = perceptualPanelHtml(a);
-  LGMDM.ui.getContent().appendChild(grid);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(grid);
 }
 
 function renderAnalysisSingle(a) {
   const grid = document.createElement("div");
   grid.className = "analysis-grid";
   grid.innerHTML = `<div class="analysis-panel"><h3>Métricas del audio</h3>${metricsHtml(a, null)}</div>${perceptualPanelHtml(a)}`;
-  const target = document.getElementById("analysisDynamicContent") || LGMDM.ui.getContent();
-  target.appendChild(grid);
+  const target = document.getElementById("analysisDynamicContent") || (STFX.ui.getContent ? STFX.ui.getContent() : null);
+  if (target) target.appendChild(grid);
   renderProfessionalMeter(a);
   renderSpectrum([a], ["before"]);
 }
@@ -332,8 +335,8 @@ function renderAnalysisComparison(before, after) {
   const grid = document.createElement("div");
   grid.className = "analysis-grid";
   grid.innerHTML = `<div class="analysis-panel"><h3>Antes</h3>${metricsHtml(before, null)}</div><div class="analysis-panel"><h3>Después</h3>${metricsHtml(after, before)}</div>${perceptualPanelHtml(after, "— Después")}`;
-  const target = document.getElementById("analysisDynamicContent") || LGMDM.ui.getContent();
-  target.appendChild(grid);
+  const targetComp = document.getElementById("analysisDynamicContent") || (STFX.ui.getContent ? STFX.ui.getContent() : null);
+  if (targetComp) targetComp.appendChild(grid);
   renderProfessionalMeter(after);
   renderSpectrum([before, after], ["before", "after"]);
   if (before.fft_spectrum && after.fft_spectrum) {
@@ -406,7 +409,7 @@ function drawOverlayWaveforms(originalBuffer, masterBuffer, canvas) {
 
 // ── A/B player existente con integración de waveforms ────────
 function _abGetCtx() {
-  const ctx = window.LGMDM.audio.getContext();
+  const ctx = window.STFX.audio.getContext();
   if (!_abGain || _abGain.context !== ctx) {
     _abGain = ctx.createGain();
     _abGain.connect(ctx.destination);
@@ -415,7 +418,7 @@ function _abGetCtx() {
 }
 
 function _abCurrentPosition() {
-  const ctx = window.LGMDM?.state?.audio?.context;
+  const ctx = window.STFX?.state?.audio?.context;
   if (!_abPlaying || !ctx) return _abOffset;
   return _abOffset + (ctx.currentTime - _abStartTime);
 }
@@ -456,7 +459,7 @@ function _abSetMode(mode) {
   if (_abPlaying && buf) {
     _abStop();
     _abPlay(buf, pos);
-    const ctx = window.LGMDM?.state?.audio?.context;
+    const ctx = window.STFX?.state?.audio?.context;
     if (_abGain && ctx) {
       _abGain.gain.cancelScheduledValues(ctx.currentTime);
       _abGain.gain.setValueAtTime(1, ctx.currentTime);
@@ -469,7 +472,7 @@ function _abSetMode(mode) {
 
 function _abToggle() {
   const pos = _abCurrentPosition();
-  const ctx = window.LGMDM?.state?.audio?.context;
+  const ctx = window.STFX?.state?.audio?.context;
   _abMode = _abMode === "master" ? "original" : "master";
   const buf = _abMode === "master" ? _abMasterBuf : _abOriginalBuf;
   if (_abPlaying) {
@@ -478,7 +481,7 @@ function _abToggle() {
       _abGain.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
       setTimeout(() => {
         _abPlay(buf, pos);
-        const currentCtx = window.LGMDM?.state?.audio?.context;
+        const currentCtx = window.STFX?.state?.audio?.context;
         if (currentCtx && _abGain) _abGain.gain.setTargetAtTime(1, currentCtx.currentTime, 0.015);
         _updateABUI();
       }, 40);
@@ -524,9 +527,9 @@ function _updateABUI() {
   }
 }
 
-window.LGMDM = window.LGMDM || {};
-window.LGMDM.ab = window.LGMDM.ab || {};
-window.LGMDM.ab.setMode = _abSetMode;
+window.STFX = window.STFX || {};
+window.STFX.ab = window.STFX.ab || {};
+window.STFX.ab.setMode = _abSetMode;
 
 function _renderABPlayer() {
   const wrap = document.getElementById("previewAudioWrap");
@@ -699,7 +702,8 @@ function renderProfessionalMeter(a) {
     <div class="professional-meter-grid">${cards}</div>
     ${warnings.length ? `<div class="professional-meter-warning">${warnings.map((line) => `• ${line}`).join("<br>")}</div>` : ""}
   `;
-  LGMDM.ui.getContent().appendChild(wrap);
+  const container = STFX.ui.getContent ? STFX.ui.getContent() : null;
+  if (container) container.appendChild(wrap);
 }
 
 

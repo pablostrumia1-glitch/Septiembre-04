@@ -1,5 +1,5 @@
 // ============================================================
-// 00-config.js — Configuración única del frontend LGMDM
+// 00-config.js — Configuración única del frontend STFX
 // Fuente de verdad para límites y valores de producto compartidos.
 // ============================================================
 (function (global) {
@@ -9,8 +9,8 @@
   const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
   const PREVIEW_DURATION_SEC = 25;
 
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  LGMDM.config = Object.freeze({
+  const STFX = global.STFX = global.STFX || {};
+  STFX.config = Object.freeze({
     maxFileMb: MAX_FILE_MB,
     maxFileBytes: MAX_FILE_BYTES,
     previewDurationSec: PREVIEW_DURATION_SEC,
@@ -20,7 +20,7 @@
   });
 
   function applyConfigToDocument() {
-    document.querySelectorAll('[data-lgmdm-max-file-mb]').forEach((el) => {
+    document.querySelectorAll('[data-stfx-max-file-mb]').forEach((el) => {
       el.textContent = String(MAX_FILE_MB);
     });
   }
@@ -33,18 +33,18 @@
 
   // Q20 (audit): si el DOM se regenera después del load inicial
   // (e.g. cambio de workspace que recrea paneles), los nodos con
-  // data-lgmdm-max-file-mb vuelven a tener su texto de template
+  // data-stfx-max-file-mb vuelven a tener su texto de template
   // sin el valor de MAX_FILE_MB. Escuchamos inserciones top-level
   // y re-aplicamos solo a los nodos nuevos.
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== 1) continue;
-        if (typeof node.matches === 'function' && node.matches('[data-lgmdm-max-file-mb]')) {
+        if (typeof node.matches === 'function' && node.matches('[data-stfx-max-file-mb]')) {
           node.textContent = String(MAX_FILE_MB);
         }
         if (typeof node.querySelectorAll === 'function') {
-          node.querySelectorAll('[data-lgmdm-max-file-mb]').forEach((el) => {
+          node.querySelectorAll('[data-stfx-max-file-mb]').forEach((el) => {
             el.textContent = String(MAX_FILE_MB);
           });
         }

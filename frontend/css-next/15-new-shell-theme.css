@@ -1,0 +1,257 @@
+@layer new-shell-theme {
+/* ════════════════════════════════════════════════════════════════
+   NEW SHELL THEME — Dark theme for #app-root shell
+   Matches the dark-orbit aesthetic for the new 3-column layout.
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ── Base ──────────────────────────────────────────────────── */
+  .app-root {
+    background: linear-gradient(180deg, #010208, #03040a);
+    color: #e8e6f0;
+    font-family: var(--v4-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  }
+
+  /* ── Header ────────────────────────────────────────────────── */
+  .app-header {
+    background: linear-gradient(180deg, rgba(1,2,8,.92), rgba(3,4,10,.98)) !important;
+    border-bottom: 1px solid rgba(139,210,232,.20) !important;
+    box-shadow: 0 0 0 1px rgba(142,129,200,.10) inset, 0 8px 24px rgba(2,4,9,.8) !important;
+    color: #e8e6f0;
+  }
+
+  .app-header__brand {
+    color: var(--v4-accent, #ef9b42) !important;
+    font-weight: 800 !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+  }
+
+  .app-header__brand-icon {
+    background: var(--v4-accent, #ef9b42) !important;
+    box-shadow: 0 0 12px rgba(239,155,66,.35);
+  }
+
+  .app-header__service-status {
+    color: rgba(200,196,220,.55) !important;
+  }
+
+  .app-header__user-name {
+    color: #e8e6f0 !important;
+    font-weight: 600 !important;
+  }
+
+  .app-header__logout {
+    border: 1px solid rgba(255,255,255,.10) !important;
+    color: rgba(200,196,220,.55) !important;
+    transition: all 0.15s !important;
+  }
+  .app-header__logout:hover {
+    border-color: rgba(244,63,94,.40) !important;
+    color: #f43f5e !important;
+    background: rgba(244,63,94,.08) !important;
+  }
+
+  /* ── Grid panels ───────────────────────────────────────────── */
+  .app-left,
+  .app-center,
+  .app-right {
+    background: rgba(16, 18, 30, 0.72) !important;
+    border-color: rgba(255,255,255,.09) !important;
+  }
+
+  .app-panel__header {
+    background: rgba(16, 18, 30, 0.85) !important;
+    border-bottom: 1px solid rgba(255,255,255,.09) !important;
+    color: rgba(200,196,220,.55) !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+  }
+
+  /* ── Slot headers ──────────────────────────────────────────── */
+  .slot-upload h3,
+  .slot-info-track h3,
+  .slot-master h3,
+  .slot-meters h3,
+  .slot-chat-laia h3,
+  .slot-waveform h3,
+  .slot-preview h3,
+  .slot-preview-realtime h3,
+  .slot-rack-dsp h3,
+  .slot-presets h3,
+  .slot-history h3,
+  .slot-download h3 {
+    color: #e8e6f0 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── Track info text ───────────────────────────────────────── */
+  .slot-info-track p,
+  .slot-preview-realtime p {
+    color: rgba(200,196,220,.55) !important;
+  }
+  .slot-info-track strong,
+  .slot-preview-realtime strong {
+    color: #e8e6f0 !important;
+  }
+
+  /* ── Buttons ───────────────────────────────────────────────── */
+  .slot-master button,
+  .slot-download button,
+  .slot-laia-toggle button {
+    transition: all 0.15s !important;
+  }
+
+  /* Primary accent button (Masterizar, Descargar) */
+  .slot-master button[style*="background: var(--v4-accent"],
+  .slot-download button {
+    box-shadow: 0 0 12px rgba(239,155,66,.20) !important;
+  }
+
+  /* Secondary buttons (Analizar, Preview) */
+  .slot-master button[style*="background: var(--v4-panel-2"],
+  .slot-laia-toggle button {
+    border: 1px solid rgba(255,255,255,.10) !important;
+    color: #e8e6f0 !important;
+  }
+  .slot-master button[style*="background: var(--v4-panel-2"]:hover,
+  .slot-laia-toggle button:hover {
+    border-color: rgba(139,210,232,.30) !important;
+    background: rgba(139,210,232,.06) !important;
+  }
+
+  /* ── DSP tabs ──────────────────────────────────────────────── */
+  .dsp-tab > div:first-child {
+    background: rgba(16, 18, 30, 0.85) !important;
+    border: 1px solid rgba(255,255,255,.09) !important;
+    color: #e8e6f0 !important;
+  }
+  .dsp-tab > div:last-child {
+    background: rgba(10, 12, 22, 0.9) !important;
+    border: 1px solid rgba(255,255,255,.06) !important;
+    border-top: none !important;
+    color: rgba(200,196,220,.55) !important;
+  }
+
+  /* ── Presets / History ─────────────────────────────────────── */
+  .slot-presets p,
+  .slot-history p {
+    color: rgba(200,196,220,.55) !important;
+    transition: color 0.15s !important;
+  }
+  .slot-presets p:hover {
+    color: var(--v4-accent, #ef9b42) !important;
+  }
+
+  /* ── Resize handles ────────────────────────────────────────── */
+  .app-resize-handle {
+    background: transparent !important;
+    transition: background 0.15s !important;
+  }
+  .app-resize-handle:hover {
+    background: rgba(139,210,232,.15) !important;
+  }
+  .app-resize-handle.dragging {
+    background: rgba(139,210,232,.25) !important;
+  }
+
+  .app-header__resize-handle {
+    background: transparent !important;
+  }
+  .app-header__resize-handle:hover {
+    background: rgba(139,210,232,.15) !important;
+  }
+
+  /* ── Scrollbar ─────────────────────────────────────────────── */
+  .app-left__scroll::-webkit-scrollbar,
+  .app-center__scroll::-webkit-scrollbar,
+  .app-right__scroll::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+    background: transparent;
+  }
+  .app-left__scroll::-webkit-scrollbar-thumb,
+  .app-center__scroll::-webkit-scrollbar-thumb,
+  .app-right__scroll::-webkit-scrollbar-thumb {
+    background: rgba(139,210,232,.18) !important;
+    border-radius: 2px;
+  }
+
+  /* ── Status bar ────────────────────────────────────────────── */
+  [data-stfx-status] {
+    color: var(--v4-accent, #ef9b42) !important;
+    font-weight: 500 !important;
+  }
+  [data-stfx-status][data-status-type="error"] {
+    color: #f43f5e !important;
+  }
+  [data-stfx-status][data-status-type="done"],
+  [data-stfx-status][data-status-type="success"] {
+    color: #22d3ee !important;
+  }
+  [data-stfx-status][data-status-type="processing"] {
+    color: #a855f7 !important;
+    animation: status-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ── Waveform placeholder ──────────────────────────────────── */
+  .slot-waveform svg path {
+    filter: drop-shadow(0 0 4px rgba(239,155,66,.3));
+  }
+
+  /* ── Meters gradient ───────────────────────────────────────── */
+  .slot-meters > div > div:first-child {
+    box-shadow: 0 0 8px rgba(34,211,238,.15);
+  }
+
+  /* ── Plugin list (from 05-plugin-list.js) ──────────────────── */
+  .pl-list {
+    color: #e8e6f0;
+  }
+  .pl-family__header {
+    background: rgba(16, 18, 30, 0.85);
+    border-bottom: 1px solid rgba(255,255,255,.09);
+  }
+  .pl-plugin {
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    transition: background 0.12s;
+  }
+  .pl-plugin:hover {
+    background: rgba(139,210,232,.04);
+  }
+  .pl-plugin--active .pl-plugin__led {
+    background: var(--v4-accent, #ef9b42);
+    box-shadow: 0 0 6px rgba(239,155,66,.5);
+  }
+  .pl-plugin__bypass {
+    border: 1px solid rgba(255,255,255,.10);
+    color: rgba(200,196,220,.40);
+    transition: all 0.12s;
+  }
+  .pl-plugin__bypass:hover {
+    border-color: rgba(139,210,232,.30);
+    color: #e8e6f0;
+  }
+  .pl-badge {
+    border: 1px solid rgba(255,255,255,.08);
+  }
+
+  /* ── New shell results area ────────────────────────────────── */
+  .new-shell-results {
+    background: rgba(16, 18, 30, 0.6);
+    border-left: 2px solid var(--v4-accent, #ef9b42);
+    border-radius: 4px;
+    margin: 0 12px 8px;
+    padding: 10px 12px !important;
+  }
+  .new-shell-results:empty,
+  .new-shell-results[style*="display: none"] {
+    display: none !important;
+  }
+}

@@ -289,9 +289,9 @@
     return p ? (FAMILY_COLOR[p.family] || '#64748b') : '#64748b';
   }
 
-  // ── Exportar al namespace global LGMDM ────────────────────────────────────
-  const LGMDM = window.LGMDM = window.LGMDM || {};
-  LGMDM.plugins = {
+  // ── Exportar al namespace global STFX ────────────────────────────────────
+  const STFX = window.STFX = window.STFX || {};
+  STFX.plugins = {
     PLUGINS,
     FAMILY_ORDER,
     FAMILY_COLOR,

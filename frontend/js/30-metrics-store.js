@@ -1,10 +1,10 @@
-/* LGMDM — Single Metrics Store
+/* STFX — Single Metrics Store
  * One source of truth for live server metrics.
  * Consumers subscribe; producers publish. No DOM cloning and no function wrappers.
  */
 (function (global) {
   'use strict';
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const listeners = new Set();
   let snapshot = null;
   let sequence = 0;
@@ -48,7 +48,7 @@
       listeners.forEach((fn) => {
         try { fn(event); } catch (err) { console.warn('[metrics-store] subscriber error', err); }
       });
-      global.dispatchEvent(new CustomEvent('lgmdm:metrics', { detail: event }));
+      global.dispatchEvent(new CustomEvent('stfx:metrics', { detail: event }));
     } finally {
       publishing = false;
     }

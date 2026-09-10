@@ -1,8 +1,8 @@
 (function (global) {
   "use strict";
-  const MAX_FILE_MB = window.LGMDM?.config?.maxFileMb ?? 200;
+  const MAX_FILE_MB = window.STFX?.config?.maxFileMb ?? 200;
   const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
-  const LGMDM = global.LGMDM = global.LGMDM || {};
+  const STFX = global.STFX = global.STFX || {};
 // ============================================================
 // 04-file-handling.js — Carga de archivo, librería persistente, referencia
 // ============================================================
@@ -32,7 +32,7 @@
           if (file && file.data) setFile(file.data);
         });
       }
-      const bindOnce = LGMDM.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
+      const bindOnce = STFX.ui?.bindOnce || ((el, type, fn, key, opts) => { el?.addEventListener(type, fn, opts); return true; });
       bindOnce(dropZone, "dragover", (e) => {
         e.preventDefault();
         dropZone.classList.add("dragover");
@@ -61,11 +61,11 @@
         }
         if (warn) warn.textContent = "";
         selectedFile = f;
-                window.dispatchEvent(new CustomEvent("lgmdm:file-selected", { detail: { name: f.name, libraryId } }));
+                window.dispatchEvent(new CustomEvent("stfx:file-selected", { detail: { name: f.name, libraryId } }));
 
         // Un archivo nuevo invalida el análisis anterior. Evita que Control Room
         // muestre métricas del track previamente seleccionado.
-        window.LGMDM.ai.setContext(null);
+        window.STFX.ai.setContext(null);
 
         _previewSessionId = genUUID();
         _previewLibraryId = libraryId;
@@ -74,7 +74,7 @@
           const el = document.getElementById(id);
           if (el) el.disabled = false;
         });
-        window.LGMDM.reference.updateButtonState();
+        window.STFX.reference.updateButtonState();
         document.getElementById("btnDownload")?.style.setProperty("display", "none");
         document.getElementById("btnReport")?.style.setProperty("display", "none");
         const trackNameInputEl = document.getElementById("trackNameInput");
@@ -82,21 +82,21 @@
           trackNameInputEl.value = "";
           trackNameInputEl.style.display = "none";
         }
-        LGMDM.ui.clearResults();
+        STFX.ui.clearResults();
 
         if (previewAudioUrl) {
           URL.revokeObjectURL(previewAudioUrl);
           previewAudioUrl = null;
         }
-        window.LGMDM?.previewController?.stop?.({ silent: true, cancelSource: true });
+        window.STFX?.previewController?.stop?.({ silent: true, cancelSource: true });
         if (document.getElementById("previewAudioWrap")) document.getElementById("previewAudioWrap").replaceChildren();
-        window.LGMDM?.spectrum?.clear?.();
+        window.STFX?.spectrum?.clear?.();
         hideDynEqRecommendation();
         if (!document.getElementById("s-livepreview")?.checked) {
           setPreviewStatus("Preview deshabilitado");
         }
 
-        if (typeof window.LGMDM?.meters?.teardownLiveMeters === 'function') window.LGMDM.meters.teardownLiveMeters();
+        if (typeof window.STFX?.meters?.teardownLiveMeters === 'function') window.STFX.meters.teardownLiveMeters();
 
         loadFileBuffer(f);
         // Cargar un archivo NO inicia el preview automaticamente.
@@ -118,7 +118,7 @@
           return;
         }
         try {
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/library`);
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/library`);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           renderLibraryList(data.files || []);
@@ -182,7 +182,7 @@
         try {
           const fd = new FormData();
           fd.append("file", f);
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/library/upload`, { method: "POST", body: fd });
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/library/upload`, { method: "POST", body: fd });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           await refreshLibraryList();
         } catch (e) {
@@ -196,7 +196,7 @@
         const listEl = document.getElementById("libraryList");
         try {
           setPreviewStatus("Trayendo archivo de la librería…");
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/library/${fileId}/download`);
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/library/${fileId}/download`);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const blob = await res.blob();
           const file = new File([blob], filename, { type: blob.type });
@@ -209,7 +209,7 @@
 
       async function deleteLibraryFile(fileId) {
         try {
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/library/${fileId}`, { method: "DELETE" });
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/library/${fileId}`, { method: "DELETE" });
           if (!res.ok && res.status !== 404) throw new Error(`HTTP ${res.status}`);
           await refreshLibraryList();
         } catch (e) {
@@ -221,11 +221,11 @@
       // La librería es protegida: cargarla únicamente cuando exista sesión.
       // Si el módulo se inicializa antes del login, esperamos al evento de auth.
       const loadLibraryWhenAuthenticated = () => {
-        if (!!LGMDM.api.authToken()) {
+        if (!!STFX.api.authToken()) {
           refreshLibraryList();
         }
       };
-      window.addEventListener("lgmdm:authenticated", refreshLibraryList);
+      window.addEventListener("stfx:authenticated", refreshLibraryList);
       loadLibraryWhenAuthenticated();
 
       async function loadFileBuffer(f) {
@@ -244,13 +244,13 @@
         // vive solo en una variable local que se libera al
         // terminar la función.
         const ab = await f.arrayBuffer();
-        const buf = await LGMDM.audio.decode(ab);
+        const buf = await STFX.audio.decode(ab);
         drawWaveform(buf);
         // Un único contexto Web Audio compartido; no crear/cerrar contextos locales.
       }
 
       // ── Referencia (track de referencia para matching) ──────────────────────────
-      const referenceState = (window.LGMDM.state.reference || (window.LGMDM.state.reference = { file: null, libraryId: null }));
+      const referenceState = (window.STFX.state.reference || (window.STFX.state.reference = { file: null, libraryId: null }));
       const dropZoneRef = document.getElementById("dropZoneRef");
       const refFileInput = document.getElementById("refFileInput");
       bindOnce(dropZoneRef, "dragover", (e) => {
@@ -284,21 +284,21 @@
         referenceState.file = f;
         referenceState.libraryId = fromLibraryId || null;
         if (document.getElementById("refFileName")) document.getElementById("refFileName").textContent = `${f.name} (${(f.size / 1024 / 1024).toFixed(1)} MB)`;
-        window.LGMDM.reference.updateButtonState();
+        window.STFX.reference.updateButtonState();
         // Si viene de la librería, no hay nada que subir/guardar de nuevo.
         if (!fromLibraryId && document.getElementById("saveRefToLibraryChk")?.checked) {
           uploadRefFileToLibrary(f);
         }
       }
-      const referenceApi = window.LGMDM.reference = window.LGMDM.reference || {};
+      const referenceApi = window.STFX.reference = window.STFX.reference || {};
       referenceApi.updateButtonState = function updateRefButtonState() {
         const button = document.getElementById("btnMasterRef");
         if (button) button.disabled = !(selectedFile && referenceState.file);
       };
 
       async function uploadRefFileToLibrary(f) {
-        if (typeof LGMDM.library?.saveLocalFile === 'function') {
-          await LGMDM.library.saveLocalFile(f, { kind: 'reference' });
+        if (typeof STFX.library?.saveLocalFile === 'function') {
+          await STFX.library.saveLocalFile(f, { kind: 'reference' });
         }
       }
 

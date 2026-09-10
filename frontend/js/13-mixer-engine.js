@@ -7,7 +7,7 @@
 (function (global) {
 
   // Canonical shared services from 00-api.js / 01-state.js.
-  const LG = global.LGMDM || {};
+  const LG = global.STFX || {};
   const cachedEl = LG.dom?.cachedEl || ((id) => document.getElementById(id));
   const invalidateCachedEl = LG.dom?.invalidateCachedEl || (() => {});
   const getGenUUID = () => {
@@ -51,7 +51,7 @@
 
   function ensureAudioCtx() {
     if (!previewEngine.ctx) {
-      previewEngine.ctx = window.LGMDM.audio.getContext();
+      previewEngine.ctx = window.STFX.audio.getContext();
       previewEngine.masterGain = previewEngine.ctx.createGain();
       previewEngine.masterGain.connect(previewEngine.ctx.destination);
       const masterDb = parseFloat(cachedEl('mix-master-gain')?.value || 0);
@@ -300,7 +300,7 @@
     const pcmChunks = [];
     let sampleRate = 44100, channels = 2;
     try {
-      const wsUrl = await LGMDM.api.wsAuthUrl('/ws/mix-stream');
+      const wsUrl = await STFX.api.wsAuthUrl('/ws/mix-stream');
       await new Promise((resolve, reject) => {
         const ws = new WebSocket(wsUrl);
         serverPreview.ws = ws;
@@ -368,7 +368,7 @@
     tickTransport, removeStemFromPreview, resetPreviewEngine, setServerPreviewStatus,
     scheduleServerPreview, runServerPreview
   };
-  global.LGMDM = global.LGMDM || {};
-  global.LGMDM.mixerEngine = runtime;
+  global.STFX = global.STFX || {};
+  global.STFX.mixerEngine = runtime;
 
 })(window);

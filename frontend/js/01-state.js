@@ -2,8 +2,8 @@
 // 01-state.js — Estado global, cache de colores, tema, IA estado
 // ============================================================
       // ── State ─────────────────────────────────────────────────────────────────────
-      const MAX_FILE_BYTES = window.LGMDM?.config?.maxFileBytes ?? (200 * 1024 * 1024);
-      const MAX_FILE_MB = window.LGMDM?.config?.maxFileMb ?? 200;
+      const MAX_FILE_BYTES = window.STFX?.config?.maxFileBytes ?? (200 * 1024 * 1024);
+      const MAX_FILE_MB = window.STFX?.config?.maxFileMb ?? 200;
 
       // crypto.randomUUID() sólo existe en contextos seguros (HTTPS o localhost).
       // Serví por HTTP+IP (ej. http://104.128.64.125:5500) rompe esa función, así que
@@ -103,7 +103,7 @@
       }
       async function downloadReport(jobId) {
         try {
-          const res = await LGMDM.api.apiFetch(`${LGMDM.api.apiBase()}/report/${jobId}`);
+          const res = await STFX.api.apiFetch(`${STFX.api.apiBase()}/report/${jobId}`);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
@@ -115,7 +115,7 @@
           a.remove();
           URL.revokeObjectURL(url);
         } catch (e) {
-          window.LGMDM?.errors?.handleClientError?.(e, "No se pudo descargar el reporte.", { context: "report-download" });
+          window.STFX?.errors?.handleClientError?.(e, "No se pudo descargar el reporte.", { context: "report-download" });
         }
       }
       function prefillTrackNameFromFile() {
@@ -144,11 +144,11 @@
 
       // Public state bridge: one canonical owner with backwards-compatible window access.
       // Existing modules may still read window.selectedFile / window.lastAnalysisData,
-      // but the values are now owned by LGMDM.state instead of being copied around.
-      const _publicState = window.LGMDM?.state || (window.LGMDM = window.LGMDM || {}, window.LGMDM.state = {});
+      // but the values are now owned by STFX.state instead of being copied around.
+      const _publicState = window.STFX?.state || (window.STFX = window.STFX || {}, window.STFX.state = {});
       _publicState.reference = _publicState.reference || { file: null, libraryId: null };
       _publicState.runtime = _publicState.runtime || { preview: {}, reference: _publicState.reference, audio: {} };
-      // S11 (audit): el puente de LGMDM.state → window.X ahora cubre TODAS
+      // S11 (audit): el puente de STFX.state → window.X ahora cubre TODAS
       // las variables de estado del módulo, no solo selectedFile/lastAnalysisData.
       // Si una clave nueva se agrega, sumarla a BRIDGED_KEYS. 00-state-simple.js
       // envuelve los setters para emitir notify() en las claves críticas.

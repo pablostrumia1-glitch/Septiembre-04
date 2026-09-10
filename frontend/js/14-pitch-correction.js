@@ -104,7 +104,7 @@
       'pitchCorrectionApply', 'pitchCorrectionStatus', 'pitchCorrectionProgress',
       'pitchCorrectionProgressBar'
     ]) {
-      LGMDM.dom.requireById(id, '14-pitch-correction');
+      STFX.dom.requireById(id, '14-pitch-correction');
     }
 
     // Cargar librería de stems
@@ -133,7 +133,7 @@
       });
 
       document.getElementById('pitchCorrectionGlide')?.addEventListener('input', (e) => {
-        LGMDM.dom.requireById('pitchCorrectionGlideVal', '14-pitch-correction:glide').textContent = e.target.value + 'ms';
+        STFX.dom.requireById('pitchCorrectionGlideVal', '14-pitch-correction:glide').textContent = e.target.value + 'ms';
       });
 
       document.getElementById('pitchCorrectionApply')?.addEventListener('click', applyPitchCorrection);
@@ -144,17 +144,17 @@
     const select = document.getElementById('pitchCorrectionLibrary');
     if (!select) return;
 
-    const api = LGMDM.api.apiBase();
+    const api = STFX.api.apiBase();
 
-    LGMDM.api.apiFetch(`${api}/library`)
+    STFX.api.apiFetch(`${api}/library`)
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
       .then(data => {
         if (Array.isArray(data.files)) {
-          const esc = (typeof LGMDM?.ui?.escapeHtml === 'function')
-            ? LGMDM.ui.escapeHtml
+          const esc = (typeof STFX?.ui?.escapeHtml === 'function')
+            ? STFX.ui.escapeHtml
             : (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
           // FIX XSS: el nombre de archivo provenía del backend y se inyectaba
           // directo en innerHTML. Si la API devolvía un filename con "<script>" o
@@ -169,7 +169,7 @@
   }
 
   async function applyPitchCorrection() {
-    LGMDM.ui.showStatus('pitchCorrectionStatus', '⏳ Iniciando...', 'info');
+    STFX.ui.showStatus('pitchCorrectionStatus', '⏳ Iniciando...', 'info');
 
     const file = document.getElementById('pitchCorrectionFile')?.files[0];
     const libraryId = document.getElementById('pitchCorrectionLibrary')?.value;
@@ -179,7 +179,7 @@
     const format = document.getElementById('pitchCorrectionFormat')?.value || 'wav';
 
     if (!file && !libraryId) {
-      LGMDM.ui.showStatus('pitchCorrectionStatus', '❌ Selecciona archivo o biblioteca', 'error');
+      STFX.ui.showStatus('pitchCorrectionStatus', '❌ Selecciona archivo o biblioteca', 'error');
       return;
     }
 
@@ -191,13 +191,13 @@
     formData.append('glide_time_ms', glideTime);
     formData.append('output_format', format);
 
-    const api = LGMDM.api.apiBase();
+    const api = STFX.api.apiBase();
 
     try {
-      LGMDM.ui.showStatus('pitchCorrectionStatus', '⏳ Procesando pitch correction...', 'info');
-      LGMDM.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'block';
+      STFX.ui.showStatus('pitchCorrectionStatus', '⏳ Procesando pitch correction...', 'info');
+      STFX.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'block';
 
-      const response = await LGMDM.api.apiFetch(`${api}/pitch-correct`, {
+      const response = await STFX.api.apiFetch(`${api}/pitch-correct`, {
         method: 'POST',
         body: formData
       });
@@ -220,13 +220,13 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
-      LGMDM.ui.showStatus('pitchCorrectionStatus', `✓ Completado: tonalidad=${detectedKey} (conf=${(confidence*100).toFixed(0)}%)`, 'success');
-      LGMDM.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'none';
+      STFX.ui.showStatus('pitchCorrectionStatus', `✓ Completado: tonalidad=${detectedKey} (conf=${(confidence*100).toFixed(0)}%)`, 'success');
+      STFX.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'none';
 
     } catch (err) {
-      LGMDM.ui.showStatus('pitchCorrectionStatus', `❌ Error: ${err.message}`, 'error');
+      STFX.ui.showStatus('pitchCorrectionStatus', `❌ Error: ${err.message}`, 'error');
       console.error(err);
-      LGMDM.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'none';
+      STFX.dom.requireById('pitchCorrectionProgress', '14-pitch-correction:progress').style.display = 'none';
     }
   }
 

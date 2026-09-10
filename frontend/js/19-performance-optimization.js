@@ -4,7 +4,7 @@
 
 (function (global) {
   "use strict";
-  const LG = global.LGMDM = global.LGMDM || {};
+  const LG = global.STFX = global.STFX || {};
   const perf = LG.performance = LG.performance || {};
 
   // ── Throttle/Debounce ──
@@ -143,46 +143,21 @@
 
   // ── Stop animations cuando pestaña no visible ──
   function setupPageVisibilityOptimization() {
-    const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, options) => el?.addEventListener(type, fn, options));
+    const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key, options) => el?.addEventListener(type, fn, options));
     bindOnce(document, 'visibilitychange', () => {
       if (document.hidden) {
-        // Pausar análisis en tiempo real
         window.pauseAllVisualizers?.();
       } else {
-        // Resumir
         window.resumeAllVisualizers?.();
       }
     });
   }
 
-  // ── Memory pool para objects reutilizables ──
-  class ObjectPool {
-    constructor(Factory, size = 100) {
-      this.factory = Factory;
-      this.pool = [];
-      for (let i = 0; i < size; i++) {
-        this.pool.push(new Factory());
-      }
-    }
-
-    acquire() {
-      return this.pool.length > 0 ? this.pool.pop() : new this.factory();
-    }
-
-    release(obj) {
-      if (obj.reset) obj.reset();
-      this.pool.push(obj);
-    }
-  }
-
-  perf.ObjectPool = ObjectPool;
-
   // ── Inicializar optimizaciones ──
   const init = () => {
     setupPageVisibilityOptimization();
-    setupLazyVisualizers();
   };
-  const bindOnce = window.LGMDM?.ui?.bindOnce || ((el, type, fn, key, options) => el?.addEventListener(type, fn, options));
+  const bindOnce = window.STFX?.ui?.bindOnce || ((el, type, fn, key, options) => el?.addEventListener(type, fn, options));
   if (document.readyState === 'loading') bindOnce(document, 'DOMContentLoaded', init, 'performance-dom-ready', { once: true });
   else init();
 

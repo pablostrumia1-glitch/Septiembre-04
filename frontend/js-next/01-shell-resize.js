@@ -7,7 +7,7 @@
 // - 35-console-shell.js
 // - 36-header-resize.js
 //
-// Reutiliza LGMDM.ui.makeResizable de 00-resize-utility.js
+// Reutiliza STFX.ui.makeResizable de 00-resize-utility.js
 // en lugar de reimplementar la lógica 3 veces.
 //
 // Persistir tamaños con nuevas claves de storage para no mezclar
@@ -18,7 +18,7 @@
 (function () {
   'use strict';
 
-  const LGMDM = window.LGMDM = window.LGMDM || {};
+  const STFX = window.STFX = window.STFX || {};
   const root = document.documentElement;
 
   // Solo continuar si el shell nuevo está montado
@@ -27,8 +27,8 @@
     return;
   }
 
-  // Helper shared: bindOnce desde LGMDM.ui
-  const bindOnce = LGMDM.ui?.bindOnce || ((el, ev, fn, key, opts) => {
+  // Helper shared: bindOnce desde STFX.ui
+  const bindOnce = STFX.ui?.bindOnce || ((el, ev, fn, key, opts) => {
     if (el) el.addEventListener(ev, fn, opts);
     return true;
   });
@@ -51,12 +51,12 @@
     }
 
     bindOnce(headerHandle, 'mousedown', (e) => {
-      if (typeof LGMDM.ui.makeResizable !== 'function') {
-        console.warn('01-shell-resize: LGMDM.ui.makeResizable no disponible para header');
+      if (typeof STFX.ui.makeResizable !== 'function') {
+        console.warn('01-shell-resize: STFX.ui.makeResizable no disponible para header');
         return;
       }
 
-      LGMDM.ui.makeResizable(headerHandle, {
+      STFX.ui.makeResizable(headerHandle, {
         axis: 'y',
         getSize: getHeaderSize,
         setSize: setHeaderSize,
@@ -72,7 +72,7 @@
           // Persistir tamaño
           try {
             const final = getComputedStyle(root).getPropertyValue('--lg-shell-header-h').trim();
-            window.LGMDM?.storage?.set?.('lgmdm.headerHeight', final);
+            window.STFX?.storage?.set?.('lgmdm.headerHeight', final);
           } catch (_) {
             /* noop */
           }
@@ -93,12 +93,12 @@
     }
 
     bindOnce(leftHandle, 'mousedown', (e) => {
-      if (typeof LGMDM.ui.makeResizable !== 'function') {
-        console.warn('01-shell-resize: LGMDM.ui.makeResizable no disponible para panel izquierdo');
+      if (typeof STFX.ui.makeResizable !== 'function') {
+        console.warn('01-shell-resize: STFX.ui.makeResizable no disponible para panel izquierdo');
         return;
       }
 
-      LGMDM.ui.makeResizable(leftHandle, {
+      STFX.ui.makeResizable(leftHandle, {
         axis: 'x',
         getSize: getLeftWidth,
         setSize: setLeftWidth,
@@ -111,7 +111,7 @@
         onEnd: () => {
           leftHandle.classList.remove('dragging');
           try {
-            window.LGMDM?.storage?.set?.('lgmdm:flex-sidebar-w', getLeftWidth());
+            window.STFX?.storage?.set?.('lgmdm:flex-sidebar-w', getLeftWidth());
           } catch (_) {
             /* noop */
           }
@@ -136,12 +136,12 @@
     }
 
     bindOnce(rightHandle, 'mousedown', (e) => {
-      if (typeof LGMDM.ui.makeResizable !== 'function') {
-        console.warn('01-shell-resize: LGMDM.ui.makeResizable no disponible para panel derecho');
+      if (typeof STFX.ui.makeResizable !== 'function') {
+        console.warn('01-shell-resize: STFX.ui.makeResizable no disponible para panel derecho');
         return;
       }
 
-      LGMDM.ui.makeResizable(rightHandle, {
+      STFX.ui.makeResizable(rightHandle, {
         axis: 'x',
         getSize: getRightWidth,
         setSize: setRightWidth,
@@ -154,7 +154,7 @@
         onEnd: () => {
           rightHandle.classList.remove('dragging');
           try {
-            window.LGMDM?.storage?.set?.('lgmdm.shellRightWidth', getRightWidth());
+            window.STFX?.storage?.set?.('lgmdm.shellRightWidth', getRightWidth());
           } catch (_) {
             /* noop */
           }

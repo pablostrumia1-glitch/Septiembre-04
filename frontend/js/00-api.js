@@ -6,12 +6,12 @@
   'use strict';
 
   const TOKEN_KEY = 'master_auth_token';
-  const CSRF_META_SELECTOR = 'meta[name=\"lgmdm-csrf-token\"]';
+  const CSRF_META_SELECTOR = 'meta[name=\"stfx-csrf-token\"]';
   const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
   const DEFAULT_API_ORIGIN = 'https://masteringstudio-api.duckdns.org';
   const ALLOWED_REMOTE_API_ORIGINS = new Set([DEFAULT_API_ORIGIN]);
-  const LGMDM = global.LGMDM = global.LGMDM || {};
-  LGMDM.api = LGMDM.api || {};
+  const STFX = global.STFX = global.STFX || {};
+  STFX.api = STFX.api || {};
 
   function normalizeApiOrigin(value) {
     const raw = String(value || '').trim() || DEFAULT_API_ORIGIN;
@@ -31,7 +31,7 @@
     url.pathname = url.pathname.replace(/\/$/, '');
     const origin = url.origin;
     if (origin !== global.location.origin && !ALLOWED_REMOTE_API_ORIGINS.has(origin)) {
-      throw new Error('Origen de API no permitido por la política de seguridad de LGMDM');
+      throw new Error('Origen de API no permitido por la política de seguridad de STFX');
     }
     return origin;
   }
@@ -48,7 +48,7 @@
     const meta = document.querySelector(CSRF_META_SELECTOR);
     const metaValue = meta?.content?.trim();
     if (metaValue) return metaValue;
-    try { return sessionStorage.getItem('lgmdm.csrf-token') || ''; } catch (_) { return ''; }
+    try { return sessionStorage.getItem('stfx.csrf-token') || ''; } catch (_) { return ''; }
   }
 
   function authHeaders(extra, method = 'GET') {
@@ -193,7 +193,7 @@
     throw lastError || new Error('La solicitud HTTP agotó los reintentos permitidos');
   }
 
-  function filenameFromResponse(res, fallback = 'lgmdm-download') {
+  function filenameFromResponse(res, fallback = 'stfx-download') {
     const cd = res.headers.get('content-disposition') || '';
     const utf = cd.match(/filename\*=UTF-8''([^;]+)/i);
     if (utf) { try { return decodeURIComponent(utf[1].trim().replace(/^"|"$/g, '')); } catch (_) {} }
@@ -202,10 +202,10 @@
   }
 
   async function downloadAuthenticated(path, options = {}) {
-    const { filename = 'lgmdm-download', notify = true, ...fetchOptions } = options || {};
+    const { filename = 'stfx-download', notify = true, ...fetchOptions } = options || {};
     const res = await apiFetch(path, fetchOptions);
     if (res.status === 401 || res.status === 403) {
-      window.dispatchEvent(new CustomEvent('lgmdm:auth-required', { detail: { status: res.status, path: String(path) } }));
+      window.dispatchEvent(new CustomEvent('stfx:auth-required', { detail: { status: res.status, path: String(path) } }));
       let detail = 'Sesión expirada. Iniciá sesión nuevamente para descargar.';
       try { const data = await res.clone().json(); detail = data.detail || detail; } catch (_) {}
       const err = new Error(detail);
@@ -245,7 +245,7 @@
     delete: (path, options) => request('DELETE', path, options),
   };
 
-  Object.assign(LGMDM.api, { apiBase, apiUrl, wsUrl, wsAuthUrl, authToken, csrfToken, authHeaders, apiFetch, downloadAuthenticated, resolveApiTarget, request, client });
+  Object.assign(STFX.api, { apiBase, apiUrl, wsUrl, wsAuthUrl, authToken, csrfToken, authHeaders, apiFetch, downloadAuthenticated, resolveApiTarget, request, client });
 
   const domCache = new Map();
   function cachedEl(id) {
@@ -255,7 +255,7 @@
     return el;
   }
   function invalidateCachedEl(...ids) { ids.forEach(id => domCache.delete(id)); }
-  LGMDM.dom = LGMDM.dom || {};
-  LGMDM.dom.cachedEl = cachedEl;
-  LGMDM.dom.invalidateCachedEl = invalidateCachedEl;
+  STFX.dom = STFX.dom || {};
+  STFX.dom.cachedEl = cachedEl;
+  STFX.dom.invalidateCachedEl = invalidateCachedEl;
 })(window);
