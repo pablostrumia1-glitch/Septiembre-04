@@ -64,7 +64,7 @@
   .lg-kicker,
   .lg-panel-kicker {
     color: var(--v4-accent);
-    font: 800 12px var(--v4-mono);
+    font: 800 11px var(--v4-mono);
     letter-spacing: .14em;
     text-transform: uppercase;
   }
@@ -759,31 +759,7 @@
   /* .studio-gr-grid vive en console-shell.css (@layer console-shell,
      gana por orden de capas) — acá era código muerto duplicado. */
 
-  .studio-gr-card {
-    padding: 5px;
-    border: 1px solid var(--v4-border);
-    border-radius: 3px;
-  }
-
-  .studio-gr-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 4px;
-    color: var(--v4-muted);
-    font: 700 11px var(--v4-mono);
-  }
-
-  .studio-gr-top strong {
-    color: var(--v4-text);
-  }
-
-  .studio-gr-track {
-    height: 4px;
-    margin-top: 4px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: #202a34;
-  }
+  /* .studio-gr-* reglas consolidadas en console-shell.css */
 
   .studio-gr-bar {
     width: 0;
@@ -945,27 +921,27 @@
 /* Dashboard y health */
 @layer console-center-group-b {
   .dashboard-wrap {
-    margin-top: 10px;
-    padding: 10px;
+    padding: 6px 8px;
     border: 1px solid var(--v4-border);
     border-radius: 6px;
     background: var(--v4-panel-2);
+    margin-top: 4px;
   }
 
   .dashboard-wrap h3 {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 0 8px;
+    margin: 0 0 4px;
     color: var(--v4-text-2);
-    font: 700 12px var(--v4-mono);
+    font: 700 10px var(--v4-mono);
     text-transform: uppercase;
     letter-spacing: .06em;
   }
 
   .dash-live-dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: var(--v4-green);
     box-shadow: 0 0 6px var(--v4-green);
@@ -974,8 +950,8 @@
 
   .dash-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
   }
 
   .dash-card {
@@ -1128,13 +1104,6 @@
     border-radius: 50%;
     background: var(--v4-muted);
     box-shadow: 0 0 6px transparent;
-  }
-
-  .health-card {
-    padding: 6px 8px;
-    border: 1px solid var(--v4-border);
-    border-radius: 5px;
-    background: var(--v4-panel-3);
   }
 
   /* health-label aquí es dim/metadata → scope al contexto del análisis */

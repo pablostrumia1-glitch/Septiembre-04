@@ -10,7 +10,7 @@
   min-height: var(--lg-shell-header-h);
   max-height: var(--lg-shell-header-h);
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(220px, 1fr);
   gap: 16px;
   align-items: center;
   padding: 6px var(--gutter);
@@ -19,10 +19,20 @@
   -webkit-backdrop-filter: blur(6px);
   background: linear-gradient(180deg, transparent, rgba(7, 8, 18, 0.96));
   overflow: visible;
-  /* FIX: acá había un segundo "position: relative;" pisando el sticky de
-     arriba (misma propiedad declarada 2 veces en la regla, gana la última).
-     position:sticky ya funciona como contexto de posicionamiento para el
-     handle absoluto — no hace falta relative. */
+}
+
+.lg-header-left {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.lg-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 /* ── Handle de redimensionamiento ────────────────────────────── */
@@ -56,13 +66,6 @@
 }
 
 /* ── Marca / Logo ────────────────────────────────────────────── */
-.lg-brand-lockup {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
 .lg-brand-mark {
   width: 30px;
   height: 30px;
@@ -164,8 +167,6 @@
   display: inline-block;
 }
 
-}
-
 .lg-user-name {
   max-width: 140px;
   min-width: 0;
@@ -175,4 +176,5 @@
   color: var(--v4-text, var(--text));
   font: 700 10px var(--v4-mono, var(--mono));
   letter-spacing: .04em;
+}
 }

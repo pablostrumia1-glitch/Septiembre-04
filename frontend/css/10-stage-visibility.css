@@ -11,15 +11,24 @@
     display: none !important;
   }
 
-  .lg-header-center {
+  .lg-header-left {
     grid-column: 1;
-    justify-self: start;
-    text-align: left;
   }
 
   .lg-brand-lockup {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .lg-health-dropdown {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .lg-header-center {
     grid-column: 2;
     justify-self: center;
+    text-align: left;
   }
 
   .lg-header-actions {
@@ -74,6 +83,7 @@
   .cns-panel {
     max-height: none;
     border-radius: 0;
+    box-shadow: none;
   }
 
   .cns-console-wrap {
@@ -103,11 +113,6 @@
     border-bottom: 2px solid var(--v4-accent, var(--a));
   }
 
-  .console-workspace {
-    padding: 8px;
-    overflow: hidden;
-  }
-
   .lg-console {
     min-height: 0;
     height: 100%;
@@ -119,12 +124,10 @@
     min-height: 0;
     height: 100%;
     grid-template-columns: 74px 6px minmax(0, 1fr);
-    grid-template-rows: 150px 6px 105px 6px minmax(130px, 1fr);
-    gap: 8px;
   }
 
   .cns-zone-lower {
-    --cns-gr-w: minmax(250px, 1fr);
+    --cns-gr-w: minmax(250px, 1.2fr);
     grid-template-columns: minmax(220px, 1fr) 6px minmax(210px, .9fr);
     gap: 8px;
   }
@@ -205,15 +208,6 @@
 }
 
 @layer stage-visibility {
-  .stage-track-context {
-    display: grid;
-    gap: 2px;
-    margin-top: 8px;
-    padding: 8px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--s2);
-  }
 
   .stage-track-kicker {
     color: var(--v4-accent, var(--a));
@@ -256,8 +250,8 @@
     --cns-left-max: 420px;
     --cns-right-min: 180px;
     --cns-right-max: 420px;
-    --cns-wave-h: clamp(175px, 28vh, 310px);
-    --cns-ana-h: clamp(105px, 16vh, 175px);
+    --cns-wave-h: clamp(80px, 12vh, 140px);
+    --cns-ana-h: clamp(70px, 10vh, 120px);
     margin-top: 0;
   }
 
@@ -265,11 +259,6 @@
     height: 100%;
     min-height: 0;
     align-items: stretch;
-  }
-
-  .cns-panel {
-    border-radius: 0;
-    box-shadow: none;
   }
 
   .cns-panel-left,
@@ -357,8 +346,13 @@
   }
 
   .stage-track-context {
+    display: grid;
+    gap: 2px;
     margin-top: 6px;
     padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--s2);
   }
 
   .cns-panel-left #cnsOutputFormatBlock {
@@ -402,10 +396,6 @@
     min-height: 0;
   }
 
-  .lg-workspace-workspace-tabs {
-    border-bottom-color: var(--v4-border, var(--line));
-  }
-
   .lg-workspace-workspace-tab {
     font: 800 11px var(--v4-mono, var(--mono));
     letter-spacing: .06em;
@@ -416,7 +406,6 @@
   }
 
   .cns-console {
-    --cns-ana-h: clamp(190px, 24vh, 250px);
     grid-template-rows: var(--cns-wave-h) 6px var(--cns-ana-h) 6px minmax(145px, 1fr);
     gap: 6px;
   }
@@ -509,10 +498,6 @@
   #previewStatus {
     margin: 0;
     font-size: 9px;
-  }
-
-  .cns-zone-lower {
-    --cns-gr-w: minmax(250px, 1.2fr);
   }
 
   .cns-zone-lower #studioGrPanel {

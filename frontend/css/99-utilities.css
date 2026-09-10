@@ -13,7 +13,8 @@
 .section-note{color:var(--muted);font-size:9px;font-weight:700}
 .field-input{width:auto}
 .accent-amber{accent-color:var(--a)}
-.link-inline{font-size:9px}
+.link-inline{font-size:9px;color:var(--v4-accent);cursor:pointer}
+.link-inline:hover{text-decoration:underline}
 .mb-sm{margin-bottom:6px}
 .mb-xs{margin-bottom:4px}
 .limiter{border-color:rgba(238,109,109,.28)!important;background:linear-gradient(180deg,rgba(238,109,109,.05),transparent)!important}
@@ -96,4 +97,11 @@
 @media (max-width: 480px) {
   .mobile-only { display: block; }
 }
+/* Floating elements — ocultos por defecto */
+#stfx-shortcut-help { display: none !important; }
+.lg-engineer-tip { display: none !important; }
+.lg-engineer-tip.show { display: block !important; }
+#toast-container:empty { display: none !important; }
+
+} /* @layer utilities */
 

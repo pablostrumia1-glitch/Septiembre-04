@@ -1,6 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
    12-drawer-history.css — Compact Drawer + History Panel
    ══════════════════════════════════════════════════════════════════════ */
+@layer drawer-history {
 
 /* ── Compact Drawer ─────────────────────────────────────────────────── */
 .lg-compact-drawer {
@@ -381,3 +382,5 @@ body.lg-compact-drawer-open {
   border-radius: 50%;
   background: var(--v4-accent, var(--p));
 }
+
+} /* @layer drawer-history */

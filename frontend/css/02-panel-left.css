@@ -31,7 +31,7 @@
   .eyebrow,
   .health-label {
     color: var(--v4-accent);
-    font: 800 12px/1.1 var(--v4-mono);
+    font: 800 11px/1.1 var(--v4-mono);
     letter-spacing: .14em;
     text-transform: uppercase;
   }
@@ -224,7 +224,6 @@
   .param-hint,
   .note-mini,
   .note-small,
-  .small-text,
   .text-muted-body {
     color: var(--v4-dim);
     font: 500 12px/1.35 var(--v4-mono);
@@ -256,10 +255,6 @@
   .toggle-label--compact {
     gap: 5px;
     font-size: 12px;
-  }
-
-  .accent-amber {
-    accent-color: var(--a);
   }
 
   .accent2 {
@@ -333,175 +328,18 @@
     margin-top: 6px;
   }
 
-  /* .lg-mini-btn sacado de esta lista: quedaba duplicado con la
-     definición real en 03-console-center.css (@layer workspace, que
-     gana por orden de capas) — esta de acá era código muerto. */
-  .btn,
-  .btn-primary,
-  .btn-secondary,
-  .btn-tertiary,
-  .btn-ref,
-  .btn-preset-load,
-  .lg-ghost-btn,
-  .lg-primary-btn {
-    min-width: 0;
-    min-height: 28px;
-    padding: 6px 10px;
-    border: 1px solid var(--v4-border);
-    border-radius: 4px;
-    background: #121922;
-    color: var(--v4-text-2);
-    cursor: pointer;
-    font: 700 12px var(--v4-mono);
-    letter-spacing: .02em;
-    transition: all 0.15s;
-  }
-
-  .btn:hover,
-  .btn-secondary:hover,
-  .btn-tertiary:hover,
-  .btn-ref:hover,
-  .lg-ghost-btn:hover {
-    border-color: var(--v4-accent);
-    color: var(--v4-text);
-  }
-
-  .btn-primary,
-  .btn-automaster {
-    border-color: var(--v4-accent);
-    background: var(--v4-accent-soft);
-    color: var(--v4-text);
-  }
-  .btn-primary:hover,
-  .btn-automaster:hover {
-    background: rgba(239, 155, 66, .25);
-  }
-
-  .btn-ref {
-    border-color: var(--v4-cyan);
-  }
-  .btn-ref:hover {
-    background: rgba(111, 178, 216, .1);
-  }
-
-  .btn-block,
-  .full-width,
-  .select-full {
-    width: 100%;
-  }
-
-  .btn-ab {
-    border-color: var(--v4-cyan);
-    color: var(--v4-cyan);
-  }
-  .btn-ab:hover {
-    background: rgba(111, 178, 216, .1);
-  }
-
-  .btn-download,
-  .btn-report {
-    border-color: var(--v4-border);
-  }
-
-  .btn-small {
-    min-height: 22px;
-    padding: 3px 6px;
-    font-size: 12px;
-  }
-
-  /* Inputs y selects */
-  select,
-  input[type="text"],
-  input[type="number"],
-  input[type="email"],
-  input[type="password"],
-  textarea {
-    width: 100%;
-    min-width: 0;
-    min-height: 28px;
-    padding: 5px 8px;
-    border: 1px solid var(--v4-border);
-    border-radius: 4px;
-    background: #0c1218;
-    color: var(--v4-text);
-    font: 600 12px var(--v4-mono);
-  }
-
-  select:focus,
-  input:focus,
-  textarea:focus {
-    border-color: var(--v4-accent);
-    outline: none;
-    box-shadow: 0 0 0 2px var(--v4-accent-soft);
-  }
-
-  input[type="range"] {
-    width: 100%;
-    min-width: 0;
-    accent-color: var(--v4-accent);
-    cursor: pointer;
-  }
-
-  input[type="range"]::-webkit-slider-runnable-track {
-    height: 4px;
-    border: 0;
-    border-radius: 999px;
-    background: #2a3440;
-  }
-
-input[type="range"]::-webkit-slider-thumb {
-  width: 12px;
-  height: 12px;
-  margin-top: -4px;
-    border: 2px solid #d9e1e8;
-    border-radius: 50%;
-    background: var(--v4-accent);
-    -webkit-appearance: none;
-  }
-
-  input[type="range"]::-moz-range-track {
-    height: 4px;
-    border: 0;
-    border-radius: 999px;
-    background: #2a3440;
-  }
-
-  input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    border: 2px solid #d9e1e8;
-    border-radius: 50%;
-    background: var(--v4-accent);
-  }
+  /* Botones y forms consolidados en 05-components.css (@layer components).
+     Sidebar solo conserva overrides únicos (.range-compact, .preset-grid). */
 
   .range-compact {
     width: 80px !important;
   }
 
-  /* Presets */
+  /* Presets — estilos base en 05-components.css */
   .preset-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
-  }
-
-  .preset-btn {
-    min-width: 0;
-    padding: 6px 4px;
-    border: 1px solid var(--v4-border);
-    border-radius: 4px;
-    background: #111821;
-    color: var(--v4-text-2);
-    cursor: pointer;
-    font: 600 12px var(--v4-mono);
-    transition: all 0.15s;
-  }
-
-  .preset-btn:hover,
-  .preset-btn.active {
-    border-color: var(--v4-accent);
-    color: var(--v4-text);
-    background: var(--v4-accent-soft);
   }
 
   /* Scroll panels */
@@ -514,16 +352,14 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
   /* Detalles */
-  .details-summary,
-  .summary-accent {
+  .details-summary {
     list-style: none;
     cursor: pointer;
     color: var(--v4-text-2);
     font: 700 12px var(--v4-mono);
   }
 
-  .details-summary::-webkit-details-marker,
-  .summary-accent::-webkit-details-marker {
+  .details-summary::-webkit-details-marker {
     display: none;
   }
 
@@ -587,12 +423,6 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
   /* Espaciado */
-  .space-top-sm {
-    margin-top: 6px;
-  }
-  .mt-sm {
-    margin-top: 6px;
-  }
   .mt-xs {
     margin-top: 4px;
   }
@@ -601,12 +431,6 @@ input[type="range"]::-webkit-slider-thumb {
   }
   .mt-lg {
     margin-top: 10px;
-  }
-  .mb-sm {
-    margin-bottom: 6px;
-  }
-  .mb-xs {
-    margin-bottom: 4px;
   }
   .mb-none {
     margin-bottom: 0;
@@ -926,14 +750,6 @@ input[type="range"]::-webkit-slider-thumb {
     color: var(--v4-text);
   }
 
-  .link-inline {
-    font-size: 12px;
-    color: var(--v4-accent);
-    cursor: pointer;
-  }
-  .link-inline:hover {
-    text-decoration: underline;
-  }
 
   /* Proyectos */
   .lg-projects-host {

@@ -100,20 +100,6 @@
   align-self: stretch;
 }
 
-.cns-console {
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  --cns-vu-w: 90px;
-  --cns-wave-h: 28vh;
-  --cns-ana-h: 16vh;
-  display: grid;
-  grid-template-columns: var(--cns-vu-w) var(--cns-handle-w) minmax(0, 1fr);
-  grid-template-rows: minmax(160px, var(--cns-wave-h)) var(--cns-handle-w) minmax(110px, var(--cns-ana-h)) var(--cns-handle-w) minmax(140px, 1fr);
-  gap: 10px;
-}
 
 .cns-zone-vu { grid-column: 1; grid-row: 1 / 6; }
 #cnsVHandle { grid-column: 2; grid-row: 1 / 6; cursor: col-resize; }
@@ -128,15 +114,7 @@
    (#cnsPanelLeft) y el rack activo (#cnsPanelRight) queden fijos en los
    costados sin importar qué pestaña esté activa, en vez de desaparecer
    cuando se cambia de pestaña. */
-.cns-console-wrap {
-  min-width: 0;
-  min-height: 0;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+.cns-console-wrap {}
 
 @media (max-width: 960px) {
   .cns-body {
@@ -151,15 +129,10 @@
   }
   .cns-panel-left,
   .cns-panel-right {
-    max-height: none;
-    order: 2;
-  }
-  .cns-console-wrap {
-    order: 1;
+    grid-column: auto;
   }
 }
 
-/* ── resize handles ────────────────────────────────────────── */
 .cns-handle::after {
   content: '';
   position: absolute;
@@ -178,11 +151,6 @@
   right: 8%;
   width: auto;
   height: 2px;
-}
-
-.cns-handle:hover::after,
-.cns-handle.dragging::after {
-  background: var(--a);
 }
 
 /* ── side panels (izq: plugins disponibles / der: rack) ─────── */
@@ -321,23 +289,6 @@
   position: relative;
 }
 
-.cns-zone-wave,
-.cns-zone-ana,
-.cns-zone-lower,
-.cns-zone-wave .cns-card,
-.cns-zone-ana .cns-card {
-  min-width: 0;
-  height: 100%;
-  min-height: 0;
-}
-
-.cns-zone-wave,
-.cns-zone-ana,
-.cns-zone-lower {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-}
 
 .cns-zone-wave .lg-wave-stage {
   height: 100%;
@@ -415,13 +366,17 @@
   grid-template-columns: 40px 56px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  padding: 2px 0;
-  border: none;
-  border-radius: 0;
+  padding: 5px;
+  border: 1px solid var(--v4-border);
+  border-radius: 3px;
   background: none;
 }
 .studio-gr-top {
-  display: contents;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  color: var(--v4-muted);
+  font: 700 11px var(--v4-mono);
 }
 .studio-gr-top span {
   font: 700 10px var(--mono);
@@ -430,15 +385,16 @@
 }
 .studio-gr-top strong {
   font: 700 12px var(--mono);
-  color: var(--text);
+  color: var(--v4-text);
   text-align: right;
 }
 .studio-gr-track {
   position: relative;
-  height: 12px;
-  border-radius: 4px;
-  background: var(--bg2);
-  border: 1px solid var(--line);
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: #202a34;
+  border: none;
   overflow: hidden;
 }
 [id^="studioGrBar_"] {
@@ -452,13 +408,9 @@
 }
 
 /* ── Fusionado desde 07-visualizers.css ── */
-#waveformCanvas, #waveformCanvas, canvas { max-width: 100%; }
+#waveformCanvas, canvas { max-width: 100%; }
 .waveform-wrap, .analyzer-wrap, #waveformWrap, .spectrum-wrap { min-height: 170px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: #080b14; overflow: hidden; }
-.waveform-wrap canvas, .analyzer-wrap canvas, #waveformCanvas, #waveformCanvas { width: 100%; height: 100%; min-height: 150px; display: block; }
-.meter-bar, .level-bar, .progress-bar { position: relative; height: 8px; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
-.meter-bar > *, .level-bar > *, .progress-bar > * { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--p), var(--p2), var(--a)); }
-}
-
+.waveform-wrap canvas, .analyzer-wrap canvas, #waveformCanvas { width: 100%; height: 100%; min-height: 150px; display: block; }
 /* ── Sidebar viejo (workflowSidebar) desactivado: sus botones vivos
    se reubicaron en la barra MASTER BUS de la consola. JS de
    32-flex-layout.js sigue seteando grid-template-columns por inline
@@ -479,8 +431,6 @@
 .spectrum-wrap,
 .spectrum-bars,
 .bar-wrap,
-.meter-col .meter-track,
-.meter-track,
 #consoleSpectrum {
   background: linear-gradient(135deg, rgba(139,210,232,.06), rgba(142,129,200,.08), rgba(7,8,18,.92)) !important;
   border: 1px solid rgba(139,210,232,.25) !important;
@@ -489,45 +439,11 @@
   position: relative;
   overflow: hidden;
 }
-.bar-before,
-.bar-after,
-.freqband-fill,
-.meter-fill,
-#meterPeakFill,
-#meterRmsFill,
-#meterLufsFill,
-#meterTruePeakFill,
-#stereoMeterFill,
-#fb-sub, #fb-bass, #fb-lowmid, #fb-mid, #fb-highmid, #fb-air,
-.meter-col .meter-fill,
-.meter-col [id^="meter"] > .meter-fill {
-  animation: shimmer-hologram 3.2s linear infinite alternate;
-  background: linear-gradient(90deg, rgba(139,210,232,.85), rgba(142,129,200,.85), rgba(255,255,255,.6), rgba(142,129,200,.85), rgba(139,210,232,.85)) !important;
-  background-size: 200% 100% !important;
-}
-@keyframes shimmer-hologram {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 .bar-label,
-.freqband-label,
-.meter-name,
-.meter-readout,
-.meter-label,
-#consoleSpectrum,
-#analysisPanel,
 .fft-wrap h3,
 .spectrum-wrap h3 {
   color: rgba(255,255,255,.92) !important;
   text-shadow: 0 0 8px rgba(139,210,232,.45), 0 0 2px rgba(142,129,200,.35);
-  font-family: var(--mono, monospace);
-  letter-spacing: .06em;
 }
-.fft-wrap canvas,
-.spectrum-wrap canvas,
-#consoleSpectrum,
-#spectrumCanvas,
-#analysisSpectrumStage {
-  filter: drop-shadow(0 0 6px rgba(139,210,232,.35)) drop-shadow(0 0 14px rgba(142,129,200,.25));
+
 }
